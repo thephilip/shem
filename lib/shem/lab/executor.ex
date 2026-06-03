@@ -14,9 +14,15 @@ defmodule Shem.Lab.Executor do
       {:ok, modules} ->
         Enum.each(modules, fn {mod, bc} -> :code.load_binary(mod, ~c"nofile", bc) end)
         last_module = modules |> List.last() |> elem(0)
-        result = execute(last_module, fun, timeout)
-        Enum.each(modules, fn {mod, _} -> :code.purge(mod) && :code.delete(mod) end)
-        result
+
+        try do
+          execute(last_module, fun, timeout)
+        after
+          Enum.each(modules, fn {mod, _} ->
+            :code.purge(mod)
+            :code.delete(mod)
+          end)
+        end
 
       error ->
         error
