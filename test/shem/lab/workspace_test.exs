@@ -5,7 +5,7 @@ defmodule Shem.Lab.WorkspaceTest do
   alias Shem.Tool
 
   setup do
-    lab_dir = Application.get_env(:shem, :lab_dir)
+    lab_dir = Application.get_env(:shem, :lab_dir, System.tmp_dir!())
     on_exit(fn -> File.rm_rf!(lab_dir) end)
     :ok
   end

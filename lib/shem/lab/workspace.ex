@@ -20,7 +20,7 @@ defmodule Shem.Lab.Workspace do
     |> File.ls!()
     |> Enum.filter(&String.ends_with?(&1, ".ex"))
     |> Enum.map(fn filename ->
-      id = String.trim_trailing(filename, ".ex")
+      id = String.replace_suffix(filename, ".ex", "")
       {id, Path.join(dir, filename)}
     end)
   end
