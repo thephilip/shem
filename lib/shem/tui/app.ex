@@ -47,18 +47,9 @@ defmodule Shem.TUI.App do
 
   @impl true
   def render(model) do
-    # Views are implemented in Task 7; placeholder keeps compilation clean
-    import Ratatouille.View
-    import Ratatouille.Constants, only: [color: 1]
-
-    view do
-      row do
-        column(size: 12) do
-          panel(title: "Shem — mode: #{model.mode}", color: color(:green)) do
-            label(content: "TUI views coming in next task.")
-          end
-        end
-      end
+    case model.mode do
+      :dashboard -> Shem.TUI.Views.Dashboard.render(model)
+      :interactive -> Shem.TUI.Views.Interactive.render(model)
     end
   end
 end
