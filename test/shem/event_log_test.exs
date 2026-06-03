@@ -49,4 +49,43 @@ defmodule Shem.EventLogTest do
       assert after_ > before
     end
   end
+
+  describe "append/3" do
+    test "returns {:ok, %Event{}} with the correct fields" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, event} = EventLog.append(sid, :state_changed, %{x: 1})
+      assert String.starts_with?(event.id, "evt_")
+      assert event.session_id == sid
+      assert event.type == :state_changed
+      assert event.payload == %{x: 1}
+      assert event.parent_id == nil
+    end
+
+    test "append/4 sets parent_id when provided" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, e1} = EventLog.append(sid, :first, %{})
+      {:ok, e2} = EventLog.append(sid, :second, %{}, e1.id)
+      assert e2.parent_id == e1.id
+    end
+
+    test "increments the session event_count" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :a, %{})
+      EventLog.append(sid, :b, %{})
+      {:ok, sessions} = EventLog.list_sessions()
+      session = Enum.find(sessions, &(&1.id == sid))
+      assert session.event_count == 2
+    end
+
+    test "returns {:error, :session_not_found} for unknown session" do
+      assert {:error, :session_not_found} =
+               EventLog.append("ses_doesnotexist00", :type, %{})
+    end
+
+    test "returns {:error, :session_ended} for a closed session" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.end_session(sid)
+      assert {:error, :session_ended} = EventLog.append(sid, :type, %{})
+    end
+  end
 end

@@ -1,7 +1,8 @@
 defmodule Shem.EventLog do
   use GenServer
 
-  alias Shem.EventLog.{Event, Session}
+  alias Shem.EventLog.Session
+  alias Shem.EventLog.Event
 
   # ── Client API ──────────────────────────────────────────────────────────────
 
@@ -20,6 +21,11 @@ defmodule Shem.EventLog do
 
   @spec stats() :: %{sessions: non_neg_integer(), total_events: non_neg_integer()}
   def stats, do: GenServer.call(__MODULE__, :stats)
+
+  @spec append(String.t(), atom(), map(), String.t() | nil) ::
+          {:ok, Event.t()} | {:error, :session_not_found | :session_ended}
+  def append(session_id, type, payload, parent_id \\ nil),
+    do: GenServer.call(__MODULE__, {:append, session_id, type, payload, parent_id})
 
   # ── Server callbacks ────────────────────────────────────────────────────────
 
@@ -58,6 +64,28 @@ defmodule Shem.EventLog do
   end
 
   @impl true
+  def handle_call({:append, session_id, type, payload, parent_id}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} ->
+        event = Event.new(session_id, type, payload, parent_id)
+
+        case state.store.append(handle, event) do
+          :ok ->
+            sessions =
+              Map.update!(state.sessions, session_id, fn {h, s} -> {h, Session.increment(s)} end)
+
+            {:reply, {:ok, event}, %{state | sessions: sessions}}
+
+          {:error, reason} ->
+            {:reply, {:error, reason}, state}
+        end
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  @impl true
   def handle_call(:stats, _from, state) do
     total_events =
       state.sessions
@@ -69,6 +97,14 @@ defmodule Shem.EventLog do
   end
 
   # ── Helpers ─────────────────────────────────────────────────────────────────
+
+  defp get_active_handle(state, session_id) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, _session}} when handle != nil -> {:ok, handle}
+      {:ok, {nil, _session}} -> {:error, :session_ended}
+      :error -> {:error, :session_not_found}
+    end
+  end
 
   defp event_log_path do
     Application.get_env(
