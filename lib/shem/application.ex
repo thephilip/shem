@@ -3,12 +3,21 @@ defmodule Shem.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {Registry, keys: :unique, name: Shem.Registry},
-      Shem.AgentSupervisor
-    ]
+    children =
+      [
+        {Registry, keys: :unique, name: Shem.Registry},
+        Shem.AgentSupervisor
+      ] ++ tui_children()
 
     opts = [strategy: :one_for_one, name: Shem.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp tui_children do
+    if Application.get_env(:shem, :start_tui, true) do
+      [Shem.TUI.RuntimeSupervisor]
+    else
+      []
+    end
   end
 end
