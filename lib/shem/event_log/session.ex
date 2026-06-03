@@ -1,0 +1,30 @@
+defmodule Shem.EventLog.Session do
+  @enforce_keys [:id, :started_at]
+  defstruct [:id, :started_at, :ended_at, event_count: 0]
+
+  @type t :: %__MODULE__{
+          id: String.t(),
+          started_at: DateTime.t(),
+          ended_at: DateTime.t() | nil,
+          event_count: non_neg_integer()
+        }
+
+  @spec new() :: t()
+  def new do
+    %__MODULE__{
+      id: generate_id(),
+      started_at: DateTime.utc_now()
+    }
+  end
+
+  @spec generate_id() :: String.t()
+  def generate_id, do: "ses_" <> Base.encode16(:crypto.strong_rand_bytes(8))
+
+  @spec increment(t()) :: t()
+  def increment(%__MODULE__{} = session),
+    do: %{session | event_count: session.event_count + 1}
+
+  @spec close(t()) :: t()
+  def close(%__MODULE__{} = session),
+    do: %{session | ended_at: DateTime.utc_now()}
+end
