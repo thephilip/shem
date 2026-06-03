@@ -8,7 +8,8 @@ defmodule Shem.TUI.Views.DashboardTest do
       mode: :dashboard,
       command_buffer: "",
       paused: false,
-      event_log_stats: %{sessions: 0, total_events: 0}
+      event_log_stats: %{sessions: 0, total_events: 0},
+      tool_count: 0
     }
   end
 

@@ -14,7 +14,8 @@ defmodule Shem.TUI.App do
       mode: :dashboard,
       command_buffer: "",
       paused: false,
-      event_log_stats: %{sessions: 0, total_events: 0}
+      event_log_stats: %{sessions: 0, total_events: 0},
+      tool_count: 0
     }
   end
 
@@ -49,7 +50,7 @@ defmodule Shem.TUI.App do
         %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
 
       :tick ->
-        %{model | event_log_stats: safe_stats()}
+        %{model | event_log_stats: safe_stats(), tool_count: safe_tool_count()}
 
       _ ->
         model
@@ -69,6 +70,14 @@ defmodule Shem.TUI.App do
       Shem.EventLog.stats()
     catch
       :exit, _ -> %{sessions: 0, total_events: 0}
+    end
+  end
+
+  defp safe_tool_count do
+    try do
+      Shem.Lab.Registry.all() |> length()
+    catch
+      :exit, _ -> 0
     end
   end
 end
