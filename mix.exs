@@ -7,7 +7,8 @@ defmodule Shem.MixProject do
       version: "0.1.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -24,5 +25,24 @@ defmodule Shem.MixProject do
     [
       {:ratatouille, "~> 0.5"}
     ]
+  end
+
+  defp aliases do
+    [
+      "deps.get": ["deps.get", &patch_waf/1],
+      "deps.compile": [&patch_waf/1, "deps.compile"]
+    ]
+  end
+
+  # ex_termbox bundles waf 2.0.14 which breaks on Python 3.11+ (removed `imp` module).
+  # priv/waf is waf 2.1.4 — copy it into place before every compile.
+  defp patch_waf(_) do
+    dst = Path.join(~w[deps ex_termbox c_src termbox waf])
+    src = Path.join([__DIR__, "priv", "waf"])
+
+    if File.exists?(src) and File.dir?(Path.dirname(dst)) do
+      File.cp!(src, dst)
+      File.chmod!(dst, 0o755)
+    end
   end
 end
