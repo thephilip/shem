@@ -14,17 +14,10 @@ defmodule Shem.Application do
   end
 
   defp tui_children do
-    if Application.get_env(:shem, :start_tui, true) and tty?() do
+    if Application.get_env(:shem, :start_tui, true) do
       [Shem.TUI.RuntimeSupervisor]
     else
       []
-    end
-  end
-
-  defp tty? do
-    case :io.getopts(:standard_io) do
-      opts when is_list(opts) -> Keyword.get(opts, :terminal) == :terminal
-      _ -> false
     end
   end
 end
