@@ -20,7 +20,7 @@ defmodule Shem.ToolTest do
   end
 
   test "raises if a required field is missing" do
-    assert_raise ArgumentError, fn ->
+    assert_raise ArgumentError, ~r/the following keys must also be given/, fn ->
       struct!(Tool, %{id: "x"})
     end
   end
