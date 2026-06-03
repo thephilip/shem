@@ -13,6 +13,7 @@ defmodule Shem.Tool do
     :test_source,
     :graduated_at,
     constraints: [],
+    input_schema: %{},
     metadata: %{}
   ]
 
@@ -23,6 +24,7 @@ defmodule Shem.Tool do
           source: String.t(),
           test_source: String.t(),
           constraints: [String.t()],
+          input_schema: map(),
           graduated_at: DateTime.t(),
           metadata: map()
         }

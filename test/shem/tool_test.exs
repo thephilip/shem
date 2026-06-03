@@ -24,4 +24,29 @@ defmodule Shem.ToolTest do
       struct!(Tool, %{id: "x"})
     end
   end
+
+  test "defaults input_schema to empty map" do
+    tool = %Shem.Tool{
+      id: "foo",
+      name: "Foo",
+      module: Foo,
+      source: "defmodule Foo do\nend",
+      test_source: "",
+      graduated_at: DateTime.utc_now()
+    }
+    assert tool.input_schema == %{}
+  end
+
+  test "accepts a non-empty input_schema" do
+    tool = %Shem.Tool{
+      id: "bar",
+      name: "Bar",
+      module: Bar,
+      source: "defmodule Bar do\nend",
+      test_source: "",
+      graduated_at: DateTime.utc_now(),
+      input_schema: %{"n" => %{"type" => "integer"}}
+    }
+    assert tool.input_schema == %{"n" => %{"type" => "integer"}}
+  end
 end
