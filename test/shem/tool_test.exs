@@ -1,0 +1,27 @@
+defmodule Shem.ToolTest do
+  use ExUnit.Case, async: true
+
+  alias Shem.Tool
+
+  test "can be constructed with all required fields" do
+    tool = %Tool{
+      id: "parse_csv_v1",
+      name: "ParseCsv",
+      module: ParseCsv,
+      source: "defmodule ParseCsv do end",
+      test_source: "defmodule ParseCsvTest do def run, do: :ok end",
+      graduated_at: ~U[2026-06-03 00:00:00Z]
+    }
+
+    assert tool.id == "parse_csv_v1"
+    assert tool.module == ParseCsv
+    assert tool.constraints == []
+    assert tool.metadata == %{}
+  end
+
+  test "raises if a required field is missing" do
+    assert_raise ArgumentError, fn ->
+      struct!(Tool, %{id: "x"})
+    end
+  end
+end
