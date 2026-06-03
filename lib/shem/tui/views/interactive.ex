@@ -48,7 +48,7 @@ defmodule Shem.TUI.Views.Interactive do
 
   defp prompt_title(%{paused: true}), do: "[ PAUSED — press SPACE to resume ]"
   defp prompt_title(%{command_buffer: "/" <> _ = buf}), do: "Command: #{buf}"
-  defp prompt_title(_), do: "d=Dashboard  /=Command  SPACE=Pause"
+  defp prompt_title(_), do: "d=Dashboard  /=Command  SPACE=Pause  q=Quit"
 
   defp prompt_color(%{paused: true}), do: color(:red)
   defp prompt_color(_), do: color(:cyan)

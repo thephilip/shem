@@ -53,7 +53,7 @@ defmodule Shem.TUI.Views.Dashboard do
     do: "Command: #{buf}"
 
   defp status_bar_title(_),
-    do: "Ready  |  d=Dashboard  i=Interactive  /=Command  SPACE=Pause  ESC=Pause"
+    do: "Ready  |  d=Dashboard  i=Interactive  /=Command  SPACE=Pause  q=Quit"
 
   defp status_bar_color(%{paused: true}), do: color(:red)
   defp status_bar_color(_), do: color(:green)
