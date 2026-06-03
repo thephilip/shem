@@ -8,7 +8,8 @@ defmodule Shem.TUI.RuntimeSupervisor do
   @impl true
   def init(_opts) do
     children = [
-      {Ratatouille.Runtime, app: Shem.TUI.App, quit_events: [{:key, 3}]}
+      {Ratatouille.Runtime.Supervisor,
+       app: Shem.TUI.App, runtime: [quit_events: [{:key, 3}]]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
