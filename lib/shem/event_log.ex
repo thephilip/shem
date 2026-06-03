@@ -27,6 +27,24 @@ defmodule Shem.EventLog do
   def append(session_id, type, payload, parent_id \\ nil),
     do: GenServer.call(__MODULE__, {:append, session_id, type, payload, parent_id})
 
+  @spec events(String.t()) :: {:ok, [Event.t()]} | {:error, :session_not_found | :session_ended}
+  def events(session_id), do: GenServer.call(__MODULE__, {:events, session_id})
+
+  @spec event(String.t(), String.t()) ::
+          {:ok, Event.t()} | {:error, :session_not_found | :session_ended | :not_found}
+  def event(session_id, event_id),
+    do: GenServer.call(__MODULE__, {:event, session_id, event_id})
+
+  @spec reconstruct(String.t(), (term(), Event.t() -> term()), term()) ::
+          {:ok, term()} | {:error, :session_not_found | :session_ended}
+  def reconstruct(session_id, reducer, initial),
+    do: GenServer.call(__MODULE__, {:reconstruct, session_id, reducer, initial})
+
+  @spec reconstruct_at(String.t(), String.t(), (term(), Event.t() -> term()), term()) ::
+          {:ok, term()} | {:error, :session_not_found | :session_ended | :event_not_found}
+  def reconstruct_at(session_id, event_id, reducer, initial),
+    do: GenServer.call(__MODULE__, {:reconstruct_at, session_id, event_id, reducer, initial})
+
   # ── Server callbacks ────────────────────────────────────────────────────────
 
   @impl true
@@ -78,6 +96,48 @@ defmodule Shem.EventLog do
 
           {:error, reason} ->
             {:reply, {:error, reason}, state}
+        end
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:events, session_id}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} -> {:reply, state.store.read_all(handle), state}
+      error -> {:reply, error, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:event, session_id, event_id}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} -> {:reply, state.store.get(handle, event_id), state}
+      error -> {:reply, error, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:reconstruct, session_id, reducer, initial}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} ->
+        with {:ok, events} <- state.store.read_all(handle) do
+          {:reply, {:ok, Shem.EventLog.Replay.fold(events, initial, reducer)}, state}
+        end
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:reconstruct_at, session_id, event_id, reducer, initial}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} ->
+        with {:ok, events} <- state.store.read_all(handle) do
+          {:reply, Shem.EventLog.Replay.state_at(events, event_id, initial, reducer), state}
         end
 
       error ->

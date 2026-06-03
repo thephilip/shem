@@ -88,4 +88,65 @@ defmodule Shem.EventLogTest do
       assert {:error, :session_ended} = EventLog.append(sid, :type, %{})
     end
   end
+
+  describe "events/1" do
+    test "returns all appended events in timestamp order" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, e1} = EventLog.append(sid, :first, %{})
+      {:ok, e2} = EventLog.append(sid, :second, %{})
+      {:ok, events} = EventLog.events(sid)
+      assert Enum.map(events, & &1.id) == [e1.id, e2.id]
+    end
+
+    test "returns {:error, :session_not_found} for unknown session" do
+      assert {:error, :session_not_found} = EventLog.events("ses_doesnotexist00")
+    end
+  end
+
+  describe "event/2" do
+    test "retrieves a specific event by id" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, e} = EventLog.append(sid, :state_changed, %{val: 42})
+      assert {:ok, ^e} = EventLog.event(sid, e.id)
+    end
+
+    test "returns {:error, :not_found} for unknown event_id" do
+      {:ok, sid} = EventLog.start_session()
+      assert {:error, :not_found} = EventLog.event(sid, "evt_0000000000000000")
+    end
+  end
+
+  describe "reconstruct/3" do
+    test "folds all events to produce final state" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :inc, %{})
+      EventLog.append(sid, :inc, %{})
+      EventLog.append(sid, :inc, %{})
+      reducer = fn count, _event -> count + 1 end
+      assert {:ok, 3} = EventLog.reconstruct(sid, reducer, 0)
+    end
+
+    test "returns {:ok, initial} for a session with no events" do
+      {:ok, sid} = EventLog.start_session()
+      assert {:ok, :empty} = EventLog.reconstruct(sid, fn s, _ -> s end, :empty)
+    end
+  end
+
+  describe "reconstruct_at/4" do
+    test "folds only up to and including the given event_id" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, e1} = EventLog.append(sid, :inc, %{})
+      {:ok, e2} = EventLog.append(sid, :inc, %{})
+      {:ok, _e3} = EventLog.append(sid, :inc, %{})
+      reducer = fn count, _event -> count + 1 end
+      assert {:ok, 2} = EventLog.reconstruct_at(sid, e2.id, reducer, 0)
+    end
+
+    test "returns {:error, :event_not_found} for unknown event_id" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :inc, %{})
+      assert {:error, :event_not_found} =
+               EventLog.reconstruct_at(sid, "evt_0000000000000000", fn s, _ -> s end, 0)
+    end
+  end
 end
