@@ -24,7 +24,7 @@ defmodule Shem.MixProject do
   defp deps do
     [
       {:ratatouille, "~> 0.5"},
-      {:stream_data, "~> 1.0"}
+      {:stream_data, "~> 1.0", only: :test}
     ]
   end
 
