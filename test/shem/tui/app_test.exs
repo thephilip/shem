@@ -9,6 +9,7 @@ defmodule Shem.TUI.AppTest do
       assert model.mode == :dashboard
       assert model.command_buffer == ""
       assert model.paused == false
+      assert model.event_log_stats == %{sessions: 0, total_events: 0}
     end
   end
 
@@ -87,6 +88,15 @@ defmodule Shem.TUI.AppTest do
       model = %{App.init(%{}) | command_buffer: "/"}
       result = App.update(model, {:event, %{ch: 0, key: 127}})
       assert result.command_buffer == ""
+    end
+  end
+
+  describe "update/2 — tick subscription" do
+    test ":tick message updates event_log_stats from EventLog.stats()" do
+      model = App.init(%{})
+      updated = App.update(model, :tick)
+      assert is_integer(updated.event_log_stats.sessions)
+      assert is_integer(updated.event_log_stats.total_events)
     end
   end
 end

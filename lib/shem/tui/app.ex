@@ -1,7 +1,9 @@
 defmodule Shem.TUI.App do
   @behaviour Ratatouille.App
 
-  # Keyboard constants (termbox key codes)
+  alias Shem.TUI.Views.{Dashboard, Interactive}
+  alias Ratatouille.Runtime.Subscription
+
   @esc 27
   @backspace 127
   @space ?\s
@@ -11,8 +13,14 @@ defmodule Shem.TUI.App do
     %{
       mode: :dashboard,
       command_buffer: "",
-      paused: false
+      paused: false,
+      event_log_stats: %{sessions: 0, total_events: 0}
     }
+  end
+
+  @impl true
+  def subscribe(_model) do
+    Subscription.interval(500, :tick)
   end
 
   @impl true
@@ -40,6 +48,9 @@ defmodule Shem.TUI.App do
       {:event, %{ch: ch}} when model.command_buffer != "" and ch > 0 ->
         %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
 
+      :tick ->
+        %{model | event_log_stats: safe_stats()}
+
       _ ->
         model
     end
@@ -48,8 +59,16 @@ defmodule Shem.TUI.App do
   @impl true
   def render(model) do
     case model.mode do
-      :dashboard -> Shem.TUI.Views.Dashboard.render(model)
-      :interactive -> Shem.TUI.Views.Interactive.render(model)
+      :dashboard -> Dashboard.render(model)
+      :interactive -> Interactive.render(model)
+    end
+  end
+
+  defp safe_stats do
+    try do
+      Shem.EventLog.stats()
+    catch
+      :exit, _ -> %{sessions: 0, total_events: 0}
     end
   end
 end

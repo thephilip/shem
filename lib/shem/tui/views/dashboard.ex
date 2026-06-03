@@ -21,7 +21,10 @@ defmodule Shem.TUI.Views.Dashboard do
         column(size: 4) do
           panel(title: "Lab Status", color: color(:magenta)) do
             label(content: "Tools graduated: 0", color: color(:white))
-            label(content: "Active loops:    0", color: color(:white))
+            label(
+              content: "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",
+              color: color(:white)
+            )
             label(content: "")
             label(
               content: "Lab: idle",
