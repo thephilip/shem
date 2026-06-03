@@ -7,7 +7,8 @@ defmodule Shem.Application do
       [
         {Registry, keys: :unique, name: Shem.Registry},
         Shem.AgentSupervisor,
-        Shem.EventLog
+        Shem.EventLog,
+        {Task.Supervisor, name: Shem.Lab.TaskSupervisor}
       ] ++ tui_children()
 
     opts = [strategy: :one_for_one, name: Shem.Supervisor]
