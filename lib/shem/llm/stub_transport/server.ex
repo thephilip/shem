@@ -18,6 +18,9 @@ defmodule Shem.LLM.StubTransport.Server do
   def pop(server \\ __MODULE__),
     do: GenServer.call(server, :pop)
 
+  def reset(server \\ __MODULE__),
+    do: GenServer.call(server, :reset)
+
   @impl true
   def init(:ok), do: {:ok, %{queue: [], default: nil, calls: []}}
 
@@ -45,4 +48,7 @@ defmodule Shem.LLM.StubTransport.Server do
 
   def handle_call({:record_call, request}, _from, state),
     do: {:reply, :ok, %{state | calls: state.calls ++ [request]}}
+
+  def handle_call(:reset, _from, _state),
+    do: {:reply, :ok, %{queue: [], default: nil, calls: []}}
 end

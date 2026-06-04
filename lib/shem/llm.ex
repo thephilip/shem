@@ -7,6 +7,10 @@ defmodule Shem.LLM do
     pipeline.(request)
   end
 
+  @doc """
+  Phase 5 MVP: invokes `complete/1` and calls `callback` once with the full response content.
+  Full chunked streaming is Phase 6.
+  """
   @spec stream(Request.t(), (String.t() -> any())) :: {:ok, Response.t()} | {:error, term()}
   def stream(%Request{} = request, callback) when is_function(callback, 1) do
     case complete(request) do

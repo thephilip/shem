@@ -17,8 +17,10 @@ defmodule Shem.Application do
     Supervisor.start_link(children, opts)
   end
 
+  @test_env Mix.env() == :test
+
   defp llm_stub_children do
-    if Application.get_env(:shem, :start_llm_stub, Mix.env() == :test) do
+    if Application.get_env(:shem, :start_llm_stub, @test_env) do
       [{Shem.LLM.StubTransport.Server, name: Shem.LLM.StubTransport.Server}]
     else
       []

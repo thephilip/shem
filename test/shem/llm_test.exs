@@ -14,6 +14,7 @@ defmodule Shem.LLMTest do
 
   setup do
     Shem.LLM.BudgetServer.reset()
+    Shem.LLM.StubTransport.Server.reset()
     :ok
   end
 
