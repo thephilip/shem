@@ -9,6 +9,8 @@ config :shem, mcp_port: 4001
 config :shem, mcp_clients: []
 config :shem, mcp_client_timeout_ms: 200
 
+config :shem, start_llm_stub: true
+
 config :shem,
   llm_pipeline: [
     {Shem.LLM.Middleware.BudgetCheck,

@@ -13,14 +13,6 @@ defmodule Shem.LLMTest do
   end
 
   setup do
-    unless Process.whereis(Shem.LLM.BudgetServer) do
-      start_supervised!(Shem.LLM.BudgetServer)
-    end
-
-    unless Process.whereis(Shem.LLM.StubTransport.Server) do
-      start_supervised!({Shem.LLM.StubTransport.Server, name: Shem.LLM.StubTransport.Server})
-    end
-
     Shem.LLM.BudgetServer.reset()
     :ok
   end

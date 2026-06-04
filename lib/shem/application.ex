@@ -9,11 +9,20 @@ defmodule Shem.Application do
         Shem.AgentSupervisor,
         Shem.EventLog,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
-        Shem.Lab.Registry
-      ] ++ mcp_children() ++ tui_children()
+        Shem.Lab.Registry,
+        Shem.LLM.BudgetServer
+      ] ++ llm_stub_children() ++ mcp_children() ++ tui_children()
 
     opts = [strategy: :one_for_one, name: Shem.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp llm_stub_children do
+    if Application.get_env(:shem, :start_llm_stub, Mix.env() == :test) do
+      [{Shem.LLM.StubTransport.Server, name: Shem.LLM.StubTransport.Server}]
+    else
+      []
+    end
   end
 
   defp mcp_children do
