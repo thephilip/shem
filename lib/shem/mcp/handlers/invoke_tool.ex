@@ -15,8 +15,11 @@ defmodule Shem.MCP.Handlers.InvokeTool do
       args = Map.get(valid, "args", %{})
 
       with {:ok, _} <- Schema.validate(args, tool.input_schema) do
-        result = tool.module.run(args)
-        {:ok, result}
+        try do
+          {:ok, tool.module.run(args)}
+        rescue
+          e -> {:error, :runtime, Exception.message(e)}
+        end
       end
     end
   end

@@ -75,7 +75,13 @@ defmodule Shem.MCP.Router do
   defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments}) do
     case call_tool(name, arguments) do
       {:ok, result} ->
-        {:ok, %{"content" => [%{"type" => "text", "text" => inspect(result)}]}}
+        text =
+          case Jason.encode(result) do
+            {:ok, json} -> json
+            {:error, _} -> inspect(result)
+          end
+
+        {:ok, %{"content" => [%{"type" => "text", "text" => text}]}}
 
       {:error, kind, detail} ->
         {:error, -32602, "#{kind}: #{inspect(detail)}"}
