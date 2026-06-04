@@ -103,6 +103,17 @@ defmodule Shem.MCP.Client.ServerConn do
     {:noreply, state}
   end
 
+  def handle_info({port, {:exit_status, code}}, %{port: port} = state) do
+    Logger.warning("ServerConn #{state.config.name}: OS process exited with status #{code}")
+
+    Enum.each(state.pending, fn {_id, {from, timer_ref}} ->
+      Process.cancel_timer(timer_ref)
+      GenServer.reply(from, {:error, :server_down})
+    end)
+
+    {:stop, {:port_exited, code}, %{state | status: :down, pending: %{}}}
+  end
+
   # --- private ---
 
   defp handle_message(%{"id" => @handshake_init_id, "result" => _}, %{handshake_step: :awaiting_init} = state) do

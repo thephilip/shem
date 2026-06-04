@@ -183,4 +183,49 @@ defmodule Shem.MCP.Client.ServerConnTest do
       assert {:error, :not_ready} = GenServer.call(conn, {:call, "tool", %{}})
     end
   end
+
+  describe "error paths" do
+    test "malformed stdout line is skipped, ServerConn does not crash" do
+      conn = start_conn("e1")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      send(conn, {fake_pid, {:data, {:eol, "not json at all"}}})
+      Process.sleep(20)
+
+      # ServerConn is still alive
+      assert Process.alive?(conn)
+      assert :ready = GenServer.call(conn, :status)
+    end
+
+    test "oversized line (noeol) is skipped, ServerConn does not crash" do
+      conn = start_conn("e2")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      send(conn, {fake_pid, {:data, {:noeol, "x"}}})
+      Process.sleep(20)
+
+      assert Process.alive?(conn)
+    end
+
+    test "port exit_status sends :server_down to in-flight callers" do
+      conn = start_conn("e3")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      task = Task.async(fn ->
+        GenServer.call(conn, {:call, "slow_tool", %{}}, 2_000)
+      end)
+
+      # Wait for the port_write
+      assert_receive {:port_write, ^conn, _}, 500
+
+      # Simulate OS process exit
+      Process.flag(:trap_exit, true)
+      send(conn, {fake_pid, {:exit_status, 1}})
+
+      assert {:error, :server_down} = Task.await(task, 1_000)
+    end
+  end
 end
