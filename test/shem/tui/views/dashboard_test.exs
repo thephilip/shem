@@ -10,7 +10,8 @@ defmodule Shem.TUI.Views.DashboardTest do
       paused: false,
       event_log_stats: %{sessions: 0, total_events: 0},
       tool_count: 0,
-      mcp_client_count: 0
+      mcp_client_count: 0,
+      mcp_outbound_count: 0
     }
   end
 
@@ -42,5 +43,12 @@ defmodule Shem.TUI.Views.DashboardTest do
     rendered = Dashboard.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "3"
     assert rendered =~ "17"
+  end
+
+  test "render/1 shows mcp_outbound_count in client stat line" do
+    model = %{base_model() | mcp_outbound_count: 2}
+    rendered = Dashboard.render(model) |> inspect(limit: :infinity)
+    assert rendered =~ "MCP clients"
+    assert rendered =~ "2"
   end
 end

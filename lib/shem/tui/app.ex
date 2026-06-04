@@ -16,7 +16,8 @@ defmodule Shem.TUI.App do
       paused: false,
       event_log_stats: %{sessions: 0, total_events: 0},
       tool_count: 0,
-      mcp_client_count: 0
+      mcp_client_count: 0,
+      mcp_outbound_count: 0
     }
   end
 
@@ -55,7 +56,8 @@ defmodule Shem.TUI.App do
           model
           | event_log_stats: safe_stats(),
             tool_count: safe_tool_count(),
-            mcp_client_count: safe_mcp_count()
+            mcp_client_count: safe_mcp_count(),
+            mcp_outbound_count: safe_mcp_outbound_count()
         }
 
       _ ->
@@ -90,6 +92,15 @@ defmodule Shem.TUI.App do
   defp safe_mcp_count do
     try do
       Shem.MCP.SessionRegistry.client_count()
+    catch
+      :exit, _ -> 0
+    end
+  end
+
+  defp safe_mcp_outbound_count do
+    try do
+      Shem.MCP.Client.connected_servers()
+      |> Enum.count(&(&1.status == :ready))
     catch
       :exit, _ -> 0
     end

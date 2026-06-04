@@ -30,6 +30,11 @@ defmodule Shem.TUI.Views.Dashboard do
             )
 
             label(
+              content: "MCP clients: #{model.mcp_outbound_count} connected",
+              color: color(:cyan)
+            )
+
+            label(
               content:
                 "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",
               color: color(:white)
