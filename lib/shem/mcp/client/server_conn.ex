@@ -64,7 +64,31 @@ defmodule Shem.MCP.Client.ServerConn do
     {:reply, state.status, state}
   end
 
+  def handle_call({:call, _tool, _args}, _from, %{status: :connecting} = state) do
+    {:reply, {:error, :not_ready}, state}
+  end
+
+  def handle_call({:call, tool, args}, from, state) do
+    timeout_ms = Application.get_env(:shem, :mcp_client_timeout_ms, 5_000)
+    id = state.next_id
+    timer_ref = Process.send_after(self(), {:timeout, id}, timeout_ms)
+    send_to_port(state, Protocol.encode_request(id, "tools/call", %{"name" => tool, "arguments" => args}))
+    pending = Map.put(state.pending, id, {from, timer_ref})
+    {:noreply, %{state | next_id: id + 1, pending: pending}}
+  end
+
   @impl true
+  def handle_info({:timeout, id}, state) do
+    case Map.pop(state.pending, id) do
+      {nil, _} ->
+        {:noreply, state}
+
+      {{from, _timer_ref}, pending} ->
+        GenServer.reply(from, {:error, :timeout})
+        {:noreply, %{state | pending: pending}}
+    end
+  end
+
   def handle_info({port, {:data, {:eol, line}}}, %{port: port} = state) do
     case Protocol.decode_message(line) do
       {:ok, msg} -> handle_message(msg, state)
@@ -89,6 +113,20 @@ defmodule Shem.MCP.Client.ServerConn do
 
   defp handle_message(%{"id" => @handshake_tools_id, "result" => %{"tools" => tools}}, %{handshake_step: :awaiting_tools} = state) do
     {:noreply, %{state | status: :ready, handshake_step: nil, tools: tools}}
+  end
+
+  defp handle_message(%{"id" => id, "result" => result}, state) when is_map_key(state.pending, id) do
+    {{from, timer_ref}, pending} = Map.pop(state.pending, id)
+    Process.cancel_timer(timer_ref)
+    GenServer.reply(from, {:ok, result})
+    {:noreply, %{state | pending: pending}}
+  end
+
+  defp handle_message(%{"id" => id, "error" => error}, state) when is_map_key(state.pending, id) do
+    {{from, timer_ref}, pending} = Map.pop(state.pending, id)
+    Process.cancel_timer(timer_ref)
+    GenServer.reply(from, {:error, error})
+    {:noreply, %{state | pending: pending}}
   end
 
   defp handle_message(_msg, state) do

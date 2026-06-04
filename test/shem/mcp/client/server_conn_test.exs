@@ -107,4 +107,80 @@ defmodule Shem.MCP.Client.ServerConnTest do
     assert [{^conn, _}] =
              Registry.lookup(Shem.Registry, {ServerConn, "t6"})
   end
+
+  describe "call/response correlation" do
+    test "call returns {:ok, result} when server responds correctly" do
+      conn = start_conn("c1")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      task = Task.async(fn ->
+        GenServer.call(conn, {:call, "read_file", %{"path" => "/tmp/x"}})
+      end)
+
+      # Receive the tools/call request
+      assert_receive {:port_write, ^conn, req_data}, 500
+      decoded = Jason.decode!(req_data)
+      id = decoded["id"]
+      assert decoded["method"] == "tools/call"
+      assert decoded["params"]["name"] == "read_file"
+
+      # Send back a response
+      resp = Jason.encode!(%{"jsonrpc" => "2.0", "id" => id, "result" => %{"content" => "hello"}})
+      send(conn, {fake_pid, {:data, {:eol, resp}}})
+
+      assert {:ok, %{"content" => "hello"}} = Task.await(task)
+    end
+
+    test "multiple in-flight calls are correlated independently" do
+      conn = start_conn("c2")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      task1 = Task.async(fn -> GenServer.call(conn, {:call, "tool_a", %{}}) end)
+      task2 = Task.async(fn -> GenServer.call(conn, {:call, "tool_b", %{}}) end)
+
+      # Receive both requests, capture ids
+      assert_receive {:port_write, ^conn, req1}, 500
+      assert_receive {:port_write, ^conn, req2}, 500
+      id1 = Jason.decode!(req1)["id"]
+      id2 = Jason.decode!(req2)["id"]
+      assert id1 != id2
+
+      # Respond in reverse order
+      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => id2, "result" => %{"from" => "b"}})}}})
+      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => id1, "result" => %{"from" => "a"}})}}})
+
+      assert {:ok, %{"from" => "a"}} = Task.await(task1)
+      assert {:ok, %{"from" => "b"}} = Task.await(task2)
+    end
+
+    test "call returns {:error, ...} when server returns a JSON-RPC error" do
+      conn = start_conn("c3")
+      drive_handshake(conn)
+      fake_pid = self()
+
+      task = Task.async(fn -> GenServer.call(conn, {:call, "bad_tool", %{}}) end)
+
+      assert_receive {:port_write, ^conn, req_data}, 500
+      id = Jason.decode!(req_data)["id"]
+
+      err_resp = Jason.encode!(%{
+        "jsonrpc" => "2.0",
+        "id" => id,
+        "error" => %{"code" => -32601, "message" => "method not found"}
+      })
+      send(conn, {fake_pid, {:data, {:eol, err_resp}}})
+
+      assert {:error, %{"code" => -32601, "message" => "method not found"}} = Task.await(task)
+    end
+
+    test "call returns {:error, :not_ready} when status is :connecting" do
+      conn = start_conn("c4")
+      # Do NOT drive handshake — status stays :connecting
+      # Drain the initialize port_write so the process doesn't block
+      assert_receive {:port_write, ^conn, _}, 500
+      assert {:error, :not_ready} = GenServer.call(conn, {:call, "tool", %{}})
+    end
+  end
 end
