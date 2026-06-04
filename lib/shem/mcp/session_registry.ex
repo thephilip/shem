@@ -30,7 +30,11 @@ defmodule Shem.MCP.SessionRegistry do
   end
 
   def handle_call({:unregister, session_id}, _from, state) do
-    {:reply, :ok, drop_session(state, session_id)}
+    ref = Enum.find_value(state.monitors, fn {r, sid} -> if sid == session_id, do: r end)
+    if ref, do: Process.demonitor(ref, [:flush])
+    monitors = if ref, do: Map.delete(state.monitors, ref), else: state.monitors
+    sessions = Map.delete(state.sessions, session_id)
+    {:reply, :ok, %{state | sessions: sessions, monitors: monitors}}
   end
 
   def handle_call({:send, session_id, data}, _from, state) do

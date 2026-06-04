@@ -41,4 +41,16 @@ defmodule Shem.MCP.SessionRegistryTest do
     Process.sleep(20)
     assert 0 = GenServer.call(pid, :client_count)
   end
+
+  test "unregister cancels the monitor so no spurious DOWN is delivered" do
+    {:ok, reg} = start_supervised({SessionRegistry, name: :test_sr_7})
+    session_pid = spawn(fn -> receive do: (:stop -> :ok) end)
+    GenServer.call(reg, {:register, "sess-1", session_pid})
+    GenServer.call(reg, {:unregister, "sess-1"})
+    state = :sys.get_state(reg)
+    assert map_size(state.monitors) == 0
+    Process.exit(session_pid, :kill)
+    :sys.get_state(reg)
+    assert 0 = GenServer.call(reg, :client_count)
+  end
 end
