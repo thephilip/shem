@@ -1,4 +1,11 @@
 defmodule Shem.MCP.Schema do
+  @moduledoc """
+  Validates MCP handler input arguments against a lightweight schema.
+
+  Schema format: `%{"field" => %{"type" => "string"|"integer"|"boolean"}}`.
+  Fields default to required unless `"required" => false` is set explicitly.
+  """
+
   @type schema :: %{String.t() => %{String.t() => term()}}
 
   @spec validate(map(), schema()) :: {:ok, map()} | {:error, :invalid_args, String.t()}
