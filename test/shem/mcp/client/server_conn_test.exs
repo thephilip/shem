@@ -64,9 +64,6 @@ defmodule Shem.MCP.Client.ServerConnTest do
       })
 
     send(conn_pid, {fake_pid, {:data, {:eol, tools_resp}}})
-
-    # Give ServerConn time to process
-    Process.sleep(20)
   end
 
   # ---- tests ----

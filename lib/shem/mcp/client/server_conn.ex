@@ -2,6 +2,7 @@ defmodule Shem.MCP.Client.ServerConn do
   use GenServer
 
   alias Shem.MCP.Client.Protocol
+  require Logger
 
   @handshake_init_id 0
   @handshake_tools_id 1
@@ -68,14 +69,12 @@ defmodule Shem.MCP.Client.ServerConn do
     case Protocol.decode_message(line) do
       {:ok, msg} -> handle_message(msg, state)
       {:error, reason} ->
-        require Logger
         Logger.warning("ServerConn #{state.config.name}: malformed line (#{reason}), skipping")
         {:noreply, state}
     end
   end
 
   def handle_info({port, {:data, {:noeol, _}}}, %{port: port} = state) do
-    require Logger
     Logger.warning("ServerConn #{state.config.name}: oversized line from server, skipping")
     {:noreply, state}
   end
