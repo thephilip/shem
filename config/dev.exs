@@ -10,10 +10,10 @@ config :shem,
     {Shem.LLM.Middleware.BudgetCheck,
      [budget_server: Shem.LLM.BudgetServer]},
     {Shem.LLM.Middleware.EventLogger, []},
-    {Shem.LLM.Middleware.OllamaTransport,
-     [url: "http://localhost:11434"]}
+    {Shem.LLM.Middleware.LlamaCppTransport,
+     [url: "http://localhost:8080"]}
   ],
-  llm_models: %{default: "llama3:latest"},
-  llm_ollama_url: "http://localhost:11434",
+  llm_models: %{default: "gemma4"},
+  llm_llama_cpp_url: "http://localhost:8080",
   llm_budget_limit: 500_000,
   llm_soft_threshold: 0.8

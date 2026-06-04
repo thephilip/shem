@@ -1,12 +1,14 @@
 # Run with: mix run scripts/smoke_llm.exs
-# Requires Ollama running at localhost:11434 with a model loaded.
+# Requires an LLM server configured in config/dev.exs (Ollama or llama.cpp).
 # Verifies: LLM call succeeds, tokens tracked, event log records the call.
 
+Application.put_env(:shem, :start_tui, false)
+Application.put_env(:shem, :start_mcp, false)
 Application.ensure_all_started(:shem)
 
 model = Application.get_env(:shem, :llm_models, %{}) |> Map.get(:default, "llama3:latest")
 IO.puts("Using model config: #{inspect(model)}")
-IO.puts("Sending test prompt to Ollama...\n")
+IO.puts("Sending test prompt to LLM server...\n")
 
 {:ok, sid} = Shem.EventLog.start_session()
 
@@ -35,6 +37,6 @@ case Shem.LLM.complete(request) do
 
   {:error, reason} ->
     IO.puts("✗ LLM call failed: #{inspect(reason)}")
-    IO.puts("Is Ollama running at localhost:11434?")
+    IO.puts("Is your LLM server running and configured in config/dev.exs?")
     System.halt(1)
 end
