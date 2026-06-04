@@ -55,7 +55,8 @@ GenServer, same structural pattern as `StubTransport.Server`. State:
 
 ```elixir
 %{
-  queue: [{prompt, content, tokens_used} | {prompt, :error, reason}],
+  queue: [%{prompt: String.t(), content: String.t(), tokens_used: non_neg_integer()}
+          | %{prompt: String.t(), error: String.t()}],
   call_index: non_neg_integer(),
   session_id: String.t() | nil
 }
@@ -63,7 +64,7 @@ GenServer, same structural pattern as `StubTransport.Server`. State:
 
 Public API:
 - `start_link/1` — accepts `name:` opt
-- `load/2` — loads the ordered queue extracted from original session events
+- `load/3` — `load(server, queue, replay_session_id)` — loads the ordered queue and sets the session_id used for appending divergence/exhaustion events
 - `pop/1` — returns `{:ok, entry} | :exhausted`
 
 ### 3.3 `Shem.LLM.ReplayTransport`
@@ -72,7 +73,7 @@ Terminal middleware (`@behaviour Shem.LLM.Middleware`). `call/3` logic:
 
 1. `pop` from `ReplayTransport.Server`
 2. If `:exhausted` → append `:replay_exhausted` event (`call_index`, `replay_prompt`), return `{:error, :replay_exhausted}`
-3. If `{prompt, :error, reason}` → return `{:error, reason}` (replay the original failure)
+3. If `%{error: reason_string}` entry → return `{:error, {:replayed_failure, reason_string}}` (replay the original failure; `reason_string` is the `inspect`-ed reason stored by EventLogger)
 4. If prompts match → return `{:ok, %Response{content: content, tokens_used: tokens_used, model: request.model, latency_ms: 0}}`
 5. If prompts differ → append `:llm_call_diverged` event (`call_index`, `original_prompt`, `replay_prompt`, `recorded_content`), then return `{:ok, response}` (permissive — still serves recorded content)
 
@@ -93,7 +94,7 @@ Steps:
 2. Return `{:error, :session_not_found | :session_ended | :no_llm_events}` if preconditions fail
 3. Extract LLM call pairs in order → build queue of `{prompt, content, tokens_used}` tuples. Failed calls (`{prompt, :error, reason}`) are included.
 4. Start `ReplayTransport.Server` (unique name, started directly — not supervised, short-lived)
-5. Load queue into server; set `session_id` on server for divergence event appending
+5. `ReplayTransport.Server.load(server, queue, replay_session_id)` — sets queue and session_id for divergence event appending
 6. Build replay pipeline: `[{BudgetCheck, [budget_server: BudgetServer]}, {EventLogger, []}, {ReplayTransport, [server: server_name]}]`
 7. `Process.put(:shem_replay_pipeline, replay_pipeline)`
 8. `EventLog.start_session()` → `replay_session_id`
@@ -126,11 +127,11 @@ Events from the original session are filtered to `:llm_call_started` / `:llm_cal
 
 ```elixir
 # Success
-{prompt: started.payload.prompt, content: completed.payload.content,
- tokens_used: completed.payload.tokens_used}
+%{prompt: started.payload.prompt, content: completed.payload.content,
+  tokens_used: completed.payload.tokens_used}
 
-# Failure
-{prompt: started.payload.prompt, error: failed.payload.reason}
+# Failure (reason is the inspect'd string stored by EventLogger)
+%{prompt: started.payload.prompt, error: failed.payload.reason}
 ```
 
 **`with_replay/2` execution trace:**
@@ -204,7 +205,7 @@ Existing event types unchanged (`:llm_call_started`, `:llm_call_completed`, `:ll
 - Process dict cleaned up after `with_replay/2`
 - Exception in fun: process dict cleared, server stopped, exception re-raised
 
-**`Shem.LLM.Replay.diff/2`** (`async: true`, pure):
+**`Shem.LLM.Replay.diff/2`** (`async: false`, read-only — reads from EventLog GenServer):
 - Identical replay → `[]`
 - One diverged call → single diff entry
 - Exhausted replay → exhaustion entry
