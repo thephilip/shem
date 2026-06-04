@@ -26,8 +26,10 @@ defmodule Shem.MCP.Handlers.InvokeTool do
       false ->
         case Code.compile_string(source) do
           [{^module, bytecode} | _] ->
-            :code.load_binary(module, ~c"nofile", bytecode)
-            :ok
+            case :code.load_binary(module, ~c"nofile", bytecode) do
+              {:module, _} -> :ok
+              {:error, _} -> {:error, :load_failed}
+            end
 
           _ ->
             {:error, :load_failed}
