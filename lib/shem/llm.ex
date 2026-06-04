@@ -24,7 +24,9 @@ defmodule Shem.LLM do
   end
 
   defp build_pipeline do
-    pipeline = Application.get_env(:shem, :llm_pipeline, [])
+    pipeline =
+      Process.get(:shem_replay_pipeline) ||
+        Application.get_env(:shem, :llm_pipeline, [])
 
     terminal = fn _req -> {:error, :no_terminal} end
 
