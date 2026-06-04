@@ -11,6 +11,7 @@ defmodule Shem.TUI.Views.Dashboard do
             label(content: "")
             label(content: "CPU: --   MEM: --   GPU: --", color: color(:cyan))
             label(content: "")
+
             label(
               content: "Token spend: $0.0000 session / $0.0000 lifetime",
               color: color(:yellow)
@@ -21,11 +22,21 @@ defmodule Shem.TUI.Views.Dashboard do
         column(size: 4) do
           panel(title: "Lab Status", color: color(:magenta)) do
             label(content: "Tools graduated: #{model.tool_count}", color: color(:white))
+
             label(
-              content: "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",
+              content:
+                "MCP: localhost:#{Application.get_env(:shem, :mcp_port, 4000)} — #{model.mcp_client_count} connected",
+              color: color(:cyan)
+            )
+
+            label(
+              content:
+                "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",
               color: color(:white)
             )
+
             label(content: "")
+
             label(
               content: "Lab: idle",
               attributes: [attribute(:bold)],

@@ -15,7 +15,8 @@ defmodule Shem.TUI.App do
       command_buffer: "",
       paused: false,
       event_log_stats: %{sessions: 0, total_events: 0},
-      tool_count: 0
+      tool_count: 0,
+      mcp_client_count: 0
     }
   end
 
@@ -50,7 +51,12 @@ defmodule Shem.TUI.App do
         %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
 
       :tick ->
-        %{model | event_log_stats: safe_stats(), tool_count: safe_tool_count()}
+        %{
+          model
+          | event_log_stats: safe_stats(),
+            tool_count: safe_tool_count(),
+            mcp_client_count: safe_mcp_count()
+        }
 
       _ ->
         model
@@ -76,6 +82,14 @@ defmodule Shem.TUI.App do
   defp safe_tool_count do
     try do
       Shem.Lab.Registry.all() |> length()
+    catch
+      :exit, _ -> 0
+    end
+  end
+
+  defp safe_mcp_count do
+    try do
+      Shem.MCP.SessionRegistry.client_count()
     catch
       :exit, _ -> 0
     end

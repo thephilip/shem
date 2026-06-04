@@ -9,7 +9,8 @@ defmodule Shem.TUI.Views.DashboardTest do
       command_buffer: "",
       paused: false,
       event_log_stats: %{sessions: 0, total_events: 0},
-      tool_count: 0
+      tool_count: 0,
+      mcp_client_count: 0
     }
   end
 
@@ -21,24 +22,24 @@ defmodule Shem.TUI.Views.DashboardTest do
 
   test "render/1 shows PAUSED when model.paused is true" do
     model = %{base_model() | paused: true}
-    rendered = Dashboard.render(model) |> inspect()
+    rendered = Dashboard.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "PAUSED"
   end
 
   test "render/1 shows the command buffer content when it is active" do
     model = %{base_model() | command_buffer: "/style"}
-    rendered = Dashboard.render(model) |> inspect()
+    rendered = Dashboard.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "/style"
   end
 
   test "render/1 shows keybinding hints in the default state" do
-    rendered = Dashboard.render(base_model()) |> inspect()
+    rendered = Dashboard.render(base_model()) |> inspect(limit: :infinity)
     assert rendered =~ "Dashboard"
   end
 
   test "render/1 shows live session and event counts from event_log_stats" do
     model = %{base_model() | event_log_stats: %{sessions: 3, total_events: 17}}
-    rendered = Dashboard.render(model) |> inspect()
+    rendered = Dashboard.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "3"
     assert rendered =~ "17"
   end
