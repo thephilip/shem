@@ -1,5 +1,5 @@
 defmodule Shem.MCP.Client.ConfigTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   alias Shem.MCP.Client.Config
 

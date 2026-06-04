@@ -6,12 +6,15 @@ defmodule Shem.MCP.Client.Config do
   end
 
   defp validate_all(entries) do
-    Enum.reduce_while(entries, {:ok, []}, fn entry, {:ok, acc} ->
+    case Enum.reduce_while(entries, {:ok, []}, fn entry, {:ok, acc} ->
       case validate(entry) do
-        :ok -> {:cont, {:ok, acc ++ [entry]}}
+        :ok -> {:cont, {:ok, [entry | acc]}}
         {:error, _} = err -> {:halt, err}
       end
-    end)
+    end) do
+      {:ok, reversed} -> {:ok, Enum.reverse(reversed)}
+      err -> err
+    end
   end
 
   defp validate(%{name: n, cmd: c, args: a})
