@@ -9,14 +9,27 @@ defmodule Shem.LLM.Middleware.BudgetCheck do
 
     case BudgetServer.check(server) do
       {:error, :budget_exhausted} ->
+        if request.session_id do
+          Shem.EventLog.append(request.session_id, :budget_exhausted, %{})
+        end
+
         {:error, :budget_exhausted}
 
       :ok ->
         result = next.(request)
 
         case result do
-          {:ok, response} -> BudgetServer.deduct(server, response.tokens_used)
-          {:error, _} -> :ok
+          {:ok, response} ->
+            %{soft_warned?: was_warned} = BudgetServer.status(server)
+            BudgetServer.deduct(server, response.tokens_used)
+            %{soft_warned?: now_warned} = BudgetServer.status(server)
+
+            if request.session_id && not was_warned && now_warned do
+              Shem.EventLog.append(request.session_id, :budget_soft_warning, %{})
+            end
+
+          {:error, _} ->
+            :ok
         end
 
         result
