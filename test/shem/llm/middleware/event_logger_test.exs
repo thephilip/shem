@@ -47,6 +47,30 @@ defmodule Shem.LLM.Middleware.EventLoggerTest do
       failed = Enum.find(events, &(&1.type == :llm_call_failed))
       assert failed.payload.reason == ":transport_down"
     end
+
+    test ":llm_call_started event carries prompt" do
+      {:ok, sid} = Shem.EventLog.start_session()
+      next = fn _req -> {:ok, ok_response(5)} end
+
+      EventLogger.call(%Request{prompt: "tell me about BEAM", model: :default, session_id: sid}, [], next)
+
+      {:ok, events} = Shem.EventLog.events(sid)
+      started = Enum.find(events, &(&1.type == :llm_call_started))
+      assert started.payload.prompt == "tell me about BEAM"
+    end
+
+    test ":llm_call_completed event carries content" do
+      {:ok, sid} = Shem.EventLog.start_session()
+      next = fn _req ->
+        {:ok, %Response{content: "BEAM is great", tokens_used: 10, model: :default, latency_ms: 1}}
+      end
+
+      EventLogger.call(%Request{prompt: "hi", model: :default, session_id: sid}, [], next)
+
+      {:ok, events} = Shem.EventLog.events(sid)
+      completed = Enum.find(events, &(&1.type == :llm_call_completed))
+      assert completed.payload.content == "BEAM is great"
+    end
   end
 
   describe "call/3 — nil session_id" do
