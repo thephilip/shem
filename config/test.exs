@@ -8,3 +8,14 @@ config :shem, executor_timeout_ms: 200
 config :shem, mcp_port: 4001
 config :shem, mcp_clients: []
 config :shem, mcp_client_timeout_ms: 200
+
+config :shem,
+  llm_pipeline: [
+    {Shem.LLM.Middleware.BudgetCheck,
+     [budget_server: Shem.LLM.BudgetServer]},
+    {Shem.LLM.Middleware.EventLogger, []},
+    {Shem.LLM.StubTransport, [server: Shem.LLM.StubTransport.Server]}
+  ],
+  llm_models: %{default: "llama3:latest"},
+  llm_budget_limit: 100_000,
+  llm_soft_threshold: 0.8

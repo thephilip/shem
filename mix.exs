@@ -27,7 +27,8 @@ defmodule Shem.MixProject do
       {:stream_data, "~> 1.0", only: :test},
       {:bandit, "~> 1.0"},
       {:plug, "~> 1.16"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:req, "~> 0.5"}
     ]
   end
 
