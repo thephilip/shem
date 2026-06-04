@@ -64,12 +64,11 @@ defmodule Shem.MCP.Client.ServerConn do
     {:reply, state.status, state}
   end
 
-  def handle_call({:call, _tool, _args}, _from, %{status: :connecting} = state) do
+  def handle_call({:call, _tool, _args, _timeout_ms}, _from, %{status: :connecting} = state) do
     {:reply, {:error, :not_ready}, state}
   end
 
-  def handle_call({:call, tool, args}, from, state) do
-    timeout_ms = Application.get_env(:shem, :mcp_client_timeout_ms, 5_000)
+  def handle_call({:call, tool, args, timeout_ms}, from, state) do
     id = state.next_id
     timer_ref = Process.send_after(self(), {:timeout, id}, timeout_ms)
     send_to_port(state, Protocol.encode_request(id, "tools/call", %{"name" => tool, "arguments" => args}))
@@ -122,8 +121,18 @@ defmodule Shem.MCP.Client.ServerConn do
     {:noreply, %{state | handshake_step: :awaiting_tools}}
   end
 
+  defp handle_message(%{"id" => @handshake_init_id, "error" => error}, %{handshake_step: :awaiting_init} = state) do
+    Logger.warning("ServerConn #{state.config.name}: initialize failed: #{inspect(error)}")
+    {:stop, :handshake_failed, state}
+  end
+
   defp handle_message(%{"id" => @handshake_tools_id, "result" => %{"tools" => tools}}, %{handshake_step: :awaiting_tools} = state) do
     {:noreply, %{state | status: :ready, handshake_step: nil, tools: tools}}
+  end
+
+  defp handle_message(%{"id" => @handshake_tools_id}, %{handshake_step: :awaiting_tools} = state) do
+    Logger.warning("ServerConn #{state.config.name}: tools/list response missing 'tools' key or returned error")
+    {:stop, :handshake_failed, state}
   end
 
   defp handle_message(%{"id" => id, "result" => result}, state) when is_map_key(state.pending, id) do

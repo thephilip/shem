@@ -12,15 +12,11 @@ defmodule Shem.MCP.Client.SupervisorTest do
     Application.put_env(:shem, :mcp_clients, [])
   end
 
-  test "raises ArgumentError on invalid config entry" do
+  test "returns error tuple on invalid config entry" do
     Application.put_env(:shem, :mcp_clients, [%{bad: :entry}])
 
-    error =
-      assert_raise RuntimeError, fn ->
-        start_supervised!({ClientSup, name: :test_client_sup_bad})
-      end
-
-    assert error.message =~ "mcp_clients config error"
+    assert {:error, {{:config_error, msg}, _}} = start_supervised({ClientSup, name: :test_client_sup_bad})
+    assert msg =~ "invalid"
   after
     Application.put_env(:shem, :mcp_clients, [])
   end

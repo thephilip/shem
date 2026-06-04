@@ -6,23 +6,21 @@ defmodule Shem.MCP.Client.Supervisor do
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
 
-    case DynamicSupervisor.start_link(__MODULE__, opts, name: name) do
-      {:ok, pid} ->
-        case Config.load() do
-          {:ok, entries} ->
+    case Config.load() do
+      {:ok, entries} ->
+        case DynamicSupervisor.start_link(__MODULE__, opts, name: name) do
+          {:ok, pid} ->
             Enum.each(entries, fn entry ->
               DynamicSupervisor.start_child(pid, {Shem.MCP.Client.ServerConn, config: entry})
             end)
-
             {:ok, pid}
 
-          {:error, reason} ->
-            DynamicSupervisor.stop(pid)
-            raise ArgumentError, "mcp_clients config error: #{reason}"
+          other ->
+            other
         end
 
-      other ->
-        other
+      {:error, reason} ->
+        {:error, {:config_error, reason}}
     end
   end
 

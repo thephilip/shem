@@ -9,7 +9,7 @@ defmodule Shem.MCP.Client do
     case lookup_conn(server_name) do
       {:ok, pid} ->
         # Add buffer so ServerConn's internal timeout fires before GenServer call times out
-        GenServer.call(pid, {:call, tool_name, args}, timeout + 500)
+        GenServer.call(pid, {:call, tool_name, args, timeout}, timeout + 500)
 
       {:error, :not_found} ->
         {:error, :unknown_server}

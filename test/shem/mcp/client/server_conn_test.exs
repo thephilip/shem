@@ -115,7 +115,7 @@ defmodule Shem.MCP.Client.ServerConnTest do
       fake_pid = self()
 
       task = Task.async(fn ->
-        GenServer.call(conn, {:call, "read_file", %{"path" => "/tmp/x"}})
+        GenServer.call(conn, {:call, "read_file", %{"path" => "/tmp/x"}, 1_000})
       end)
 
       # Receive the tools/call request
@@ -137,8 +137,8 @@ defmodule Shem.MCP.Client.ServerConnTest do
       drive_handshake(conn)
       fake_pid = self()
 
-      task1 = Task.async(fn -> GenServer.call(conn, {:call, "tool_a", %{}}) end)
-      task2 = Task.async(fn -> GenServer.call(conn, {:call, "tool_b", %{}}) end)
+      task1 = Task.async(fn -> GenServer.call(conn, {:call, "tool_a", %{}, 1_000}) end)
+      task2 = Task.async(fn -> GenServer.call(conn, {:call, "tool_b", %{}, 1_000}) end)
 
       # Receive both requests, capture ids
       assert_receive {:port_write, ^conn, req1}, 500
@@ -160,7 +160,7 @@ defmodule Shem.MCP.Client.ServerConnTest do
       drive_handshake(conn)
       fake_pid = self()
 
-      task = Task.async(fn -> GenServer.call(conn, {:call, "bad_tool", %{}}) end)
+      task = Task.async(fn -> GenServer.call(conn, {:call, "bad_tool", %{}, 1_000}) end)
 
       assert_receive {:port_write, ^conn, req_data}, 500
       id = Jason.decode!(req_data)["id"]
@@ -180,7 +180,7 @@ defmodule Shem.MCP.Client.ServerConnTest do
       # Do NOT drive handshake — status stays :connecting
       # Drain the initialize port_write so the process doesn't block
       assert_receive {:port_write, ^conn, _}, 500
-      assert {:error, :not_ready} = GenServer.call(conn, {:call, "tool", %{}})
+      assert {:error, :not_ready} = GenServer.call(conn, {:call, "tool", %{}, 1_000})
     end
   end
 
@@ -214,7 +214,7 @@ defmodule Shem.MCP.Client.ServerConnTest do
       fake_pid = self()
 
       task = Task.async(fn ->
-        GenServer.call(conn, {:call, "slow_tool", %{}}, 2_000)
+        GenServer.call(conn, {:call, "slow_tool", %{}, 2_000}, 2_500)
       end)
 
       # Wait for the port_write
