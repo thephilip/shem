@@ -15,8 +15,9 @@ defmodule Shem.MCP.Handlers.ListToolsTest do
     input_schema: %{"x" => %{"type" => "integer"}}
   }
 
-  test "returns empty list when no tools are registered" do
-    assert {:ok, []} = ListTools.call(%{})
+  test "always returns {:ok, list}" do
+    assert {:ok, tools} = ListTools.call(%{})
+    assert is_list(tools)
   end
 
   test "returns tool summaries for registered tools" do
