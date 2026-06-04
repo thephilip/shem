@@ -91,4 +91,14 @@ defmodule Shem.LLM.BudgetServerTest do
              } = status
     end
   end
+
+  describe "config validation" do
+    test "raises on invalid limit" do
+      assert {:error, _} = start_supervised({BudgetServer, name: :bad_limit, limit: 0, soft_threshold: 0.8})
+    end
+
+    test "raises on soft_threshold > 1.0" do
+      assert {:error, _} = start_supervised({BudgetServer, name: :bad_threshold, limit: 100, soft_threshold: 1.5})
+    end
+  end
 end

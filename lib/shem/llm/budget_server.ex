@@ -25,8 +25,15 @@ defmodule Shem.LLM.BudgetServer do
   # ── Server callbacks ────────────────────────────────────────────────────────
 
   @impl true
-  def init({limit, threshold}) do
+  def init({limit, threshold})
+      when is_integer(limit) and limit > 0 and
+           is_number(threshold) and threshold > 0 and threshold <= 1.0 do
     {:ok, %{global_limit: limit, soft_threshold: threshold, tokens_used: 0, soft_warned?: false}}
+  end
+
+  def init({limit, threshold}) do
+    {:stop,
+     "Invalid BudgetServer config: limit must be a positive integer, soft_threshold must be in (0, 1.0], got limit=#{inspect(limit)}, soft_threshold=#{inspect(threshold)}"}
   end
 
   @impl true
