@@ -6,3 +6,5 @@ config :shem, event_log_store: Shem.EventLog.FakeStore
 config :shem, lab_dir: "tmp/test_lab"
 config :shem, executor_timeout_ms: 200
 config :shem, mcp_port: 4001
+config :shem, mcp_clients: []
+config :shem, mcp_client_timeout_ms: 200

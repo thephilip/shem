@@ -18,7 +18,7 @@ defmodule Shem.Application do
 
   defp mcp_children do
     if Application.get_env(:shem, :start_mcp, true) do
-      [Shem.MCP.Server]
+      [Shem.MCP.Server, Shem.MCP.Client.Supervisor]
     else
       []
     end
