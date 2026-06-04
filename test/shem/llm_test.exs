@@ -76,5 +76,12 @@ defmodule Shem.LLMTest do
 
       assert Agent.get(chunks, &Enum.reverse/1) == ["streamed"]
     end
+
+    test "propagates {:error, reason} when pipeline fails" do
+      StubServer.push_response({:error, :transport_down})
+
+      request = %Request{prompt: "hi", model: :default}
+      assert {:error, :transport_down} = LLM.stream(request, fn _chunk -> :ok end)
+    end
   end
 end
