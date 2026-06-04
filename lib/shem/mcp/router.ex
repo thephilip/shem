@@ -34,17 +34,7 @@ defmodule Shem.MCP.Router do
 
   post "/message" do
     session_id = conn.query_params["sessionId"]
-
-    case conn.body_params do
-      %Plug.Conn.Unfetched{} ->
-        send_resp(conn, 400, Jason.encode!(%{"error" => "parse error"}))
-
-      params when is_map(params) ->
-        handle_rpc(conn, params, session_id)
-
-      _ ->
-        send_resp(conn, 400, Jason.encode!(%{"error" => "parse error"}))
-    end
+    handle_rpc(conn, conn.body_params, session_id)
   end
 
   match _ do
@@ -113,7 +103,9 @@ defmodule Shem.MCP.Router do
   # ── SSE helpers ────────────────────────────────────────────────────────────
 
   defp send_or_sse(conn, nil, response) do
-    send_resp(conn, 200, Jason.encode!(response))
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Jason.encode!(response))
   end
 
   defp send_or_sse(conn, session_id, response) do
