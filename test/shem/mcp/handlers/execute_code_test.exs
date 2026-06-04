@@ -9,6 +9,7 @@ defmodule Shem.MCP.Handlers.ExecuteCodeTest do
       def run(), do: {:ok, 42}
     end
     """
+
     assert {:ok, {:ok, 42}} = ExecuteCode.call(%{"source" => source})
   end
 
@@ -24,6 +25,7 @@ defmodule Shem.MCP.Handlers.ExecuteCodeTest do
       def run(), do: raise "boom"
     end
     """
+
     assert {:error, :runtime, _reason} = ExecuteCode.call(%{"source" => source})
   end
 
