@@ -22,7 +22,7 @@ Timeline/replay work (mocking LLM calls from the event log, fork/branching) is *
 
 ## 2. Architecture
 
-Every LLM call flows through a middleware pipeline assembled at startup from config. The pipeline is immutable at runtime.
+Every LLM call flows through a middleware pipeline built per-call from config. The pipeline config (which middleware modules to use) is immutable at runtime — set at startup and never changed.
 
 ```
 caller
@@ -87,7 +87,7 @@ Each middleware receives the request and a `next` function. Calling `next.(reque
 ### 3.3 Middleware Modules
 
 **`Shem.LLM.Middleware.BudgetCheck`**
-- Before: calls `BudgetServer.check/1`. Returns `{:error, :budget_exhausted}` if the hard limit is reached (appends `:budget_exhausted` event before halting). Appends `:budget_soft_warning` event and sets `soft_warned? = true` at threshold — fires once per session.
+- Before: calls `BudgetServer.check/0`. Returns `{:error, :budget_exhausted}` if the hard limit is reached (appends `:budget_exhausted` event before halting). Appends `:budget_soft_warning` event and sets `soft_warned? = true` at threshold — fires once per session.
 - After: calls `BudgetServer.deduct/1` with `response.tokens_used`. Skips deduction on `{:error, _}`.
 
 **`Shem.LLM.Middleware.EventLogger`**
@@ -113,7 +113,7 @@ GenServer supervised under the application tree alongside `MCP.Client.Supervisor
 }
 ```
 
-Resets on session start. Public calls: `check/1`, `deduct/1`, `reset/0`, `status/0`.
+Resets on session start — `reset/0` is called explicitly by the session machinery when a new session is created. Public calls: `check/0`, `deduct/1`, `reset/0`, `status/0`.
 
 ### 3.5 `Shem.LLM.StubTransport`
 
@@ -197,7 +197,7 @@ config :shem,
 - `EventLogger` middleware — started/completed/failed events with correct fields, session_id correlation
 - `OllamaTransport` — HTTP happy path, unreachable host, malformed JSON, unknown model atom fallback
 - `StubTransport` — response queue pop order, empty queue fallback, call recording
-- `Shem.LLM` public API — pipeline assembly from config, `complete/2` end-to-end with stub, session_id injection
+- `Shem.LLM` public API — pipeline assembly from config, `complete/1` end-to-end with stub, session_id injection
 
 **Integration smoke test:** `scripts/smoke_llm.exs` — calls `Shem.LLM.complete/1` against a live Ollama instance, prints response and token count, verifies event log entries. Consistent with Phase 4's `scripts/smoke_mcp.exs` pattern.
 
