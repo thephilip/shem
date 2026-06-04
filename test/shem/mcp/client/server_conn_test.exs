@@ -191,7 +191,6 @@ defmodule Shem.MCP.Client.ServerConnTest do
       fake_pid = self()
 
       send(conn, {fake_pid, {:data, {:eol, "not json at all"}}})
-      Process.sleep(20)
 
       # ServerConn is still alive
       assert Process.alive?(conn)
@@ -204,9 +203,9 @@ defmodule Shem.MCP.Client.ServerConnTest do
       fake_pid = self()
 
       send(conn, {fake_pid, {:data, {:noeol, "x"}}})
-      Process.sleep(20)
 
       assert Process.alive?(conn)
+      assert :ready = GenServer.call(conn, :status)
     end
 
     test "port exit_status sends :server_down to in-flight callers" do
