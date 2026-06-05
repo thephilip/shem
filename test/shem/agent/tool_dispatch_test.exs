@@ -46,6 +46,41 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = ToolDispatch.build_manifest(@config)
       assert Enum.any?(manifest, &(&1.source == {:lab, tool.id}))
     end
+
+    test "allow-list filters builtins to only listed names (plus list_tools always present)" do
+      config = %Config{task: "t", system_prompt: "s", tools: ["read_file", "list_dir"]}
+      manifest = ToolDispatch.build_manifest(config)
+      names = Enum.map(manifest, & &1.name)
+      assert "read_file" in names
+      assert "list_dir" in names
+      assert "list_tools" in names
+      refute "write_file" in names
+      refute "shell" in names
+      refute "run_code" in names
+      refute "write_tool" in names
+    end
+
+    test "allow-list excludes Lab tools whose names are not listed" do
+      source = """
+      defmodule AllowListLabTool do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule AllowListLabToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+
+      config_excluded = %Config{task: "t", system_prompt: "s", tools: ["read_file"]}
+      manifest_excluded = ToolDispatch.build_manifest(config_excluded)
+      refute Enum.any?(manifest_excluded, &(&1.source == {:lab, tool.id}))
+
+      config_included = %Config{task: "t", system_prompt: "s", tools: [tool.name]}
+      manifest_included = ToolDispatch.build_manifest(config_included)
+      assert Enum.any?(manifest_included, &(&1.source == {:lab, tool.id}))
+    end
   end
 
   describe "execute/2 — list_tools built-in" do
