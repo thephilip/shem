@@ -5,7 +5,18 @@ defmodule Shem.LLM.BudgetServer do
 
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
-    limit = Keyword.get(opts, :limit, Application.get_env(:shem, :llm_budget_limit, 500_000))
+
+    limit =
+      Keyword.get(
+        opts,
+        :limit,
+        Application.get_env(
+          :shem,
+          :budget_node_tokens,
+          Application.get_env(:shem, :llm_budget_limit, 500_000)
+        )
+      )
+
     threshold = Keyword.get(opts, :soft_threshold, Application.get_env(:shem, :llm_soft_threshold, 0.8))
     GenServer.start_link(__MODULE__, {limit, threshold}, name: name)
   end
