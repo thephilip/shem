@@ -106,18 +106,16 @@ defmodule Shem.LLM.BudgetServerTest do
     test "reads budget_node_tokens when set, ignoring llm_budget_limit" do
       Application.put_env(:shem, :budget_node_tokens, 999)
       on_exit(fn -> Application.delete_env(:shem, :budget_node_tokens) end)
-      {:ok, pid} = BudgetServer.start_link(name: :test_node_budget)
+      start_supervised!({BudgetServer, name: :test_node_budget})
       status = BudgetServer.status(:test_node_budget)
       assert status.global_limit == 999
-      GenServer.stop(:test_node_budget)
     end
 
-    test "falls back to llm_budget_limit when budget_node_tokens is not set" do
+    test "explicit limit: opt wins when budget_node_tokens is absent" do
       Application.delete_env(:shem, :budget_node_tokens)
-      {:ok, pid} = BudgetServer.start_link(name: :test_fallback_budget, limit: 12_345)
+      start_supervised!({BudgetServer, name: :test_fallback_budget, limit: 12_345})
       status = BudgetServer.status(:test_fallback_budget)
       assert status.global_limit == 12_345
-      GenServer.stop(:test_fallback_budget)
     end
   end
 end
