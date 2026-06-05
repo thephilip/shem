@@ -11,6 +11,11 @@ defmodule Shem.Agent.Turn do
   alias Shem.LLM
   alias Shem.LLM.{Request, Response}
 
+  @spec strip_thinking(String.t()) :: String.t()
+  def strip_thinking(content) do
+    Regex.replace(~r/<think>.*?<\/think>/s, content, "") |> String.trim()
+  end
+
   @spec parse_response(String.t()) ::
           {:tool_calls, [%{tool: String.t(), args: map()}], String.t()}
           | {:done, String.t()}
@@ -85,7 +90,7 @@ defmodule Shem.Agent.Turn do
     request = %Request{prompt: prompt, model: config.model, session_id: session_id}
 
     case LLM.complete(request) do
-      {:ok, %Response{content: content}} -> parse_response(content)
+      {:ok, %Response{content: content}} -> content |> strip_thinking() |> parse_response()
       {:error, reason} -> {:error, reason}
     end
   end

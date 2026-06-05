@@ -60,6 +60,23 @@ defmodule Shem.Agent.TurnTest do
     end
   end
 
+  describe "strip_thinking/1" do
+    test "parse_response strips <think> block before extracting tool calls" do
+      content = "<think>\nLet me think. {\"tool\": \"fake\", \"args\": {}}\n</think>\n{\"tool\": \"list_tools\", \"args\": {}}"
+      assert {:tool_calls, [%{tool: "list_tools"}], _} = Turn.parse_response(Turn.strip_thinking(content))
+    end
+
+    test "parse_response on content without <think> block is unchanged" do
+      content = "{\"tool\": \"list_tools\", \"args\": {}}"
+      assert Turn.strip_thinking(content) == content
+    end
+
+    test "strip_thinking removes multiline think block" do
+      content = "<think>\nsome\nmultiline\nthinking\n</think>\nhello"
+      assert Turn.strip_thinking(content) == "hello"
+    end
+  end
+
   describe "build_prompt/3" do
     @manifest [
       %{name: "list_tools", description: "List tools.", source: :builtin},
