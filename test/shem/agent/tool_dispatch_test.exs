@@ -28,7 +28,7 @@ defmodule Shem.Agent.ToolDispatchTest do
     test "built-in entries have :builtin source" do
       manifest = ToolDispatch.build_manifest(@config)
       builtins = Enum.filter(manifest, &(&1.source == :builtin))
-      assert length(builtins) == 3
+      assert length(builtins) == 7
     end
 
     test "includes graduated Lab tools with {:lab, id} source" do
@@ -143,6 +143,76 @@ defmodule Shem.Agent.ToolDispatchTest do
     test "returns {:error, 'unknown tool: name'} when not in manifest" do
       assert {:error, "unknown tool: ghost"} =
                ToolDispatch.execute(%{tool: "ghost", args: %{}}, [])
+    end
+  end
+
+  describe "read_file built-in" do
+    test "returns file contents on success" do
+      path = Path.join(System.tmp_dir!(), "shem_test_read_#{System.unique_integer([:positive])}.txt")
+      File.write!(path, "hello world")
+      on_exit(fn -> File.rm(path) end)
+
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "hello world"} = ToolDispatch.execute(%{tool: "read_file", args: %{"path" => path}}, manifest)
+    end
+
+    test "returns error for missing file" do
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{tool: "read_file", args: %{"path" => "/nonexistent/path/xyz"}}, manifest)
+      assert match?({:error, _}, result)
+    end
+  end
+
+  describe "write_file built-in" do
+    test "writes file and returns byte count message" do
+      path = Path.join(System.tmp_dir!(), "shem_test_write_#{System.unique_integer([:positive])}.txt")
+      on_exit(fn -> File.rm(path) end)
+
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, msg} = ToolDispatch.execute(%{tool: "write_file", args: %{"path" => path, "content" => "test content"}}, manifest)
+      assert String.contains?(msg, "bytes")
+      assert File.read!(path) == "test content"
+    end
+
+    test "returns error for unwritable path" do
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{tool: "write_file", args: %{"path" => "/nonexistent_dir/file.txt", "content" => "x"}}, manifest)
+      assert match?({:error, _}, result)
+    end
+  end
+
+  describe "list_dir built-in" do
+    test "returns newline-joined directory entries" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, entries} = ToolDispatch.execute(%{tool: "list_dir", args: %{"path" => "lib/shem"}}, manifest)
+      assert String.contains?(entries, "agent")
+      assert String.contains?(entries, "event_log.ex")
+    end
+
+    test "returns error for missing directory" do
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{tool: "list_dir", args: %{"path" => "/nonexistent_xyz"}}, manifest)
+      assert match?({:error, _}, result)
+    end
+  end
+
+  describe "shell built-in" do
+    test "returns stdout for successful command" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, output} = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "echo hello"}}, manifest)
+      assert String.trim(output) == "hello"
+    end
+
+    test "returns exit code error for failing command" do
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "exit 1"}}, manifest)
+      assert match?({:error, "exit 1:" <> _}, result)
+    end
+
+    test "returns timeout error when exceeded" do
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "sleep 10", "timeout_ms" => 100}}, manifest)
+      assert match?({:error, "timeout after 100ms"}, result)
     end
   end
 end
