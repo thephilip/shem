@@ -11,10 +11,10 @@ config :shem,
      [budget_server: Shem.LLM.BudgetServer]},
     {Shem.LLM.Middleware.EventLogger, []},
     {Shem.LLM.Middleware.LlamaCppTransport,
-     [url: "http://localhost:8080"]}
+     [url: "http://localhost:1234"]}
   ],
-  llm_models: %{default: "gemma4"},
-  llm_llama_cpp_url: "http://localhost:8080",
+  llm_models: %{default: "qwen3.6-27b-uncensored-hauhaucs-balanced"},
+  llm_llama_cpp_url: "http://localhost:1234",
   llm_budget_limit: 500_000,
   llm_soft_threshold: 0.8
 
