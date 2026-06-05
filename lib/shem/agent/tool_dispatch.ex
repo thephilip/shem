@@ -21,10 +21,27 @@ defmodule Shem.Agent.ToolDispatch do
       description: "List all tools currently available.",
       source: :builtin
     },
-    %{name: "read_file", description: "Read a file and return its contents. Args: path (string).", source: :builtin},
-    %{name: "write_file", description: "Write content to a file. Args: path (string), content (string).", source: :builtin},
-    %{name: "list_dir", description: "List entries in a directory. Args: path (string).", source: :builtin},
-    %{name: "shell", description: "Run a shell command and return stdout. Args: cmd (string), timeout_ms (integer, optional, default 10000). NOTE: runs locally until Phase 9b K8s executor.", source: :builtin}
+    %{
+      name: "read_file",
+      description: "Read a file and return its contents. Args: path (string).",
+      source: :builtin
+    },
+    %{
+      name: "write_file",
+      description: "Write content to a file. Args: path (string), content (string).",
+      source: :builtin
+    },
+    %{
+      name: "list_dir",
+      description: "List entries in a directory. Args: path (string).",
+      source: :builtin
+    },
+    %{
+      name: "shell",
+      description:
+        "Run a shell command and return stdout. Args: cmd (string), timeout_ms (integer, optional, default 10000). NOTE: runs locally until Phase 9b K8s executor.",
+      source: :builtin
+    }
   ]
 
   @spec build_manifest(Config.t()) :: [map()]
@@ -112,6 +129,7 @@ defmodule Shem.Agent.ToolDispatch do
 
   defp dispatch_builtin("read_file", args) do
     path = args["path"] || ""
+
     case File.read(path) do
       {:ok, contents} -> {:ok, contents}
       {:error, reason} -> {:error, "read_file failed: #{:file.format_error(reason)}"}
@@ -121,6 +139,7 @@ defmodule Shem.Agent.ToolDispatch do
   defp dispatch_builtin("write_file", args) do
     path = args["path"] || ""
     content = args["content"] || ""
+
     case File.write(path, content) do
       :ok -> {:ok, "written #{byte_size(content)} bytes to #{path}"}
       {:error, reason} -> {:error, "write_file failed: #{:file.format_error(reason)}"}
@@ -129,6 +148,7 @@ defmodule Shem.Agent.ToolDispatch do
 
   defp dispatch_builtin("list_dir", args) do
     path = args["path"] || ""
+
     case File.ls(path) do
       {:ok, entries} -> {:ok, Enum.join(entries, "\n")}
       {:error, reason} -> {:error, "list_dir failed: #{:file.format_error(reason)}"}
@@ -139,12 +159,22 @@ defmodule Shem.Agent.ToolDispatch do
   defp dispatch_builtin("shell", args) do
     cmd = args["cmd"] || ""
     timeout = args["timeout_ms"] || 10_000
-    task = Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
-      System.cmd("sh", ["-c", cmd], stderr_to_stdout: true)
-    end)
+
+    task =
+      Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
+        System.cmd("sh", ["-c", cmd], stderr_to_stdout: true)
+      end)
+
     case Task.yield(task, timeout) do
-      {:ok, {output, 0}} -> {:ok, output}
-      {:ok, {output, code}} -> {:error, "exit #{code}: #{output}"}
+      {:ok, {output, 0}} ->
+        {:ok, output}
+
+      {:ok, {output, code}} ->
+        {:error, "exit #{code}: #{output}"}
+
+      {:exit, reason} ->
+        {:error, "shell command crashed: #{inspect(reason)}"}
+
       nil ->
         Task.shutdown(task, :brutal_kill)
         {:error, "timeout after #{timeout}ms"}
