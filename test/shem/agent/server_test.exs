@@ -213,4 +213,17 @@ defmodule Shem.Agent.ServerTest do
       assert Enum.any?(events, &(&1.type == :agent_resumed))
     end
   end
+
+  describe "start_with_preset/2" do
+    test "starts an agent using a named preset" do
+      stub("done")
+      assert {:ok, name} = Agent.start_with_preset("general", "say hello")
+      assert is_binary(name)
+      assert {:ok, _status} = Agent.await(name, 2_000)
+    end
+
+    test "returns error for unknown preset" do
+      assert {:error, :not_found} = Agent.start_with_preset("no_such_preset", "task")
+    end
+  end
 end

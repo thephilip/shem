@@ -47,4 +47,17 @@ defmodule Shem.Agent do
       pid -> GenServer.call(pid, :await, timeout)
     end
   end
+
+  @spec start_with_preset(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  def start_with_preset(preset_name, task) do
+    with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do
+      config = %Config{
+        task: task,
+        system_prompt: preset.system_prompt,
+        tools: if(preset.tools == :all, do: [], else: preset.tools),
+        max_turns: 20
+      }
+      start(config)
+    end
+  end
 end
