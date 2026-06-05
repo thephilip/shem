@@ -12,6 +12,15 @@ defmodule Shem.TUI.CommandDispatchTest do
     test "empty string returns error" do
       assert {:error, _} = CommandDispatch.parse("")
     end
+
+    test "plain text with leading/trailing spaces is trimmed" do
+      assert {:start_agent, "general", "fix the bug"} =
+             CommandDispatch.parse("  fix the bug  ")
+    end
+
+    test "whitespace-only input returns error" do
+      assert {:error, _} = CommandDispatch.parse("   ")
+    end
   end
 
   describe "parse/1 — /agent command" do

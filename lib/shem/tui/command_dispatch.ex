@@ -27,5 +27,8 @@ defmodule Shem.TUI.CommandDispatch do
     end
   end
 
-  def parse(text), do: {:start_agent, "general", text}
+  def parse(text) do
+    trimmed = String.trim(text)
+    if trimmed == "", do: {:error, "empty input"}, else: {:start_agent, "general", trimmed}
+  end
 end
