@@ -158,4 +158,59 @@ defmodule Shem.Agent.ServerTest do
       assert {:ok, :done} = Agent.await(name, 100)
     end
   end
+
+  describe "checkpoint and resume" do
+    test "a checkpoint is written before each turn" do
+      {:ok, sessions_before} = Shem.EventLog.list_sessions()
+      before_ids = MapSet.new(Enum.map(sessions_before, & &1.id))
+
+      stub("done")
+      name = start_agent("task")
+      Agent.await(name, 2_000)
+
+      {:ok, sessions_after} = Shem.EventLog.list_sessions()
+      session = Enum.find(sessions_after, fn s -> s.id not in before_ids end)
+      assert session != nil
+
+      session_id = GenServer.call(Shem.ProcessRegistry.via_tuple(name), :session_id)
+      {:ok, events} = Shem.EventLog.events(session_id)
+      checkpoint_events = Enum.filter(events, &(&1.type == :agent_checkpoint))
+      assert length(checkpoint_events) >= 1
+    end
+
+    test "agent resumes from checkpoint when session already has a checkpoint" do
+      # Open a session manually, save a checkpoint, then start an agent with that session_id
+      session_id = "ses_RESUME_TEST_" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      {:ok, ^session_id} = Shem.EventLog.start_session(session_id)
+
+      prior_history = [
+        %{role: :user, content: "resume task"},
+        %{role: :assistant, content: "I'll help"},
+        %{role: :tool, content: "Tool result (list_tools): []"}
+      ]
+      config = %Agent.Config{task: "resume task", system_prompt: "helpful", max_turns: 10}
+
+      Shem.Agent.Checkpoint.save(session_id, %{
+        history: prior_history,
+        turn_count: 3,
+        config: config
+      })
+
+      # Start Agent.Server directly with the pre-seeded session_id
+      name = "resume_agent_#{System.unique_integer([:positive])}"
+      stub("Final answer after resume.")
+      via = Shem.ProcessRegistry.via_tuple(name)
+      child_spec = %{
+        id: name,
+        start: {Shem.Agent.Server, :start_link, [{name, config, session_id, [name: via]}]},
+        restart: :temporary
+      }
+      {:ok, _pid} = Horde.DynamicSupervisor.start_child(Shem.AgentSupervisor, child_spec)
+      assert {:ok, :done} = Agent.await(name, 2_000)
+
+      # Verify :agent_resumed was appended
+      {:ok, events} = Shem.EventLog.events(session_id)
+      assert Enum.any?(events, &(&1.type == :agent_resumed))
+    end
+  end
 end

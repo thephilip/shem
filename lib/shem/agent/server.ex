@@ -1,11 +1,11 @@
 defmodule Shem.Agent.Server do
   use GenServer
 
-  alias Shem.Agent.{Config, Turn, ToolDispatch}
+  alias Shem.Agent.{Config, Turn, ToolDispatch, Checkpoint}
   alias Shem.{EventLog, LLM}
 
-  def start_link({name, %Config{} = config, opts}) do
-    GenServer.start_link(__MODULE__, {name, config}, opts)
+  def start_link({name, %Config{} = config, session_id, opts}) do
+    GenServer.start_link(__MODULE__, {name, config, session_id}, opts)
   end
 
   # ── Client API ──────────────────────────────────────────────────────────────
@@ -30,21 +30,33 @@ defmodule Shem.Agent.Server do
   # ── Init ────────────────────────────────────────────────────────────────────
 
   @impl true
-  def init({name, config}) do
-    {:ok, session_id} = EventLog.start_session()
+  def init({name, config, session_id}) do
+    {:ok, ^session_id} = EventLog.start_session(session_id)
 
-    EventLog.append(session_id, :agent_started, %{
-      task: config.task,
-      model: config.model,
-      max_turns: config.max_turns
-    })
+    {history, turn_count} =
+      case Checkpoint.reconstruct(session_id) do
+        :not_found ->
+          EventLog.append(session_id, :agent_started, %{
+            task: config.task,
+            model: config.model,
+            max_turns: config.max_turns
+          })
+          {[%{role: :user, content: config.task}], 0}
+
+        {:ok, checkpoint} ->
+          EventLog.append(session_id, :agent_resumed, %{
+            node: Node.self(),
+            turn: checkpoint.turn_count
+          })
+          {checkpoint.history, checkpoint.turn_count}
+      end
 
     state = %{
       name: name,
       config: config,
-      history: [%{role: :user, content: config.task}],
+      history: history,
       session_id: session_id,
-      turn_count: 0,
+      turn_count: turn_count,
       status: :running,
       done_reason: nil,
       awaiting: []
@@ -62,6 +74,8 @@ defmodule Shem.Agent.Server do
   end
 
   def handle_info(:run_turn, state) do
+    Checkpoint.save(state.session_id, state)
+
     cond do
       state.turn_count >= state.config.max_turns ->
         {:noreply, finish(state, :done, :max_turns_reached)}
@@ -80,7 +94,8 @@ defmodule Shem.Agent.Server do
               turn: state.turn_count + 1,
               outcome: :done
             })
-            {:noreply, finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
+            {:noreply,
+             finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
 
           {:tool_calls, calls, raw} ->
             history = state.history ++ [%{role: :assistant, content: raw}]
