@@ -1,0 +1,125 @@
+defmodule Shem.Agent.Server do
+  use GenServer
+
+  alias Shem.Agent.{Config, Turn, ToolDispatch}
+  alias Shem.{EventLog, LLM}
+
+  def start_link({name, %Config{} = config, opts}) do
+    GenServer.start_link(__MODULE__, {name, config}, opts)
+  end
+
+  # ── Client API ──────────────────────────────────────────────────────────────
+
+  @impl true
+  def handle_call(:status, _from, state) do
+    {:reply, {:ok, state.status}, state}
+  end
+
+  def handle_call(:await, _from, %{status: s} = state) when s in [:done, :error] do
+    {:reply, {:ok, s}, state}
+  end
+
+  def handle_call(:await, from, state) do
+    {:noreply, %{state | awaiting: [from | state.awaiting]}}
+  end
+
+  def handle_call(:session_id, _from, state) do
+    {:reply, state.session_id, state}
+  end
+
+  # ── Init ────────────────────────────────────────────────────────────────────
+
+  @impl true
+  def init({name, config}) do
+    {:ok, session_id} = EventLog.start_session()
+
+    EventLog.append(session_id, :agent_started, %{
+      task: config.task,
+      model: config.model,
+      max_turns: config.max_turns
+    })
+
+    state = %{
+      name: name,
+      config: config,
+      history: [%{role: :user, content: config.task}],
+      session_id: session_id,
+      turn_count: 0,
+      status: :running,
+      done_reason: nil,
+      awaiting: []
+    }
+
+    send(self(), :run_turn)
+    {:ok, state}
+  end
+
+  # ── Loop ────────────────────────────────────────────────────────────────────
+
+  @impl true
+  def handle_info(:run_turn, %{status: s} = state) when s != :running do
+    {:noreply, state}
+  end
+
+  def handle_info(:run_turn, state) do
+    cond do
+      state.turn_count >= state.config.max_turns ->
+        {:noreply, finish(state, :done, :max_turns_reached)}
+
+      LLM.BudgetServer.check() == {:error, :budget_exhausted} ->
+        {:noreply, finish(state, :done, :budget_exhausted)}
+
+      true ->
+        EventLog.append(state.session_id, :agent_turn_started, %{turn: state.turn_count + 1})
+        manifest = ToolDispatch.build_manifest(state.config)
+
+        case Turn.step(state.config, state.session_id, state.history, manifest) do
+          {:done, answer} ->
+            history = state.history ++ [%{role: :assistant, content: answer}]
+            EventLog.append(state.session_id, :agent_turn_completed, %{
+              turn: state.turn_count + 1,
+              outcome: :done
+            })
+            {:noreply, finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
+
+          {:tool_calls, calls, raw} ->
+            history = state.history ++ [%{role: :assistant, content: raw}]
+            history = execute_tool_calls(calls, manifest, history, state.session_id)
+            EventLog.append(state.session_id, :agent_turn_completed, %{
+              turn: state.turn_count + 1,
+              outcome: :tool_calls
+            })
+            new_state = %{state | history: history, turn_count: state.turn_count + 1}
+            send(self(), :run_turn)
+            {:noreply, new_state}
+
+          {:error, reason} ->
+            EventLog.append(state.session_id, :agent_error, %{reason: inspect(reason)})
+            {:noreply, finish(state, :error, reason)}
+        end
+    end
+  end
+
+  # ── Helpers ─────────────────────────────────────────────────────────────────
+
+  defp execute_tool_calls(calls, manifest, history, session_id) do
+    Enum.reduce(calls, history, fn call, acc ->
+      EventLog.append(session_id, :agent_tool_called, %{tool: call.tool, args: call.args})
+
+      result_str =
+        case ToolDispatch.execute(call, manifest) do
+          {:ok, result} -> result
+          {:error, reason} -> "Error: #{reason}"
+        end
+
+      EventLog.append(session_id, :agent_tool_result, %{tool: call.tool, result: result_str})
+      acc ++ [%{role: :tool, content: "Tool result (#{call.tool}): #{result_str}"}]
+    end)
+  end
+
+  defp finish(state, status, reason) do
+    EventLog.append(state.session_id, :agent_done, %{reason: reason})
+    Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
+    %{state | status: status, done_reason: reason, awaiting: []}
+  end
+end
