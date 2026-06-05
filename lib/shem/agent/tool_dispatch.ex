@@ -53,6 +53,7 @@ defmodule Shem.Agent.ToolDispatch do
           do: bs,
           else: Enum.filter(bs, &(&1.name in allowed_tools))
       end)
+      # always inject list_tools — agents need it to discover what tools they have
       |> then(fn bs ->
         if Enum.any?(bs, &(&1.name == "list_tools")),
           do: bs,
