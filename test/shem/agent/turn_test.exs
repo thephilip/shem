@@ -59,4 +59,57 @@ defmodule Shem.Agent.TurnTest do
       assert {:done, ^content} = Turn.parse_response(content)
     end
   end
+
+  describe "build_prompt/3" do
+    @manifest [
+      %{name: "list_tools", description: "List tools.", source: :builtin},
+      %{name: "run_code", description: "Run code.", source: :builtin}
+    ]
+
+    test "includes system prompt" do
+      prompt = Turn.build_prompt("Be helpful.", @manifest, [%{role: :user, content: "task"}])
+      assert prompt =~ "Be helpful."
+    end
+
+    test "includes tool names and descriptions in manifest section" do
+      prompt = Turn.build_prompt("sys", @manifest, [%{role: :user, content: "task"}])
+      assert prompt =~ "list_tools"
+      assert prompt =~ "List tools."
+      assert prompt =~ "run_code"
+    end
+
+    test "renders user history entry" do
+      prompt = Turn.build_prompt("sys", @manifest, [%{role: :user, content: "my task"}])
+      assert prompt =~ "User: my task"
+    end
+
+    test "renders assistant history entry" do
+      history = [
+        %{role: :user, content: "task"},
+        %{role: :assistant, content: "thinking..."}
+      ]
+      prompt = Turn.build_prompt("sys", @manifest, history)
+      assert prompt =~ "Assistant: thinking..."
+    end
+
+    test "renders tool result verbatim" do
+      history = [
+        %{role: :user, content: "task"},
+        %{role: :assistant, content: "calling"},
+        %{role: :tool, content: "Tool result (run_code): 42"}
+      ]
+      prompt = Turn.build_prompt("sys", @manifest, history)
+      assert prompt =~ "Tool result (run_code): 42"
+    end
+
+    test "ends with 'Assistant:' to cue next completion" do
+      prompt = Turn.build_prompt("sys", @manifest, [%{role: :user, content: "task"}])
+      assert String.ends_with?(String.trim_trailing(prompt), "Assistant:")
+    end
+
+    test "includes tool call JSON format instructions" do
+      prompt = Turn.build_prompt("sys", @manifest, [%{role: :user, content: "t"}])
+      assert prompt =~ ~s({"tool":)
+    end
+  end
 end
