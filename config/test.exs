@@ -24,3 +24,7 @@ config :shem,
 
 config :shem, start_cluster: false
 config :shem, lab_executor_node: nil
+
+config :shem, start_adversarial: false
+config :shem, adversarial_max_rounds: 3
+config :shem, adversarial_agent_timeout_ms: 5_000
