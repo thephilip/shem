@@ -51,4 +51,26 @@ defmodule Shem.Lab.RegistryTest do
     assert length(tools) == 1
     assert hd(tools).id == "greeter_v1"
   end
+
+  describe "lookup_by_name/1" do
+    test "returns {:ok, tool} when a tool with that name exists" do
+      source = """
+      defmodule LookupByNameTool do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule LookupByNameToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      assert {:ok, found} = Shem.Lab.Registry.lookup_by_name(tool.name)
+      assert found.id == tool.id
+    end
+
+    test "returns {:error, :not_found} for unknown name" do
+      assert {:error, :not_found} = Shem.Lab.Registry.lookup_by_name("no_such_tool")
+    end
+  end
 end

@@ -14,6 +14,9 @@ defmodule Shem.Lab.Registry do
   @spec lookup(String.t()) :: {:ok, Tool.t()} | {:error, :not_found}
   def lookup(id), do: GenServer.call(__MODULE__, {:lookup, id})
 
+  @spec lookup_by_name(String.t()) :: {:ok, Tool.t()} | {:error, :not_found}
+  def lookup_by_name(name), do: GenServer.call(__MODULE__, {:lookup_by_name, name})
+
   @spec all() :: [Tool.t()]
   def all, do: GenServer.call(__MODULE__, :all)
 
@@ -39,6 +42,20 @@ defmodule Shem.Lab.Registry do
       case :ets.lookup(state.table, id) do
         [{^id, tool}] -> {:ok, tool}
         [] -> {:error, :not_found}
+      end
+
+    {:reply, result, state}
+  end
+
+  @impl true
+  def handle_call({:lookup_by_name, name}, _from, state) do
+    result =
+      state.table
+      |> :ets.tab2list()
+      |> Enum.find(fn {_id, tool} -> tool.name == name end)
+      |> case do
+        {_id, tool} -> {:ok, tool}
+        nil -> {:error, :not_found}
       end
 
     {:reply, result, state}
