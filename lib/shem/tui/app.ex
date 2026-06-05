@@ -199,11 +199,15 @@ defmodule Shem.TUI.App do
           nil
 
         pid ->
-          session_id = GenServer.call(pid, :session_id, 200)
+          case GenServer.call(pid, :session_id, 200) do
+            session_id when is_binary(session_id) ->
+              case AgentView.build(session_id) do
+                {:ok, view} -> %{view | agent_name: name}
+                :not_found -> nil
+              end
 
-          case AgentView.build(session_id) do
-            {:ok, view} -> %{view | agent_name: name}
-            :not_found -> nil
+            _ ->
+              nil
           end
       end
     catch
