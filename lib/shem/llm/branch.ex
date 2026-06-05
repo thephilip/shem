@@ -65,10 +65,8 @@ defmodule Shem.LLM.Branch do
             summaries =
               events
               |> Utils.extract_llm_pairs()
-              |> Enum.with_index()
-              |> Enum.map(fn {{started, outcome}, idx} ->
+              |> Enum.map(fn {started, outcome} ->
                 %{
-                  call_index: idx,
                   label: label,
                   prompt: started.payload[:prompt],
                   content: outcome.payload[:content]

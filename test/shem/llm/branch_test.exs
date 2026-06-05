@@ -211,7 +211,7 @@ defmodule Shem.LLM.BranchTest do
     end
   end
 
-  describe "compare/2" do
+  describe "compare/1" do
     test "all :identical when branches have the same content at every call" do
       original_sid = record_session([{"q1", "a1", 5}])
       fork_event = nth_completed_event(original_sid, 0)
