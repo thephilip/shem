@@ -11,7 +11,8 @@ defmodule Shem.TUI.Views.DashboardTest do
       event_log_stats: %{sessions: 0, total_events: 0},
       tool_count: 0,
       mcp_client_count: 0,
-      mcp_outbound_count: 0
+      mcp_outbound_count: 0,
+      cluster_node_count: 1
     }
   end
 

@@ -35,6 +35,11 @@ defmodule Shem.TUI.Views.Dashboard do
             )
 
             label(
+              content: "Cluster: #{model.cluster_node_count} #{if model.cluster_node_count == 1, do: "node", else: "nodes"}",
+              color: color(:cyan)
+            )
+
+            label(
               content:
                 "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",
               color: color(:white)

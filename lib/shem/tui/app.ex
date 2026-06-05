@@ -17,7 +17,8 @@ defmodule Shem.TUI.App do
       event_log_stats: %{sessions: 0, total_events: 0},
       tool_count: 0,
       mcp_client_count: 0,
-      mcp_outbound_count: 0
+      mcp_outbound_count: 0,
+      cluster_node_count: 1
     }
   end
 
@@ -57,7 +58,8 @@ defmodule Shem.TUI.App do
           | event_log_stats: safe_stats(),
             tool_count: safe_tool_count(),
             mcp_client_count: safe_mcp_count(),
-            mcp_outbound_count: safe_mcp_outbound_count()
+            mcp_outbound_count: safe_mcp_outbound_count(),
+            cluster_node_count: safe_cluster_count()
         }
 
       _ ->
@@ -103,6 +105,14 @@ defmodule Shem.TUI.App do
       |> Enum.count(&(&1.status == :ready))
     catch
       :exit, _ -> 0
+    end
+  end
+
+  defp safe_cluster_count do
+    try do
+      Shem.Cluster.nodes() |> length()
+    catch
+      :exit, _ -> 1
     end
   end
 end
