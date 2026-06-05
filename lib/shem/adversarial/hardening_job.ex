@@ -36,24 +36,29 @@ defmodule Shem.Adversarial.HardeningJob do
 
     case Lab.Registry.lookup(tool_id) do
       {:ok, tool} ->
-        {:ok, session_id} = EventLog.start_session()
-        EventLog.append(session_id, :hardening_started, %{
-          tool: tool.name,
-          tool_id: tool_id,
-          max_rounds: max_rounds
-        })
+        case EventLog.start_session() do
+          {:ok, session_id} ->
+            EventLog.append(session_id, :hardening_started, %{
+              tool: tool.name,
+              tool_id: tool_id,
+              max_rounds: max_rounds
+            })
 
-        state = %{
-          tool_id: tool_id,
-          tool_name: tool.name,
-          round: 0,
-          max_rounds: max_rounds,
-          session_id: session_id,
-          status: :running
-        }
+            state = %{
+              tool_id: tool_id,
+              tool_name: tool.name,
+              round: 0,
+              max_rounds: max_rounds,
+              session_id: session_id,
+              status: :running
+            }
 
-        send(self(), :run_round)
-        {:ok, state}
+            send(self(), :run_round)
+            {:ok, state}
+
+          {:error, reason} ->
+            {:stop, reason}
+        end
 
       {:error, :not_found} ->
         {:stop, :tool_not_found}
@@ -67,6 +72,7 @@ defmodule Shem.Adversarial.HardeningJob do
     {:reply, %{tool: state.tool_name, round: state.round, status: state.status}, state}
   end
 
+  @impl true
   def handle_call(:session_id, _from, state) do
     {:reply, {:ok, state.session_id}, state}
   end
@@ -88,63 +94,103 @@ defmodule Shem.Adversarial.HardeningJob do
   end
 
   def handle_info(:run_round, state), do: {:noreply, state}
+
+  def handle_info({:red_team_done, {:ok, answer}}, state) do
+    result = parse_red_team_result(answer)
+
+    EventLog.append(state.session_id, :hardening_attack_complete, %{
+      round: state.round + 1,
+      failures_found: result != :clean,
+      summary: if(result == :clean, do: nil, else: elem(result, 1))
+    })
+
+    case result do
+      :clean ->
+        {:noreply, finish(state, :clean)}
+
+      {:failures, summary} ->
+        case Lab.Registry.lookup_by_name(state.tool_name) do
+          {:ok, tool} -> run_target(state, tool, summary)
+          {:error, :not_found} -> {:noreply, finish(state, :error)}
+        end
+    end
+  end
+
+  def handle_info({:red_team_done, {:error, _reason}}, state) do
+    {:noreply, finish(state, :error)}
+  end
+
+  def handle_info({:target_done, {:ok, _}}, state) do
+    new_round = state.round + 1
+
+    EventLog.append(state.session_id, :hardening_patch_complete, %{
+      round: new_round,
+      tool: state.tool_name
+    })
+
+    new_state = %{state | round: new_round}
+
+    if new_state.round >= new_state.max_rounds do
+      {:noreply, finish(new_state, :max_rounds_reached)}
+    else
+      send(self(), :run_round)
+      {:noreply, new_state}
+    end
+  end
+
+  def handle_info({:target_done, {:error, _reason}}, state) do
+    {:noreply, finish(state, :error)}
+  end
+
   def handle_info(_msg, state), do: {:noreply, state}
 
   # ── Loop helpers ───────────────────────────────────────────────────────────
 
   defp run_red_team(state, tool) do
-    timeout = Application.get_env(:shem, :adversarial_agent_timeout_ms, 300_000)
+    timeout = agent_timeout()
+    parent = self()
 
-    case Agent.start(red_team_config(tool)) do
-      {:ok, agent_name} ->
-        Agent.await(agent_name, timeout)
-        answer = get_red_team_answer(agent_name)
-        result = parse_red_team_result(answer)
+    Task.start(fn ->
+      result =
+        case Agent.start(red_team_config(tool)) do
+          {:ok, agent_name} ->
+            case Agent.await(agent_name, timeout) do
+              {:ok, _} -> {:ok, get_red_team_answer(agent_name)}
+              {:error, reason} -> {:error, reason}
+            end
 
-        EventLog.append(state.session_id, :hardening_attack_complete, %{
-          round: state.round + 1,
-          failures_found: result != :clean,
-          summary: if(result == :clean, do: nil, else: elem(result, 1))
-        })
-
-        case result do
-          :clean ->
-            {:noreply, finish(state, :clean)}
-
-          {:failures, summary} ->
-            run_target(state, tool, summary)
+          {:error, reason} ->
+            {:error, reason}
         end
 
-      {:error, _reason} ->
-        {:noreply, finish(state, :error)}
-    end
+      send(parent, {:red_team_done, result})
+    end)
+
+    {:noreply, state}
   end
 
   defp run_target(state, tool, summary) do
-    timeout = Application.get_env(:shem, :adversarial_agent_timeout_ms, 300_000)
+    timeout = agent_timeout()
+    parent = self()
 
-    case Agent.start(target_config(tool, summary)) do
-      {:ok, agent_name} ->
-        Agent.await(agent_name, timeout)
-        new_round = state.round + 1
+    Task.start(fn ->
+      result =
+        case Agent.start(target_config(tool, summary)) do
+          {:ok, agent_name} ->
+            Agent.await(agent_name, timeout)
 
-        EventLog.append(state.session_id, :hardening_patch_complete, %{
-          round: new_round,
-          tool: state.tool_name
-        })
-
-        new_state = %{state | round: new_round}
-
-        if new_state.round >= new_state.max_rounds do
-          {:noreply, finish(new_state, :max_rounds_reached)}
-        else
-          send(self(), :run_round)
-          {:noreply, new_state}
+          {:error, reason} ->
+            {:error, reason}
         end
 
-      {:error, _reason} ->
-        {:noreply, finish(state, :error)}
-    end
+      send(parent, {:target_done, result})
+    end)
+
+    {:noreply, state}
+  end
+
+  defp agent_timeout do
+    Application.get_env(:shem, :adversarial_agent_timeout_ms, 300_000)
   end
 
   defp finish(state, outcome) do
