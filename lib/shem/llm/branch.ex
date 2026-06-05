@@ -34,6 +34,25 @@ defmodule Shem.LLM.Branch do
     end
   end
 
+  @spec branch_after_call(String.t(), non_neg_integer(), [alt_entry()], (String.t() -> result)) ::
+          {:ok, String.t(), result} | {:error, term()}
+        when result: term()
+  def branch_after_call(original_session_id, call_index, alt_queue, fun)
+      when is_function(fun, 1) and is_integer(call_index) and call_index >= 0 do
+    case Shem.EventLog.events(original_session_id) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, events} ->
+        completed = Enum.filter(events, &(&1.type == :llm_call_completed))
+
+        case Enum.at(completed, call_index) do
+          nil -> {:error, :call_index_out_of_range}
+          event -> branch_at(original_session_id, event.id, alt_queue, fun)
+        end
+    end
+  end
+
   # ── Private ──────────────────────────────────────────────────────────────────
 
   defp fetch_events_with_llm_check(session_id) do

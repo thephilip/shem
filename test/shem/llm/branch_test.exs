@@ -152,4 +152,62 @@ defmodule Shem.LLM.BranchTest do
                Branch.branch_at(original_sid, "evt_nonexistent", [], fn _sid -> :ok end)
     end
   end
+
+  describe "branch_after_call/4" do
+    test "forks after call index 0 — prefix has 1 call" do
+      original_sid = record_session([{"q1", "a1", 5}, {"q2", "a2", 3}])
+
+      {:ok, branch_sid, _} =
+        Branch.branch_after_call(
+          original_sid,
+          0,
+          [%{content: "alt", tokens_used: 1}],
+          fn sid ->
+            LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+            LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+          end
+        )
+
+      {:ok, events} = Shem.EventLog.events(branch_sid)
+      contents = events |> Enum.filter(&(&1.type == :llm_call_completed)) |> Enum.map(& &1.payload.content)
+      assert contents == ["a1", "alt"]
+    end
+
+    test "forks after last call index (N-1) — prefix has all recorded calls" do
+      original_sid = record_session([{"q1", "a1", 5}, {"q2", "a2", 3}])
+
+      {:ok, branch_sid, _} =
+        Branch.branch_after_call(
+          original_sid,
+          1,
+          [%{content: "alt2", tokens_used: 2}],
+          fn sid ->
+            LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+            LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+            LLM.complete(%Request{prompt: "q3", model: :default, session_id: sid})
+          end
+        )
+
+      {:ok, events} = Shem.EventLog.events(branch_sid)
+      contents = events |> Enum.filter(&(&1.type == :llm_call_completed)) |> Enum.map(& &1.payload.content)
+      assert contents == ["a1", "a2", "alt2"]
+    end
+
+    test "returns {:error, :call_index_out_of_range} when index >= total calls" do
+      original_sid = record_session([{"q1", "a1", 5}])
+
+      assert {:error, :call_index_out_of_range} =
+               Branch.branch_after_call(original_sid, 1, [], fn _sid -> :ok end)
+    end
+
+    test "branch session has :branch_created event (delegates to branch_at)" do
+      original_sid = record_session([{"q1", "a1", 5}])
+
+      {:ok, branch_sid, _} =
+        Branch.branch_after_call(original_sid, 0, [], fn _sid -> :ok end)
+
+      {:ok, events} = Shem.EventLog.events(branch_sid)
+      assert Enum.any?(events, &(&1.type == :branch_created))
+    end
+  end
 end
