@@ -1,5 +1,5 @@
 defmodule Shem.ClusterTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   describe "nodes/0" do
     test "returns a list containing at least the current node" do
