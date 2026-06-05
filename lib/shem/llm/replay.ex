@@ -1,33 +1,12 @@
 defmodule Shem.LLM.Replay do
-  alias Shem.LLM.ReplayTransport
-  alias Shem.LLM.Middleware.{BudgetCheck, EventLogger}
-  alias Shem.LLM.BudgetServer
+  alias Shem.LLM.Replay.Utils
 
   @spec with_replay(String.t(), (String.t() -> result)) ::
           {:ok, String.t(), result} | {:error, term()}
         when result: term()
   def with_replay(original_session_id, fun) when is_function(fun, 1) do
     with {:ok, queue} <- extract_queue(original_session_id) do
-      server_name = :"replay_transport_#{:erlang.unique_integer([:positive])}"
-      {:ok, _} = ReplayTransport.Server.start_link(name: server_name)
-
-      try do
-        ReplayTransport.Server.load(server_name, queue)
-
-        replay_pipeline = [
-          {BudgetCheck, [budget_server: BudgetServer]},
-          {EventLogger, []},
-          {ReplayTransport, [server: server_name]}
-        ]
-
-        Process.put(:shem_replay_pipeline, replay_pipeline)
-        {:ok, replay_session_id} = Shem.EventLog.start_session()
-        result = fun.(replay_session_id)
-        {:ok, replay_session_id, result}
-      after
-        Process.delete(:shem_replay_pipeline)
-        GenServer.stop(server_name, :normal, 1_000)
-      end
+      Utils.run_with_pipeline(queue, fun)
     end
   end
 
@@ -51,21 +30,8 @@ defmodule Shem.LLM.Replay do
       {:ok, events} ->
         queue =
           events
-          |> pair_llm_events()
-          |> Enum.map(fn
-            {started, %{type: :llm_call_completed} = completed} ->
-              %{
-                prompt: started.payload[:prompt],
-                content: completed.payload[:content],
-                tokens_used: completed.payload[:tokens_used]
-              }
-
-            {started, %{type: :llm_call_failed} = failed} ->
-              %{
-                prompt: started.payload[:prompt],
-                error: failed.payload[:reason]
-              }
-          end)
+          |> Utils.extract_llm_pairs()
+          |> Utils.build_queue_from_pairs()
 
         cond do
           queue == [] ->
@@ -80,30 +46,9 @@ defmodule Shem.LLM.Replay do
     end
   end
 
-  defp pair_llm_events(events) do
-    {_pending, pairs} =
-      Enum.reduce(events, {nil, []}, fn event, {pending_start, acc} ->
-        case {event.type, pending_start} do
-          {:llm_call_started, _} ->
-            {event, acc}
-
-          {:llm_call_completed, start} when not is_nil(start) ->
-            {nil, [{start, event} | acc]}
-
-          {:llm_call_failed, start} when not is_nil(start) ->
-            {nil, [{start, event} | acc]}
-
-          _ ->
-            {pending_start, acc}
-        end
-      end)
-
-    Enum.reverse(pairs)
-  end
-
   defp extract_call_summaries(events) do
     events
-    |> pair_llm_events()
+    |> Utils.extract_llm_pairs()
     |> Enum.with_index()
     |> Enum.map(fn {{started, outcome}, idx} ->
       %{
