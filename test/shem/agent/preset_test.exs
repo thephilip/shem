@@ -1,5 +1,5 @@
 defmodule Shem.Agent.PresetTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Shem.Agent.Preset
 
