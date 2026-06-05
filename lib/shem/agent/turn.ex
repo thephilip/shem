@@ -15,7 +15,7 @@ defmodule Shem.Agent.Turn do
 
     tool_calls =
       Regex.scan(pattern, content)
-      |> List.flatten()
+      |> Enum.map(&hd/1)
       |> Enum.flat_map(fn json_str ->
         case Jason.decode(json_str) do
           {:ok, %{"tool" => tool, "args" => args}} when is_binary(tool) and is_map(args) ->

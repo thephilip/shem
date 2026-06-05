@@ -41,5 +41,22 @@ defmodule Shem.Agent.TurnTest do
       assert {:tool_calls, [call], _} = Turn.parse_response(content)
       assert call.args["source"] =~ "defmodule"
     end
+
+    # When args is not a map, the first clause (requires is_map(args)) is skipped,
+    # but the second clause matches {"tool" => tool} and defaults args to %{}.
+    # The non-map args value is silently dropped.
+    test "tool call where args is not a map — falls back to empty args" do
+      content = ~s({"tool": "foo", "args": "not_a_map"})
+      assert {:tool_calls, [%{tool: "foo", args: %{}}], ^content} = Turn.parse_response(content)
+    end
+
+    # The regex ~r/\{(?:[^{}]|\{[^{}]*\})*\}/ only handles 1 level of {} nesting.
+    # For args with 2-level nesting (e.g. {"meta": {"k": "v"}}), the outer object
+    # is not captured — only the innermost nested object is matched, which has no
+    # "tool" key, so the result is {:done, content}. This test documents that limitation.
+    test "returns :done for tool call with 2-level nested args — regex limitation" do
+      content = ~s({"tool": "foo", "args": {"meta": {"k": "v"}}})
+      assert {:done, ^content} = Turn.parse_response(content)
+    end
   end
 end
