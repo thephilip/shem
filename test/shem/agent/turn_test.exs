@@ -112,4 +112,44 @@ defmodule Shem.Agent.TurnTest do
       assert prompt =~ ~s({"tool":)
     end
   end
+
+  describe "step/4" do
+    alias Shem.Agent.Config
+    alias Shem.LLM.{Response, StubTransport}
+
+    @config %Config{task: "do X", system_prompt: "be helpful"}
+    @manifest [%{name: "list_tools", description: "list", source: :builtin}]
+
+    setup do
+      Shem.LLM.BudgetServer.reset()
+      StubTransport.Server.reset()
+      :ok
+    end
+
+    test "returns {:done, content} when LLM response has no tool call" do
+      StubTransport.Server.push_response(
+        {:ok, %Response{content: "The answer is 42.", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+      {:ok, sid} = Shem.EventLog.start_session()
+      assert {:done, "The answer is 42."} =
+               Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
+    end
+
+    test "returns {:tool_calls, calls, raw} when LLM response contains tool call" do
+      raw = ~s(I'll call a tool.\n{"tool": "list_tools", "args": {}})
+      StubTransport.Server.push_response(
+        {:ok, %Response{content: raw, tokens_used: 10, model: :default, latency_ms: 1}}
+      )
+      {:ok, sid} = Shem.EventLog.start_session()
+      assert {:tool_calls, [%{tool: "list_tools", args: %{}}], ^raw} =
+               Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
+    end
+
+    test "returns {:error, reason} when LLM transport fails" do
+      StubTransport.Server.push_response({:error, :no_stub_response})
+      {:ok, sid} = Shem.EventLog.start_session()
+      assert {:error, _} =
+               Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
+    end
+  end
 end

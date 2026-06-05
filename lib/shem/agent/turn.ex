@@ -7,6 +7,10 @@ defmodule Shem.Agent.Turn do
   `build_prompt/3` and `step/4` are added in Tasks 3 and 4.
   """
 
+  alias Shem.Agent.Config
+  alias Shem.LLM
+  alias Shem.LLM.{Request, Response}
+
   @spec parse_response(String.t()) ::
           {:tool_calls, [%{tool: String.t(), args: map()}], String.t()}
           | {:done, String.t()}
@@ -70,5 +74,19 @@ defmodule Shem.Agent.Turn do
 
     Assistant:\
     """
+  end
+
+  @spec step(Config.t(), String.t(), [map()], [map()]) ::
+          {:tool_calls, [%{tool: String.t(), args: map()}], String.t()}
+          | {:done, String.t()}
+          | {:error, term()}
+  def step(%Config{} = config, session_id, history, tools_manifest) do
+    prompt = build_prompt(config.system_prompt, tools_manifest, history)
+    request = %Request{prompt: prompt, model: config.model, session_id: session_id}
+
+    case LLM.complete(request) do
+      {:ok, %Response{content: content}} -> parse_response(content)
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
