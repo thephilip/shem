@@ -32,6 +32,7 @@ defmodule Shem.Lab.GraduationGate do
           }
           :ok = Workspace.graduate(tool)
           :ok = Registry.register(tool)
+          Shem.Adversarial.start_hardening(tool.id)
           {:ok, tool}
         else
           {:error, :compile, reason} -> {:error, :compile, reason}
