@@ -12,6 +12,7 @@ defmodule Shem.Application do
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer
       ] ++
+        adversarial_children() ++
         llm_stub_children() ++
         mcp_children() ++
         cluster_children() ++
@@ -22,6 +23,14 @@ defmodule Shem.Application do
   end
 
   @test_env Mix.env() == :test
+
+  defp adversarial_children do
+    if Application.get_env(:shem, :start_adversarial, true) do
+      [Shem.Adversarial.Supervisor]
+    else
+      []
+    end
+  end
 
   defp llm_stub_children do
     if Application.get_env(:shem, :start_llm_stub, @test_env) do
