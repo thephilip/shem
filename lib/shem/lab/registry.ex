@@ -20,6 +20,9 @@ defmodule Shem.Lab.Registry do
   @spec register(Tool.t()) :: :ok
   def register(%Tool{} = tool), do: GenServer.call(__MODULE__, {:register, tool})
 
+  @spec flush() :: :ok
+  def flush, do: GenServer.call(__MODULE__, :flush)
+
   # ── Server callbacks ────────────────────────────────────────────────────────
 
   @impl true
@@ -50,6 +53,12 @@ defmodule Shem.Lab.Registry do
   @impl true
   def handle_call({:register, tool}, _from, state) do
     :ets.insert(state.table, {tool.id, tool})
+    {:reply, :ok, state}
+  end
+
+  @impl true
+  def handle_call(:flush, _from, state) do
+    :ets.delete_all_objects(state.table)
     {:reply, :ok, state}
   end
 

@@ -3,12 +3,16 @@ defmodule Shem.Agent.ToolDispatchTest do
   use ExUnit.Case, async: false
 
   alias Shem.Agent.{Config, ToolDispatch}
+  alias Shem.Lab.Registry
 
   @config %Config{task: "t", system_prompt: "s"}
 
   setup do
     lab_dir = Application.get_env(:shem, :lab_dir)
-    on_exit(fn -> File.rm_rf!(lab_dir) end)
+    on_exit(fn ->
+      File.rm_rf!(lab_dir)
+      Registry.flush()
+    end)
     :ok
   end
 

@@ -127,18 +127,22 @@ defmodule Shem.Agent.ToolDispatch do
   defp ensure_loaded(%{module: module, source: source}) do
     case :code.is_loaded(module) do
       false ->
-        case Code.compile_string(source) do
-          compiled when is_list(compiled) ->
-            case Enum.find(compiled, fn {mod, _bc} -> mod == module end) do
-              {^module, bc} ->
-                case :code.load_binary(module, ~c"nofile", bc) do
-                  {:module, _} -> :ok
-                  {:error, _} -> {:error, "failed to load #{module}"}
-                end
+        try do
+          case Code.compile_string(source) do
+            compiled when is_list(compiled) ->
+              case Enum.find(compiled, fn {mod, _bc} -> mod == module end) do
+                {^module, bc} ->
+                  case :code.load_binary(module, ~c"nofile", bc) do
+                    {:module, _} -> :ok
+                    {:error, _} -> {:error, "failed to load #{module}"}
+                  end
 
-              nil ->
-                {:error, "failed to compile #{module}"}
-            end
+                nil ->
+                  {:error, "failed to compile #{module}"}
+              end
+          end
+        rescue
+          e -> {:error, "compile error: #{Exception.message(e)}"}
         end
 
       _ ->
