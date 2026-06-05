@@ -53,6 +53,63 @@ defmodule Shem.LLM.Branch do
     end
   end
 
+  @spec compare([{String.t(), String.t()}]) :: [diff_entry()] | {:error, term()}
+  def compare(labelled_sessions) when is_list(labelled_sessions) do
+    results =
+      Enum.map(labelled_sessions, fn {label, session_id} ->
+        case Shem.EventLog.events(session_id) do
+          {:error, reason} ->
+            {:error, reason}
+
+          {:ok, events} ->
+            summaries =
+              events
+              |> Utils.extract_llm_pairs()
+              |> Enum.with_index()
+              |> Enum.map(fn {{started, outcome}, idx} ->
+                %{
+                  call_index: idx,
+                  label: label,
+                  prompt: started.payload[:prompt],
+                  content: outcome.payload[:content]
+                }
+              end)
+
+            {:ok, label, summaries}
+        end
+      end)
+
+    case Enum.find(results, &match?({:error, _}, &1)) do
+      {:error, reason} ->
+        {:error, reason}
+
+      nil ->
+        max_len =
+          results
+          |> Enum.map(fn {:ok, _label, summaries} -> length(summaries) end)
+          |> Enum.max(fn -> 0 end)
+
+        if max_len == 0 do
+          []
+        else
+          Enum.map(0..(max_len - 1), fn i ->
+            entries =
+              Enum.map(results, fn {:ok, label, summaries} ->
+                case Enum.at(summaries, i) do
+                  nil -> %{label: label, prompt: nil, content: nil}
+                  s -> %{label: label, prompt: s.prompt, content: s.content}
+                end
+              end)
+
+            contents = Enum.map(entries, & &1.content)
+            type = if length(Enum.uniq(contents)) == 1, do: :identical, else: :content_differs
+
+            %{call_index: i, type: type, branches: entries}
+          end)
+        end
+    end
+  end
+
   # ── Private ──────────────────────────────────────────────────────────────────
 
   defp fetch_events_with_llm_check(session_id) do

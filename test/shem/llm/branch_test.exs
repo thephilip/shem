@@ -210,4 +210,96 @@ defmodule Shem.LLM.BranchTest do
       assert Enum.any?(events, &(&1.type == :branch_created))
     end
   end
+
+  describe "compare/2" do
+    test "all :identical when branches have the same content at every call" do
+      original_sid = record_session([{"q1", "a1", 5}])
+      fork_event = nth_completed_event(original_sid, 0)
+
+      {:ok, sid_a, _} =
+        Branch.branch_at(original_sid, fork_event.id, [%{content: "same", tokens_used: 1}], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+          LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+        end)
+
+      {:ok, sid_b, _} =
+        Branch.branch_at(original_sid, fork_event.id, [%{content: "same", tokens_used: 1}], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+          LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+        end)
+
+      result = Branch.compare([{"A", sid_a}, {"B", sid_b}])
+      assert Enum.all?(result, &(&1.type == :identical))
+    end
+
+    test "returns :content_differs at the alt call index" do
+      original_sid = record_session([{"q1", "a1", 5}])
+      fork_event = nth_completed_event(original_sid, 0)
+
+      {:ok, sid_a, _} =
+        Branch.branch_at(original_sid, fork_event.id, [%{content: "response A", tokens_used: 1}], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+          LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+        end)
+
+      {:ok, sid_b, _} =
+        Branch.branch_at(original_sid, fork_event.id, [%{content: "response B", tokens_used: 1}], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+          LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+        end)
+
+      result = Branch.compare([{"A", sid_a}, {"B", sid_b}])
+      diverged = Enum.find(result, &(&1.type == :content_differs))
+      assert diverged.call_index == 1
+      labels = Enum.map(diverged.branches, & &1.label)
+      assert "A" in labels and "B" in labels
+    end
+
+    test "three branches all differing at alt call — all listed in branches" do
+      original_sid = record_session([{"q1", "a1", 5}])
+      fork_event = nth_completed_event(original_sid, 0)
+
+      sids =
+        Enum.map([{"X", "A"}, {"Y", "B"}, {"Z", "C"}], fn {content, label} ->
+          {:ok, sid, _} =
+            Branch.branch_at(original_sid, fork_event.id, [%{content: content, tokens_used: 1}], fn sid ->
+              LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+              LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+            end)
+
+          {label, sid}
+        end)
+
+      result = Branch.compare(sids)
+      diverged = Enum.find(result, &(&1.type == :content_differs))
+      contents = Enum.map(diverged.branches, & &1.content)
+      assert "X" in contents and "Y" in contents and "Z" in contents
+    end
+
+    test "shorter branch produces nil content at missing call index" do
+      original_sid = record_session([{"q1", "a1", 5}])
+      fork_event = nth_completed_event(original_sid, 0)
+
+      {:ok, sid_long, _} =
+        Branch.branch_at(original_sid, fork_event.id, [%{content: "alt", tokens_used: 1}], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+          LLM.complete(%Request{prompt: "q2", model: :default, session_id: sid})
+        end)
+
+      {:ok, sid_short, _} =
+        Branch.branch_at(original_sid, fork_event.id, [], fn sid ->
+          LLM.complete(%Request{prompt: "q1", model: :default, session_id: sid})
+        end)
+
+      result = Branch.compare([{"long", sid_long}, {"short", sid_short}])
+      entry = Enum.find(result, &(&1.call_index == 1))
+      short_entry = Enum.find(entry.branches, &(&1.label == "short"))
+      assert short_entry.content == nil
+    end
+
+    test "returns {:error, :session_not_found} for unknown session" do
+      assert {:error, :session_not_found} =
+               Branch.compare([{"A", "ses_unknown00"}])
+    end
+  end
 end
