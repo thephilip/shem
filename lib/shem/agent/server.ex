@@ -100,6 +100,8 @@ defmodule Shem.Agent.Server do
     end
   end
 
+  def handle_info(_msg, state), do: {:noreply, state}
+
   # ── Helpers ─────────────────────────────────────────────────────────────────
 
   defp execute_tool_calls(calls, manifest, history, session_id) do
