@@ -44,11 +44,11 @@ defmodule Shem.LLM.Branch do
         {:error, reason}
 
       {:ok, events} ->
-        completed = Enum.filter(events, &(&1.type == :llm_call_completed))
+        pairs = Utils.extract_llm_pairs(events)
 
-        case Enum.at(completed, call_index) do
+        case Enum.at(pairs, call_index) do
           nil -> {:error, :call_index_out_of_range}
-          event -> branch_at(original_session_id, event.id, alt_queue, fun)
+          {_started, outcome_event} -> branch_at(original_session_id, outcome_event.id, alt_queue, fun)
         end
     end
   end
