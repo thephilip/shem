@@ -28,7 +28,9 @@ defmodule Shem.MixProject do
       {:bandit, "~> 1.0"},
       {:plug, "~> 1.16"},
       {:jason, "~> 1.4"},
-      {:req, "~> 0.5"}
+      {:req, "~> 0.5"},
+      {:horde, "~> 0.9"},
+      {:libcluster, "~> 3.3"}
     ]
   end
 

@@ -17,3 +17,15 @@ config :shem,
   llm_llama_cpp_url: "http://localhost:8080",
   llm_budget_limit: 500_000,
   llm_soft_threshold: 0.8
+
+config :libcluster,
+  topologies: [
+    shem: [
+      strategy: Cluster.Strategy.Gossip,
+      config: [port: 45892, multicast_addr: "230.1.1.251"]
+    ]
+  ]
+
+config :shem, start_cluster: true
+config :shem, budget_node_tokens: 500_000
+config :shem, lab_executor_node: nil

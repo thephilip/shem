@@ -21,3 +21,6 @@ config :shem,
   llm_models: %{default: "llama3:latest"},
   llm_budget_limit: 100_000,
   llm_soft_threshold: 0.8
+
+config :shem, start_cluster: false
+config :shem, lab_executor_node: nil
