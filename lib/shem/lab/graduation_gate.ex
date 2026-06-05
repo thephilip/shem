@@ -10,7 +10,13 @@ defmodule Shem.Lab.GraduationGate do
   def run(source, test_source, constraints \\ []) do
     combined = source <> "\n" <> test_source
 
-    case Executor.run(combined, fn test_mod -> test_mod.run() end) do
+    executor_opts =
+      case Application.get_env(:shem, :lab_executor_node) do
+        nil -> []
+        node -> [node: node]
+      end
+
+    case Executor.run(combined, fn test_mod -> test_mod.run() end, executor_opts) do
       {:ok, :ok} ->
         with {:ok, module} <- extract_module(source) do
           id = unique_id(module)

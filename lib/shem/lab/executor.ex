@@ -6,10 +6,28 @@ defmodule Shem.Lab.Executor do
           | {:error, :compile, String.t()}
           | {:error, :timeout}
           | {:error, :runtime, any()}
+          | {:error, any()}
   def run(source, fun, opts \\ []) do
     timeout =
       Keyword.get(opts, :timeout, Application.get_env(:shem, :executor_timeout_ms, @default_timeout))
 
+    target_node = Keyword.get(opts, :node, nil)
+
+    if target_node && target_node != Node.self() do
+      run_remote(source, fun, timeout, target_node)
+    else
+      run_local(source, fun, timeout)
+    end
+  end
+
+  defp run_remote(source, fun, timeout, node) do
+    case :rpc.call(node, __MODULE__, :run, [source, fun, [timeout: timeout]], timeout + 1_000) do
+      {:badrpc, reason} -> {:error, reason}
+      result -> result
+    end
+  end
+
+  defp run_local(source, fun, timeout) do
     case compile(source) do
       {:ok, modules} ->
         Enum.each(modules, fn {mod, bc} -> :code.load_binary(mod, ~c"nofile", bc) end)

@@ -53,4 +53,31 @@ defmodule Shem.Lab.ExecutorTest do
 
     assert {:ok, 84} = Executor.run(source, fn mod -> mod.result() end)
   end
+
+  describe "remote node dispatch" do
+    test "node: nil uses local execution (existing behavior)" do
+      source = """
+      defmodule RemoteTestLocal do
+        def run, do: :local_result
+      end
+      """
+      assert {:ok, :local_result} = Shem.Lab.Executor.run(source, fn m -> m.run() end, node: nil)
+    end
+
+    test "node: Node.self() uses local execution" do
+      source = """
+      defmodule RemoteTestSelf do
+        def run, do: :self_result
+      end
+      """
+      assert {:ok, :self_result} =
+               Shem.Lab.Executor.run(source, fn m -> m.run() end, node: Node.self())
+    end
+
+    test "node: :nonexistent@host returns {:error, _} " do
+      source = "defmodule RemoteTestFail do\n  def run, do: :ok\nend"
+      result = Shem.Lab.Executor.run(source, fn m -> m.run() end, node: :"nonexistent@127.0.0.1")
+      assert match?({:error, _}, result)
+    end
+  end
 end
