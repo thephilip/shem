@@ -13,6 +13,9 @@ defmodule Shem.EventLog do
   @spec start_session() :: {:ok, String.t()}
   def start_session, do: GenServer.call(__MODULE__, :start_session)
 
+  @spec start_session(String.t()) :: {:ok, String.t()}
+  def start_session(session_id), do: GenServer.call(__MODULE__, {:start_session, session_id})
+
   @spec end_session(String.t()) :: :ok | {:error, :session_not_found}
   def end_session(session_id), do: GenServer.call(__MODULE__, {:end_session, session_id})
 
@@ -59,6 +62,20 @@ defmodule Shem.EventLog do
     {:ok, handle} = state.store.open(session.id, event_log_path())
     sessions = Map.put(state.sessions, session.id, {handle, session})
     {:reply, {:ok, session.id}, %{state | sessions: sessions}}
+  end
+
+  @impl true
+  def handle_call({:start_session, session_id}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, _} ->
+        {:reply, {:ok, session_id}, state}
+
+      :error ->
+        session = %Session{id: session_id, started_at: DateTime.utc_now()}
+        {:ok, handle} = state.store.open(session_id, event_log_path())
+        sessions = Map.put(state.sessions, session_id, {handle, session})
+        {:reply, {:ok, session_id}, %{state | sessions: sessions}}
+    end
   end
 
   @impl true

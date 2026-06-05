@@ -149,4 +149,30 @@ defmodule Shem.EventLogTest do
                EventLog.reconstruct_at(sid, "evt_0000000000000000", fn s, _ -> s end, 0)
     end
   end
+
+  describe "start_session/1 (external id)" do
+    test "opens a session with the provided id" do
+      id = "ses_AABBCCDD11223344"
+      assert {:ok, ^id} = EventLog.start_session(id)
+      {:ok, sessions} = EventLog.list_sessions()
+      assert Enum.any?(sessions, &(&1.id == id))
+    end
+
+    test "calling start_session/1 twice with same id returns ok without duplicating" do
+      id = "ses_DUPLICATE00000001"
+      assert {:ok, ^id} = EventLog.start_session(id)
+      assert {:ok, ^id} = EventLog.start_session(id)
+      {:ok, sessions} = EventLog.list_sessions()
+      assert Enum.count(sessions, &(&1.id == id)) == 1
+    end
+
+    test "events appended after start_session/1 are retrievable" do
+      id = "ses_EXTERNAL00000001"
+      {:ok, ^id} = EventLog.start_session(id)
+      {:ok, _} = EventLog.append(id, :test_event, %{val: 42})
+      assert {:ok, events} = EventLog.events(id)
+      assert length(events) == 1
+      assert hd(events).type == :test_event
+    end
+  end
 end
