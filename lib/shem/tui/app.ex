@@ -98,6 +98,16 @@ defmodule Shem.TUI.App do
           {:list_agents} ->
             %{model | command_buffer: "", command_error: nil}
 
+          {:redteam, tool_name} ->
+            case Shem.Lab.Registry.lookup_by_name(tool_name) do
+              {:ok, tool} ->
+                Shem.Adversarial.start_hardening(tool.id)
+                %{model | command_buffer: "", command_error: nil}
+
+              {:error, :not_found} ->
+                %{model | command_error: "unknown tool: #{tool_name}"}
+            end
+
           {:error, reason} ->
             %{model | command_error: reason}
         end
