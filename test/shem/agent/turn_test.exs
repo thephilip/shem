@@ -75,6 +75,15 @@ defmodule Shem.Agent.TurnTest do
       content = "<think>\nsome\nmultiline\nthinking\n</think>\nhello"
       assert Turn.strip_thinking(content) == "hello"
     end
+
+    test "strips multiple <think> blocks" do
+      content = "<think>first</think>middle<think>second</think>end"
+      assert Turn.strip_thinking(content) == "middleend"
+    end
+
+    test "returns empty string when content is only a <think> block" do
+      assert Turn.strip_thinking("<think>just thinking</think>") == ""
+    end
   end
 
   describe "build_prompt/3" do
