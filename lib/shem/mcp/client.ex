@@ -26,7 +26,7 @@ defmodule Shem.MCP.Client do
 
   @spec connected_servers() :: [%{name: String.t(), status: :ready | :connecting | :down}]
   def connected_servers do
-    Registry.select(Shem.Registry, [
+    Horde.Registry.select(Shem.Registry, [
       {{{ServerConn, :"$1"}, :"$2", :_}, [], [{{:"$1", :"$2"}}]}
     ])
     |> Enum.map(fn {name, pid} ->
@@ -42,7 +42,7 @@ defmodule Shem.MCP.Client do
   end
 
   defp lookup_conn(name) do
-    case Registry.lookup(Shem.Registry, {ServerConn, name}) do
+    case Horde.Registry.lookup(Shem.Registry, {ServerConn, name}) do
       [{pid, _}] -> {:ok, pid}
       [] -> {:error, :not_found}
     end

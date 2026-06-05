@@ -3,8 +3,8 @@ defmodule Shem.ProcessRegistryTest do
 
   alias Shem.ProcessRegistry
 
-  test "via_tuple/1 returns a correctly shaped Registry via-tuple" do
-    assert {:via, Registry, {Shem.Registry, :my_agent}} =
+  test "via_tuple/1 returns a correctly shaped Horde.Registry via-tuple" do
+    assert {:via, Horde.Registry, {Shem.Registry, :my_agent}} =
              ProcessRegistry.via_tuple(:my_agent)
   end
 
@@ -14,6 +14,6 @@ defmodule Shem.ProcessRegistryTest do
 
     {:ok, pid} = Agent.start_link(fn -> 0 end, name: via)
 
-    assert [{^pid, nil}] = Registry.lookup(Shem.Registry, name)
+    assert [{^pid, nil}] = Horde.Registry.lookup(Shem.Registry, name)
   end
 end

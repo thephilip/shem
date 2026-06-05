@@ -5,13 +5,17 @@ defmodule Shem.Application do
   def start(_type, _args) do
     children =
       [
-        {Registry, keys: :unique, name: Shem.Registry},
+        {Horde.Registry, [name: Shem.Registry, keys: :unique, members: :auto]},
         Shem.AgentSupervisor,
         Shem.EventLog,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer
-      ] ++ llm_stub_children() ++ mcp_children() ++ tui_children()
+      ] ++
+        llm_stub_children() ++
+        mcp_children() ++
+        cluster_children() ++
+        tui_children()
 
     opts = [strategy: :one_for_one, name: Shem.Supervisor]
     Supervisor.start_link(children, opts)
@@ -30,6 +34,18 @@ defmodule Shem.Application do
   defp mcp_children do
     if Application.get_env(:shem, :start_mcp, true) do
       [Shem.MCP.Server, Shem.MCP.Client.Supervisor]
+    else
+      []
+    end
+  end
+
+  defp cluster_children do
+    if Application.get_env(:shem, :start_cluster, true) do
+      [
+        {Cluster.Supervisor,
+         [Application.get_env(:libcluster, :topologies, []), [name: Shem.Cluster.Supervisor]]},
+        Shem.Cluster
+      ]
     else
       []
     end

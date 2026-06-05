@@ -105,7 +105,7 @@ defmodule Shem.MCP.Client.ServerConnTest do
     conn = start_conn("t6")
     drive_handshake(conn)
     assert [{^conn, _}] =
-             Registry.lookup(Shem.Registry, {ServerConn, "t6"})
+             Horde.Registry.lookup(Shem.Registry, {ServerConn, "t6"})
   end
 
   describe "call/response correlation" do

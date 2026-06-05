@@ -10,7 +10,7 @@ defmodule Shem.MCP.Client.ServerConn do
   def start_link(opts) do
     config = Keyword.fetch!(opts, :config)
     registry = Keyword.get(opts, :registry, Shem.Registry)
-    via = {:via, Registry, {registry, {__MODULE__, config.name}}}
+    via = {:via, Horde.Registry, {registry, {__MODULE__, config.name}}}
     GenServer.start_link(__MODULE__, opts, name: via)
   end
 
