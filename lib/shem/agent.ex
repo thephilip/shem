@@ -54,6 +54,7 @@ defmodule Shem.Agent do
       config = %Config{
         task: task,
         system_prompt: preset.system_prompt,
+        # tools: [] means allow-all in Config; :all is preset-only shorthand
         tools: if(preset.tools == :all, do: [], else: preset.tools),
         max_turns: 20
       }
