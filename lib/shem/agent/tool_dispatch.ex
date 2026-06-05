@@ -46,8 +46,26 @@ defmodule Shem.Agent.ToolDispatch do
 
   @spec build_manifest(Config.t()) :: [map()]
   def build_manifest(%Config{tools: allowed_tools}) do
+    builtins =
+      @builtins
+      |> then(fn bs ->
+        if allowed_tools == [],
+          do: bs,
+          else: Enum.filter(bs, &(&1.name in allowed_tools))
+      end)
+      |> then(fn bs ->
+        if Enum.any?(bs, &(&1.name == "list_tools")),
+          do: bs,
+          else: [Enum.find(@builtins, &(&1.name == "list_tools")) | bs]
+      end)
+
     lab_tools =
       Lab.Registry.all()
+      |> then(fn tools ->
+        if allowed_tools == [],
+          do: tools,
+          else: Enum.filter(tools, &(&1.name in allowed_tools))
+      end)
       |> Enum.map(fn tool ->
         %{
           name: tool.name,
@@ -77,7 +95,7 @@ defmodule Shem.Agent.ToolDispatch do
         end
       end)
 
-    @builtins ++ lab_tools ++ mcp_tools
+    builtins ++ lab_tools ++ mcp_tools
   end
 
   @spec execute(%{tool: String.t(), args: map()}, [map()]) ::
