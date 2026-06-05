@@ -65,4 +65,19 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:error, _} = CommandDispatch.parse("/run do something")
     end
   end
+
+  describe "/redteam command" do
+    test "parses /redteam <name> into {:redteam, name}" do
+      assert {:redteam, "my_tool"} = CommandDispatch.parse("/redteam my_tool")
+    end
+
+    test "trims whitespace from tool name" do
+      assert {:redteam, "my_tool"} = CommandDispatch.parse("/redteam  my_tool  ")
+    end
+
+    test "returns error for /redteam with no tool name" do
+      assert {:error, _} = CommandDispatch.parse("/redteam")
+      assert {:error, _} = CommandDispatch.parse("/redteam   ")
+    end
+  end
 end
