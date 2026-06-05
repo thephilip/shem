@@ -1,0 +1,144 @@
+# test/shem/agent/tool_dispatch_test.exs
+defmodule Shem.Agent.ToolDispatchTest do
+  use ExUnit.Case, async: false
+
+  alias Shem.Agent.{Config, ToolDispatch}
+
+  @config %Config{task: "t", system_prompt: "s"}
+
+  setup do
+    lab_dir = Application.get_env(:shem, :lab_dir)
+    on_exit(fn -> File.rm_rf!(lab_dir) end)
+    :ok
+  end
+
+  describe "build_manifest/1" do
+    test "includes all three built-ins" do
+      manifest = ToolDispatch.build_manifest(@config)
+      names = Enum.map(manifest, & &1.name)
+      assert "write_tool" in names
+      assert "run_code" in names
+      assert "list_tools" in names
+    end
+
+    test "built-in entries have :builtin source" do
+      manifest = ToolDispatch.build_manifest(@config)
+      builtins = Enum.filter(manifest, &(&1.source == :builtin))
+      assert length(builtins) == 3
+    end
+
+    test "includes graduated Lab tools with {:lab, id} source" do
+      source = """
+      defmodule DispatchTool1 do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule DispatchTool1Test do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      manifest = ToolDispatch.build_manifest(@config)
+      assert Enum.any?(manifest, &(&1.source == {:lab, tool.id}))
+    end
+  end
+
+  describe "execute/2 — list_tools built-in" do
+    test "returns {:ok, formatted string} listing manifest tools" do
+      manifest = [%{name: "foo", description: "does foo", source: :builtin}]
+      assert {:ok, result} = ToolDispatch.execute(%{tool: "list_tools", args: %{}}, manifest)
+      assert result =~ "foo"
+      assert result =~ "does foo"
+    end
+  end
+
+  describe "execute/2 — run_code built-in" do
+    test "returns {:ok, result} for valid source with run/0" do
+      source = """
+      defmodule RunCodeTest1 do
+        def run, do: 1 + 1
+      end
+      """
+      manifest = [%{name: "run_code", description: "run", source: :builtin}]
+      assert {:ok, "2"} = ToolDispatch.execute(%{tool: "run_code", args: %{"source" => source}}, manifest)
+    end
+
+    test "returns {:error, msg} for source with compile error" do
+      manifest = [%{name: "run_code", description: "run", source: :builtin}]
+      assert {:error, msg} =
+               ToolDispatch.execute(
+                 %{tool: "run_code", args: %{"source" => "this is not valid elixir !!!"}},
+                 manifest
+               )
+      assert msg =~ "compile error"
+    end
+  end
+
+  describe "execute/2 — write_tool built-in" do
+    test "returns {:ok, 'graduated: name'} on valid source and tests" do
+      source = """
+      defmodule WriteToolTarget1 do
+        def run(_args), do: :written
+      end
+      """
+      test_src = """
+      defmodule WriteToolTarget1Test do
+        def run, do: :ok
+      end
+      """
+      manifest = [%{name: "write_tool", description: "write", source: :builtin}]
+      assert {:ok, "graduated: WriteToolTarget1"} =
+               ToolDispatch.execute(
+                 %{tool: "write_tool", args: %{"source" => source, "test_source" => test_src}},
+                 manifest
+               )
+    end
+
+    test "returns {:error, msg} when test fails" do
+      source = """
+      defmodule WriteToolTarget2 do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule WriteToolTarget2Test do
+        def run, do: raise "intentional failure"
+      end
+      """
+      manifest = [%{name: "write_tool", description: "write", source: :builtin}]
+      assert {:error, msg} =
+               ToolDispatch.execute(
+                 %{tool: "write_tool", args: %{"source" => source, "test_source" => test_src}},
+                 manifest
+               )
+      assert msg =~ "test failed"
+    end
+  end
+
+  describe "execute/2 — Lab tool dispatch" do
+    test "routes to a graduated tool and returns its result" do
+      source = """
+      defmodule LabDispatchTool1 do
+        def run(args), do: Map.get(args, "x", 0) * 2
+      end
+      """
+      test_src = """
+      defmodule LabDispatchTool1Test do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}}]
+      assert {:ok, "2"} =
+               ToolDispatch.execute(%{tool: tool.name, args: %{"x" => 1}}, manifest)
+    end
+  end
+
+  describe "execute/2 — unknown tool" do
+    test "returns {:error, 'unknown tool: name'} when not in manifest" do
+      assert {:error, "unknown tool: ghost"} =
+               ToolDispatch.execute(%{tool: "ghost", args: %{}}, [])
+    end
+  end
+end
