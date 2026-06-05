@@ -12,7 +12,11 @@ defmodule Shem.TUI.Views.DashboardTest do
       tool_count: 0,
       mcp_client_count: 0,
       mcp_outbound_count: 0,
-      cluster_node_count: 1
+      cluster_node_count: 1,
+      agents: [],
+      focused_agent: nil,
+      agent_view: nil,
+      command_error: nil
     }
   end
 
