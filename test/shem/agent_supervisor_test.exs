@@ -1,36 +1,45 @@
 defmodule Shem.AgentSupervisorTest do
   use ExUnit.Case, async: false
 
-  alias Shem.AgentSupervisor
+  alias Shem.{Agent, AgentSupervisor}
 
-  test "start_agent/2 starts a live process under the supervisor" do
-    {:ok, pid} = AgentSupervisor.start_agent(
-      :"agent_#{System.unique_integer([:positive])}",
-      fn -> :idle end
+  setup do
+    Shem.LLM.BudgetServer.reset()
+    Shem.LLM.StubTransport.Server.reset()
+    :ok
+  end
+
+  test "start_agent/2 starts a live Agent.Server process" do
+    Shem.LLM.StubTransport.Server.set_default(
+      {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
     )
+    config = %Agent.Config{task: "t", system_prompt: "s"}
+    name = "test_agent_#{System.unique_integer([:positive])}"
+    {:ok, pid} = AgentSupervisor.start_agent(name, config)
     assert Process.alive?(pid)
   end
 
-  test "start_agent/2 registers the process by name in Shem.Registry" do
-    name = :"named_#{System.unique_integer([:positive])}"
-    {:ok, _pid} = AgentSupervisor.start_agent(name, fn -> 42 end)
-
+  test "started agent registers in Shem.Registry under its name" do
+    Shem.LLM.StubTransport.Server.set_default(
+      {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
+    )
+    config = %Agent.Config{task: "t", system_prompt: "s"}
+    name = "test_agent_#{System.unique_integer([:positive])}"
+    AgentSupervisor.start_agent(name, config)
     via = Shem.ProcessRegistry.via_tuple(name)
-    pid = GenServer.whereis(via)
-    assert is_pid(pid)
-    assert Process.alive?(pid)
+    assert is_pid(GenServer.whereis(via))
   end
 
-  test "a supervised agent process is restarted when it crashes" do
-    name = :"crash_#{System.unique_integer([:positive])}"
-    {:ok, pid} = AgentSupervisor.start_agent(name, fn -> :ok end)
-
+  test "a crashed agent is NOT restarted (temporary restart)" do
+    Shem.LLM.StubTransport.Server.set_default(
+      {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
+    )
+    config = %Agent.Config{task: "t", system_prompt: "s"}
+    name = "test_agent_#{System.unique_integer([:positive])}"
+    {:ok, pid} = AgentSupervisor.start_agent(name, config)
     Process.exit(pid, :kill)
     Process.sleep(100)
-
     via = Shem.ProcessRegistry.via_tuple(name)
-    new_pid = GenServer.whereis(via)
-    assert is_pid(new_pid)
-    assert new_pid != pid
+    assert GenServer.whereis(via) == nil
   end
 end

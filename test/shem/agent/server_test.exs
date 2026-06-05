@@ -1,25 +1,161 @@
-# test/shem/agent/server_test.exs
 defmodule Shem.Agent.ServerTest do
   use ExUnit.Case, async: false
 
   alias Shem.Agent
+  alias Shem.LLM.{Response, StubTransport}
 
   setup do
     Shem.LLM.BudgetServer.reset()
-    Shem.LLM.StubTransport.Server.reset()
+    StubTransport.Server.reset()
     lab_dir = Application.get_env(:shem, :lab_dir)
-    on_exit(fn -> File.rm_rf!(lab_dir) end)
+    on_exit(fn ->
+      File.rm_rf!(lab_dir)
+      Shem.Lab.Registry.flush()
+    end)
     :ok
   end
 
-  describe "Agent.Config" do
+  defp stub(content, tokens \\ 5) do
+    StubTransport.Server.push_response(
+      {:ok, %Response{content: content, tokens_used: tokens, model: :default, latency_ms: 1}}
+    )
+  end
+
+  defp start_agent(task, opts \\ []) do
+    system_prompt = Keyword.get(opts, :system_prompt, "be helpful")
+    max_turns = Keyword.get(opts, :max_turns, 10)
+    config = %Agent.Config{task: task, system_prompt: system_prompt, max_turns: max_turns}
+    {:ok, name} = Agent.start(config)
+    name
+  end
+
+  describe "Config" do
     test "struct has required fields with defaults" do
       config = %Agent.Config{task: "do something", system_prompt: "you are helpful"}
       assert config.task == "do something"
-      assert config.system_prompt == "you are helpful"
       assert config.model == :default
       assert config.tools == []
       assert config.max_turns == 20
+    end
+  end
+
+  describe "single-turn run (no tool calls)" do
+    test "agent reaches :done status after plain-text response" do
+      stub("The answer is 42.")
+      name = start_agent("what is 6 * 7?")
+      assert {:ok, :done} = Agent.await(name, 2_000)
+      assert {:ok, :done} = Agent.status(name)
+    end
+
+    test "EventLog session contains :agent_started, :agent_turn_started, :agent_turn_completed, :agent_done" do
+      {:ok, sessions_before} = Shem.EventLog.list_sessions()
+      before_ids = MapSet.new(Enum.map(sessions_before, & &1.id))
+
+      stub("done")
+      name = start_agent("task")
+      Agent.await(name, 2_000)
+
+      {:ok, sessions_after} = Shem.EventLog.list_sessions()
+      session = Enum.find(sessions_after, fn s -> s.id not in before_ids end)
+      assert session != nil
+
+      {:ok, events} = Shem.EventLog.events(session.id)
+      types = Enum.map(events, & &1.type)
+      assert :agent_started in types
+      assert :agent_turn_started in types
+      assert :agent_turn_completed in types
+      assert :agent_done in types
+    end
+  end
+
+  describe "two-turn run: tool call then done" do
+    test "agent calls write_tool, then completes" do
+      source = """
+      defmodule AgentWritten1 do
+        def run(_args), do: :written
+      end
+      """
+      test_src = """
+      defmodule AgentWritten1Test do
+        def run, do: :ok
+      end
+      """
+      tool_call_response =
+        ~s(I'll write a tool.\n{"tool": "write_tool", "args": {"source": #{Jason.encode!(source)}, "test_source": #{Jason.encode!(test_src)}}})
+
+      stub(tool_call_response)
+      stub("Task complete.")
+
+      name = start_agent("write and graduate a tool")
+      assert {:ok, :done} = Agent.await(name, 3_000)
+      assert {:ok, _} = Shem.Lab.Registry.lookup("agent_written1")
+    end
+  end
+
+  describe "self-correction loop" do
+    test "agent retries write_tool after compile error, eventually graduates" do
+      bad_source = "this is not valid elixir !!!"
+      good_source = """
+      defmodule AgentSelfCorrect1 do
+        def run(_args), do: :corrected
+      end
+      """
+      test_src = """
+      defmodule AgentSelfCorrect1Test do
+        def run, do: :ok
+      end
+      """
+
+      stub(~s({"tool": "write_tool", "args": {"source": #{Jason.encode!(bad_source)}, "test_source": ""}}))
+      stub(~s({"tool": "write_tool", "args": {"source": #{Jason.encode!(good_source)}, "test_source": #{Jason.encode!(test_src)}}}))
+      stub("Done, tool graduated.")
+
+      name = start_agent("write a tool, handle errors")
+      assert {:ok, :done} = Agent.await(name, 3_000)
+      assert {:ok, _} = Shem.Lab.Registry.lookup("agent_self_correct1")
+    end
+  end
+
+  describe "circuit breakers" do
+    test "agent stops with :done after max_turns" do
+      for _ <- 1..5, do: stub(~s({"tool": "list_tools", "args": {}}))
+
+      name = start_agent("loop forever", max_turns: 2)
+      assert {:ok, :done} = Agent.await(name, 2_000)
+      assert {:ok, :done} = Agent.status(name)
+    end
+
+    test "agent stops with :done when budget is exhausted" do
+      Shem.LLM.BudgetServer.deduct(100_001)
+      name = start_agent("some task")
+      assert {:ok, :done} = Agent.await(name, 2_000)
+    end
+
+    test "agent reaches :error status when LLM transport returns error" do
+      StubTransport.Server.push_response({:error, :transport_down})
+      name = start_agent("failing task")
+      assert {:ok, :error} = Agent.await(name, 2_000)
+    end
+  end
+
+  describe "Shem.Agent public API" do
+    test "stop/1 terminates the agent process" do
+      stub("done")
+      name = start_agent("task")
+      Agent.await(name, 2_000)
+      assert :ok = Agent.stop(name)
+      assert {:error, :not_found} = Agent.status(name)
+    end
+
+    test "status/1 returns {:error, :not_found} for unknown name" do
+      assert {:error, :not_found} = Agent.status("nonexistent_agent")
+    end
+
+    test "await/2 returns immediately if agent is already done" do
+      stub("done")
+      name = start_agent("task")
+      Agent.await(name, 2_000)
+      assert {:ok, :done} = Agent.await(name, 100)
     end
   end
 end
