@@ -53,6 +53,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       names = Enum.map(manifest, & &1.name)
       assert "read_file" in names
       assert "list_dir" in names
+      # list_tools is always injected regardless of allow-list — it is a pure meta-capability
       assert "list_tools" in names
       refute "write_file" in names
       refute "shell" in names
@@ -60,7 +61,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       refute "write_tool" in names
     end
 
-    test "allow-list excludes Lab tools whose names are not listed" do
+    test "allow-list includes or excludes Lab tools based on their name" do
       source = """
       defmodule AllowListLabTool do
         def run(_args), do: :ok
