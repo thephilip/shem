@@ -10,7 +10,7 @@ defmodule Shem.LLM.ReplayTransport do
         {:error, {:replayed_failure, reason_string}}
 
       {:ok, %{prompt: original_prompt, content: content, tokens_used: tokens_used}, call_index} ->
-        if request.prompt != original_prompt and not is_nil(request.session_id) do
+        if not is_nil(original_prompt) and request.prompt != original_prompt and not is_nil(request.session_id) do
           Shem.EventLog.append(request.session_id, :llm_call_diverged, %{
             call_index: call_index,
             original_prompt: original_prompt,
