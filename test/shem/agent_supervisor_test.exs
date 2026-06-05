@@ -6,6 +6,11 @@ defmodule Shem.AgentSupervisorTest do
   setup do
     Shem.LLM.BudgetServer.reset()
     Shem.LLM.StubTransport.Server.reset()
+    lab_dir = Application.get_env(:shem, :lab_dir)
+    on_exit(fn ->
+      File.rm_rf!(lab_dir)
+      Shem.Lab.Registry.flush()
+    end)
     :ok
   end
 
