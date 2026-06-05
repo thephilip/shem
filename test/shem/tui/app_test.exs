@@ -99,4 +99,67 @@ defmodule Shem.TUI.AppTest do
       assert is_integer(updated.event_log_stats.total_events)
     end
   end
+
+  describe "init/1 — new Phase 9 fields" do
+    test "model has agents list defaulting to empty" do
+      model = App.init(%{})
+      assert model.agents == []
+    end
+
+    test "model has focused_agent defaulting to nil" do
+      model = App.init(%{})
+      assert model.focused_agent == nil
+    end
+
+    test "model has agent_view defaulting to nil" do
+      model = App.init(%{})
+      assert model.agent_view == nil
+    end
+
+    test "model has command_error defaulting to nil" do
+      model = App.init(%{})
+      assert model.command_error == nil
+    end
+  end
+
+  describe "update/2 — Tab key cycles focused_agent" do
+    test "Tab with no agents is a no-op" do
+      model = App.init(%{})
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.focused_agent == nil
+    end
+
+    test "Tab with agents and no focused agent focuses first" do
+      model = %{App.init(%{}) | agents: [%{name: "a1", status: :running, session_id: "s1", turn_count: 0}]}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.focused_agent == "a1"
+    end
+
+    test "Tab cycles to next agent" do
+      agents = [
+        %{name: "a1", status: :running, session_id: "s1", turn_count: 0},
+        %{name: "a2", status: :done, session_id: "s2", turn_count: 3}
+      ]
+      model = %{App.init(%{}) | agents: agents, focused_agent: "a1"}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.focused_agent == "a2"
+    end
+
+    test "Tab wraps around from last agent to first" do
+      agents = [
+        %{name: "a1", status: :running, session_id: "s1", turn_count: 0},
+        %{name: "a2", status: :done, session_id: "s2", turn_count: 3}
+      ]
+      model = %{App.init(%{}) | agents: agents, focused_agent: "a2"}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.focused_agent == "a1"
+    end
+
+    test "Tab is ignored when command buffer is active" do
+      agents = [%{name: "a1", status: :running, session_id: "s1", turn_count: 0}]
+      model = %{App.init(%{}) | agents: agents, command_buffer: "/some"}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.focused_agent == nil
+    end
+  end
 end
