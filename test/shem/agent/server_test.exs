@@ -66,6 +66,29 @@ defmodule Shem.Agent.ServerTest do
       assert :agent_turn_completed in types
       assert :agent_done in types
     end
+
+    test ":agent_done event contains content when agent finishes with plain text" do
+      stub("The final answer.")
+      name = start_agent("what is the answer?")
+      Agent.await(name, 2_000)
+
+      {:ok, session_id} = Agent.session_id(name)
+      {:ok, events} = Shem.EventLog.events(session_id)
+      done_event = Enum.find(events, &(&1.type == :agent_done))
+      assert done_event != nil
+      assert Map.get(done_event.payload, :content) == "The final answer."
+    end
+
+    test "Agent.session_id/1 returns {:ok, binary} for a running agent" do
+      stub("done")
+      name = start_agent("task")
+      assert {:ok, sid} = Agent.session_id(name)
+      assert is_binary(sid)
+    end
+
+    test "Agent.session_id/1 returns {:error, :not_found} for unknown agent" do
+      assert {:error, :not_found} = Agent.session_id("no_such_agent_xyz")
+    end
   end
 
   describe "two-turn run: tool call then done" do

@@ -48,6 +48,14 @@ defmodule Shem.Agent do
     end
   end
 
+  @spec session_id(String.t()) :: {:ok, String.t()} | {:error, :not_found}
+  def session_id(name) do
+    case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
+      nil -> {:error, :not_found}
+      pid -> {:ok, GenServer.call(pid, :session_id)}
+    end
+  end
+
   @spec start_with_preset(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def start_with_preset(preset_name, task) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do

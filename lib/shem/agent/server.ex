@@ -139,6 +139,18 @@ defmodule Shem.Agent.Server do
     end)
   end
 
+  defp finish(state, status, :answer) do
+    last_content =
+      state.history
+      |> Enum.filter(&(&1.role == :assistant))
+      |> List.last()
+      |> Map.get(:content, "")
+
+    EventLog.append(state.session_id, :agent_done, %{reason: :answer, content: last_content})
+    Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
+    %{state | status: status, done_reason: :answer, awaiting: []}
+  end
+
   defp finish(state, status, reason) do
     EventLog.append(state.session_id, :agent_done, %{reason: reason})
     Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
