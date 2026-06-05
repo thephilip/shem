@@ -75,7 +75,7 @@ defmodule Shem.Adversarial.HardeningJobTest do
 
       done = Enum.find(evts, &(&1.type == :hardening_completed))
       assert done.payload.outcome == :clean
-      assert done.payload.rounds == 0
+      assert done.payload.rounds == 1
     end
   end
 
@@ -92,7 +92,7 @@ defmodule Shem.Adversarial.HardeningJobTest do
       evts = events(session_id)
       done = Enum.find(evts, &(&1.type == :hardening_completed))
       assert done.payload.outcome == :clean
-      assert done.payload.rounds == 1
+      assert done.payload.rounds == 2
 
       assert Enum.any?(evts, &(&1.type == :hardening_patch_complete))
     end

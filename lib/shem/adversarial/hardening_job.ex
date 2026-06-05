@@ -1,5 +1,5 @@
 defmodule Shem.Adversarial.HardeningJob do
-  use GenServer
+  use GenServer, restart: :temporary
 
   alias Shem.{Agent, EventLog, Lab}
   alias Shem.Agent.Config
@@ -89,7 +89,7 @@ defmodule Shem.Adversarial.HardeningJob do
         run_red_team(state, tool)
 
       {:error, :not_found} ->
-        {:noreply, finish(state, :error)}
+        {:noreply, finish(state, :error, 1)}
     end
   end
 
@@ -106,18 +106,18 @@ defmodule Shem.Adversarial.HardeningJob do
 
     case result do
       :clean ->
-        {:noreply, finish(state, :clean)}
+        {:noreply, finish(state, :clean, 1)}
 
       {:failures, summary} ->
         case Lab.Registry.lookup_by_name(state.tool_name) do
           {:ok, tool} -> run_target(state, tool, summary)
-          {:error, :not_found} -> {:noreply, finish(state, :error)}
+          {:error, :not_found} -> {:noreply, finish(state, :error, 1)}
         end
     end
   end
 
   def handle_info({:red_team_done, {:error, _reason}}, state) do
-    {:noreply, finish(state, :error)}
+    {:noreply, finish(state, :error, 1)}
   end
 
   def handle_info({:target_done, {:ok, _}}, state) do
@@ -139,7 +139,7 @@ defmodule Shem.Adversarial.HardeningJob do
   end
 
   def handle_info({:target_done, {:error, _reason}}, state) do
-    {:noreply, finish(state, :error)}
+    {:noreply, finish(state, :error, 1)}
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
@@ -154,7 +154,14 @@ defmodule Shem.Adversarial.HardeningJob do
       result =
         case Agent.start(red_team_config(tool)) do
           {:ok, agent_name} ->
-            case Agent.await(agent_name, timeout) do
+            await_result =
+              try do
+                Agent.await(agent_name, timeout)
+              catch
+                :exit, _ -> {:error, :timeout}
+              end
+
+            case await_result do
               {:ok, _} -> {:ok, get_red_team_answer(agent_name)}
               {:error, reason} -> {:error, reason}
             end
@@ -177,7 +184,11 @@ defmodule Shem.Adversarial.HardeningJob do
       result =
         case Agent.start(target_config(tool, summary)) do
           {:ok, agent_name} ->
-            Agent.await(agent_name, timeout)
+            try do
+              Agent.await(agent_name, timeout)
+            catch
+              :exit, _ -> {:error, :timeout}
+            end
 
           {:error, reason} ->
             {:error, reason}
@@ -193,10 +204,10 @@ defmodule Shem.Adversarial.HardeningJob do
     Application.get_env(:shem, :adversarial_agent_timeout_ms, 300_000)
   end
 
-  defp finish(state, outcome) do
+  defp finish(state, outcome, extra_round \\ 0) do
     EventLog.append(state.session_id, :hardening_completed, %{
       tool: state.tool_name,
-      rounds: state.round,
+      rounds: state.round + extra_round,
       outcome: outcome
     })
 
