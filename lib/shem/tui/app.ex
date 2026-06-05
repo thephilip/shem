@@ -109,10 +109,6 @@ defmodule Shem.TUI.App do
   end
 
   defp safe_cluster_count do
-    try do
-      Shem.Cluster.nodes() |> length()
-    catch
-      :exit, _ -> 1
-    end
+    Shem.Cluster.nodes() |> length()
   end
 end

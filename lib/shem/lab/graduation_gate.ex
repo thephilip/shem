@@ -45,6 +45,9 @@ defmodule Shem.Lab.GraduationGate do
 
       {:error, :timeout} ->
         {:error, :timeout}
+
+      {:error, reason} ->
+        {:error, :gate, reason}
     end
   end
 

@@ -1,14 +1,16 @@
 defmodule Shem.Agent.Checkpoint do
   alias Shem.EventLog
 
-  @spec save(String.t(), map()) :: :ok
+  @spec save(String.t(), map()) :: :ok | {:error, term()}
   def save(session_id, state) do
-    EventLog.append(session_id, :agent_checkpoint, %{
-      history: state.history,
-      turn_count: state.turn_count,
-      config: state.config
-    })
-    :ok
+    case EventLog.append(session_id, :agent_checkpoint, %{
+           history: state.history,
+           turn_count: state.turn_count,
+           config: state.config
+         }) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   @spec reconstruct(String.t()) :: {:ok, map()} | :not_found

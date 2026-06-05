@@ -1,5 +1,5 @@
 defmodule Shem.LLM.BudgetServerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Shem.LLM.BudgetServer
 

@@ -74,7 +74,12 @@ defmodule Shem.Agent.Server do
   end
 
   def handle_info(:run_turn, state) do
-    Checkpoint.save(state.session_id, state)
+    case Checkpoint.save(state.session_id, state) do
+      :ok -> :ok
+      {:error, reason} ->
+        require Logger
+        Logger.warning("Checkpoint save failed for session #{state.session_id}: #{inspect(reason)}")
+    end
 
     cond do
       state.turn_count >= state.config.max_turns ->
