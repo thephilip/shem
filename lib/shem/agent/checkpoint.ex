@@ -15,7 +15,7 @@ defmodule Shem.Agent.Checkpoint do
 
   @spec reconstruct(String.t()) :: {:ok, map()} | :not_found
   def reconstruct(session_id) do
-    case EventLog.events(session_id) do
+    case EventLog.read_session_events(session_id) do
       {:ok, events} ->
         events
         |> Enum.filter(&(&1.type == :agent_checkpoint))

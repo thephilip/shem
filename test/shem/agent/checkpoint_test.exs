@@ -78,5 +78,24 @@ defmodule Shem.Agent.CheckpointTest do
       assert checkpoint.history == state.history
       assert checkpoint.config == state.config
     end
+
+    test "reconstruct/1 returns :not_found for a session with no checkpoint events" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :agent_started, %{task: "t", model: :default, max_turns: 20})
+      # No checkpoint appended
+      assert :not_found = Checkpoint.reconstruct(sid)
+    end
+
+    test "reconstruct/1 returns checkpoint from an active session" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :agent_started, %{task: "t", model: :default, max_turns: 20})
+      EventLog.append(sid, :agent_checkpoint, %{
+        history: [%{role: :user, content: "task"}, %{role: :assistant, content: "ok"}],
+        turn_count: 1,
+        config: %{}
+      })
+      assert {:ok, checkpoint} = Checkpoint.reconstruct(sid)
+      assert checkpoint.turn_count == 1
+    end
   end
 end
