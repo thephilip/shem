@@ -8,6 +8,7 @@ defmodule Shem.Application do
         {Horde.Registry, [name: Shem.Registry, keys: :unique, members: :auto]},
         Shem.AgentSupervisor,
         Shem.EventLog,
+        Shem.Trust.Store,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer
