@@ -30,3 +30,5 @@ config :shem, adversarial_max_rounds: 3
 config :shem, adversarial_agent_timeout_ms: 5_000
 
 config :shem, trust_store_path: "tmp/test_trust.dets"
+
+config :shem, trust_gate_enabled: false
