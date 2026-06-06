@@ -10,7 +10,7 @@ defmodule Shem.LLM.Middleware.LlamaCppTransport do
     timeout_ms = Keyword.get(opts, :timeout_ms, Application.get_env(:shem, :llm_timeout_ms, 120_000))
 
     body = %{
-      "model" => resolve_model(request.model),
+      "model" => resolve_model(request.model, opts),
       "prompt" => request.prompt,
       "max_tokens" => Map.get(request.options, :max_tokens, 512),
       "stream" => false
@@ -30,16 +30,22 @@ defmodule Shem.LLM.Middleware.LlamaCppTransport do
     end
   end
 
-  defp resolve_model(model_atom) do
-    models = Application.get_env(:shem, :llm_models, %{})
-
-    case Map.get(models, model_atom) do
-      nil ->
-        Logger.warning("Unknown LLM model atom #{inspect(model_atom)}, falling back to string")
-        Atom.to_string(model_atom)
-
-      str ->
+  defp resolve_model(model_atom, opts) do
+    case Keyword.fetch(opts, :model_string) do
+      {:ok, str} ->
         str
+
+      :error ->
+        models = Application.get_env(:shem, :llm_models, %{})
+
+        case Map.get(models, model_atom) do
+          nil ->
+            Logger.warning("Unknown LLM model atom #{inspect(model_atom)}, falling back to string")
+            Atom.to_string(model_atom)
+
+          str ->
+            str
+        end
     end
   end
 

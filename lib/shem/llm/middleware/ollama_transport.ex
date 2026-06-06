@@ -9,7 +9,7 @@ defmodule Shem.LLM.Middleware.OllamaTransport do
     http_post = Keyword.get(opts, :http_post_fn, &Req.post/2)
 
     body = %{
-      "model" => resolve_model(request.model),
+      "model" => resolve_model(request.model, opts),
       "prompt" => request.prompt,
       "stream" => false,
       "options" => request.options
@@ -29,16 +29,22 @@ defmodule Shem.LLM.Middleware.OllamaTransport do
     end
   end
 
-  defp resolve_model(model_atom) do
-    models = Application.get_env(:shem, :llm_models, %{})
-
-    case Map.get(models, model_atom) do
-      nil ->
-        Logger.warning("Unknown LLM model atom #{inspect(model_atom)}, falling back to string")
-        Atom.to_string(model_atom)
-
-      str ->
+  defp resolve_model(model_atom, opts) do
+    case Keyword.fetch(opts, :model_string) do
+      {:ok, str} ->
         str
+
+      :error ->
+        models = Application.get_env(:shem, :llm_models, %{})
+
+        case Map.get(models, model_atom) do
+          nil ->
+            Logger.warning("Unknown LLM model atom #{inspect(model_atom)}, falling back to string")
+            Atom.to_string(model_atom)
+
+          str ->
+            str
+        end
     end
   end
 
