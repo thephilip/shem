@@ -23,6 +23,11 @@ defmodule Shem.Trust.Store do
     GenServer.call(__MODULE__, :all)
   end
 
+  @spec entry(String.t()) :: {:ok, map()} | {:error, :unrated}
+  def entry(tool_id) do
+    GenServer.call(__MODULE__, {:entry, tool_id})
+  end
+
   @spec flush() :: :ok
   def flush do
     GenServer.call(__MODULE__, :flush)
@@ -84,6 +89,16 @@ defmodule Shem.Trust.Store do
         %{},
         state.table
       )
+
+    {:reply, result, state}
+  end
+
+  def handle_call({:entry, tool_id}, _from, state) do
+    result =
+      case :dets.lookup(state.table, tool_id) do
+        [{^tool_id, entry}] -> {:ok, entry}
+        [] -> {:error, :unrated}
+      end
 
     {:reply, result, state}
   end

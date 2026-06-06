@@ -83,4 +83,25 @@ defmodule Shem.Trust.StoreTest do
       GenServer.stop(pid2)
     end
   end
+
+  describe "entry/1" do
+    test "returns {:error, :unrated} for unknown tool_id" do
+      assert {:error, :unrated} = Store.entry("no_such_tool")
+    end
+
+    test "returns {:ok, entry} with score, hardening_count, last_updated after record" do
+      Store.record("entry_tool_1", %{outcome: :clean, rounds: 1})
+      assert {:ok, entry} = Store.entry("entry_tool_1")
+      assert_in_delta entry.score, 1.0, 0.001
+      assert entry.hardening_count == 1
+      assert %DateTime{} = entry.last_updated
+    end
+
+    test "hardening_count increments on subsequent records" do
+      Store.record("entry_tool_2", %{outcome: :clean, rounds: 1})
+      Store.record("entry_tool_2", %{outcome: :clean, rounds: 1})
+      assert {:ok, entry} = Store.entry("entry_tool_2")
+      assert entry.hardening_count == 2
+    end
+  end
 end
