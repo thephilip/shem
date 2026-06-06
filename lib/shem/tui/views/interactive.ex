@@ -2,6 +2,53 @@ defmodule Shem.TUI.Views.Interactive do
   import Ratatouille.View
   import Ratatouille.Constants, only: [color: 1, attribute: 1]
 
+  def render(%{mode: :multiline_input} = model) do
+    name =
+      case model.multiline_target do
+        {:preset_add, n} -> n
+        _ -> "input"
+      end
+
+    view do
+      row do
+        column(size: 8) do
+          panel(title: "Shem // New Preset · #{name}", color: color(:cyan)) do
+            label(
+              content: "Type lines. Enter '/done' to save, Esc to cancel.",
+              color: color(:yellow)
+            )
+
+            label(content: "")
+
+            for line <- model.multiline_buffer do
+              label(content: line, color: color(:white))
+            end
+
+            label(content: "▸ #{model.command_buffer}_", color: color(:cyan))
+          end
+        end
+
+        column(size: 4) do
+          render_event_log(model)
+        end
+      end
+
+      row do
+        column(size: 12) do
+          render_agent_switcher(model)
+        end
+      end
+
+      row do
+        column(size: 12) do
+          panel(title: "Multiline Input · /done to submit · Esc to cancel", color: color(:yellow)) do
+            label(content: "", color: color(:white))
+          end
+        end
+      end
+    end
+  end
+
   def render(model) do
     view do
       row do

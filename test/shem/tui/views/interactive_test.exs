@@ -18,7 +18,9 @@ defmodule Shem.TUI.Views.InteractiveTest do
       agent_view: nil,
       command_error: nil,
       command_output: nil,
-      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0}
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
+      multiline_buffer: [],
+      multiline_target: nil
     }
   end
 
@@ -56,5 +58,31 @@ defmodule Shem.TUI.Views.InteractiveTest do
     rendered = Interactive.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "thinking..."
     refute rendered =~ "some output"
+  end
+
+  describe "render/1 — :multiline_input mode" do
+    test "render/1 shows multiline editor panel when mode is :multiline_input" do
+      model = %{base_model() |
+        mode: :multiline_input,
+        multiline_target: {:preset_add, "my_preset"},
+        multiline_buffer: ["You are a reviewer.", "Be thorough."],
+        command_buffer: "partial line"
+      }
+      rendered = Interactive.render(model) |> inspect(limit: :infinity)
+      assert rendered =~ "my_preset"
+      assert rendered =~ "You are a reviewer."
+      assert rendered =~ "/done"
+    end
+
+    test "render/1 in :multiline_input does not show 'No active session'" do
+      model = %{base_model() |
+        mode: :multiline_input,
+        multiline_target: {:preset_add, "p"},
+        multiline_buffer: [],
+        command_buffer: ""
+      }
+      rendered = Interactive.render(model) |> inspect(limit: :infinity)
+      refute rendered =~ "No active session"
+    end
   end
 end
