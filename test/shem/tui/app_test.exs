@@ -326,6 +326,19 @@ defmodule Shem.TUI.AppTest do
       result = App.update(model, {:event, %{ch: ?l, key: 0}})
       assert result.command_buffer == "hell"
     end
+
+    test "Backspace removes last char from command_buffer in multiline mode" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "p"}, command_buffer: "hell"}
+      result = App.update(model, {:event, %{ch: 0, key: 127}})
+      assert result.command_buffer == "hel"
+    end
+
+    test "non-char key events are ignored in multiline mode" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "p"}, command_buffer: "abc"}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.mode == :multiline_input
+      assert result.command_buffer == "abc"
+    end
   end
 
   describe "update/2 — /preset list and /preset delete" do

@@ -222,6 +222,9 @@ defmodule Shem.TUI.App do
           command_output: "preset '#{name}' saved",
           command_error: nil
         }
+
+      _ ->
+        %{model | mode: :interactive, multiline_buffer: [], multiline_target: nil, command_buffer: ""}
     end
   end
 
