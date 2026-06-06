@@ -95,10 +95,10 @@ defmodule Shem.TUI.App do
 
           {:stop_agent} ->
             if model.focused_agent, do: Shem.Agent.stop(model.focused_agent)
-            %{model | command_buffer: "", command_error: nil}
+            %{model | command_buffer: "", command_error: nil, command_output: nil}
 
           {:list_agents} ->
-            %{model | command_buffer: "", command_error: nil}
+            %{model | command_buffer: "", command_error: nil, command_output: nil}
 
           {:tools} ->
             output = format_tools()
@@ -118,14 +118,14 @@ defmodule Shem.TUI.App do
             case Shem.Lab.Registry.lookup_by_name(tool_name) do
               {:ok, tool} ->
                 Shem.Adversarial.start_hardening(tool.id)
-                %{model | command_buffer: "", command_error: nil}
+                %{model | command_buffer: "", command_error: nil, command_output: nil}
 
               {:error, :not_found} ->
                 %{model | command_error: "unknown tool: #{tool_name}"}
             end
 
           {:error, reason} ->
-            %{model | command_error: reason}
+            %{model | command_error: reason, command_output: nil}
         end
 
       :tick ->
@@ -155,53 +155,61 @@ defmodule Shem.TUI.App do
   end
 
   defp format_tools do
-    tools = Shem.Lab.Registry.all()
-    scored = Shem.Trust.Store.all()
+    try do
+      tools = Shem.Lab.Registry.all()
+      scored = Shem.Trust.Store.all()
 
-    if tools == [] do
-      "No Lab tools graduated yet."
-    else
-      header = "Lab Tools (#{length(tools)})\n"
+      if tools == [] do
+        "No Lab tools graduated yet."
+      else
+        header = "Lab Tools (#{length(tools)})\n"
 
-      lines =
-        Enum.map(tools, fn tool ->
-          {band, hardenings} =
-            case Map.fetch(scored, tool.id) do
-              {:ok, score} ->
-                count =
-                  case Shem.Trust.Store.entry(tool.id) do
-                    {:ok, entry} -> entry.hardening_count
-                    _ -> 0
-                  end
+        lines =
+          Enum.map(tools, fn tool ->
+            {band, hardenings} =
+              case Map.fetch(scored, tool.id) do
+                {:ok, score} ->
+                  count =
+                    case Shem.Trust.Store.entry(tool.id) do
+                      {:ok, entry} -> entry.hardening_count
+                      _ -> 0
+                    end
 
-                {score_to_band(score), count}
+                  {score_to_band(score), count}
 
-              :error ->
-                {:unrated, 0}
-            end
+                :error ->
+                  {:unrated, 0}
+              end
 
-          count_str = if hardenings == 1, do: "1 hardening", else: "#{hardenings} hardenings"
-          "  #{String.pad_trailing(tool.name, 24)} #{String.pad_trailing(to_string(band), 10)} #{count_str}"
-        end)
+            count_str = if hardenings == 1, do: "1 hardening", else: "#{hardenings} hardenings"
+            "  #{String.pad_trailing(tool.name, 24)} #{String.pad_trailing(to_string(band), 10)} #{count_str}"
+          end)
 
-      header <> Enum.join(lines, "\n")
+        header <> Enum.join(lines, "\n")
+      end
+    catch
+      :exit, _ -> "Trust data unavailable."
     end
   end
 
   defp format_trust(tool) do
-    case Shem.Trust.Store.entry(tool.id) do
-      {:ok, entry} ->
-        band = score_to_band(entry.score)
-        updated = Calendar.strftime(entry.last_updated, "%Y-%m-%d %H:%M:%SZ")
+    try do
+      case Shem.Trust.Store.entry(tool.id) do
+        {:ok, entry} ->
+          band = score_to_band(entry.score)
+          updated = Calendar.strftime(entry.last_updated, "%Y-%m-%d %H:%M:%SZ")
 
-        "#{tool.name}\n" <>
-          "  band:       #{band}\n" <>
-          "  score:      #{Float.round(entry.score, 3)}\n" <>
-          "  hardenings: #{entry.hardening_count}\n" <>
-          "  updated:    #{updated}"
+          "#{tool.name}\n" <>
+            "  band:       #{band}\n" <>
+            "  score:      #{Float.round(entry.score, 3)}\n" <>
+            "  hardenings: #{entry.hardening_count}\n" <>
+            "  updated:    #{updated}"
 
-      {:error, :unrated} ->
-        "#{tool.name}\n  band: unrated\n  never hardened"
+        {:error, :unrated} ->
+          "#{tool.name}\n  band: unrated\n  never hardened"
+      end
+    catch
+      :exit, _ -> "#{tool.name}\n  trust data unavailable"
     end
   end
 

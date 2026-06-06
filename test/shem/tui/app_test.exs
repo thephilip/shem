@@ -1,5 +1,5 @@
 defmodule Shem.TUI.AppTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Shem.TUI.App
 
