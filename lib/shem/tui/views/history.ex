@@ -87,13 +87,13 @@ defmodule Shem.TUI.Views.History do
       end)
       |> Enum.join("  ·  ")
 
-    panel(title: title, color: status_color_for(view.status)) do
+    panel(title: title, color: status_color(view.status)) do
       label(
         content: "STATUS",
         attributes: [attribute(:bold)],
         color: color(:white)
       )
-      label(content: status_str, color: status_color_for(view.status))
+      label(content: status_str, color: status_color(view.status))
       label(content: "")
 
       label(
@@ -118,12 +118,14 @@ defmodule Shem.TUI.Views.History do
           label(content: "none", color: color(:white))
 
         tc ->
-          [
-            label(content: "→ #{tc.name}", color: color(:green)),
+          result_label =
             if tc.result do
-              label(content: "← #{truncate(tc.result, 100)}", color: color(:white))
+              [label(content: "← #{truncate(tc.result, 100)}", color: color(:white))]
+            else
+              []
             end
-          ]
+
+          [label(content: "→ #{tc.name}", color: color(:green))] ++ result_label
       end
 
       label(content: "")
@@ -152,11 +154,6 @@ defmodule Shem.TUI.Views.History do
   defp status_color(:unknown), do: color(:white)
   defp status_color(_), do: color(:white)
 
-  defp status_color_for(:done), do: color(:green)
-  defp status_color_for(:error), do: color(:red)
-  defp status_color_for(:running), do: color(:cyan)
-  defp status_color_for(_), do: color(:white)
-
   defp format_ago(nil), do: "—"
 
   defp format_ago(dt) do
@@ -170,7 +167,6 @@ defmodule Shem.TUI.Views.History do
     end
   end
 
-  defp truncate(nil, _), do: ""
   defp truncate(str, max) when byte_size(str) <= max, do: str
   defp truncate(str, max), do: String.slice(str, 0, max) <> "…"
 end
