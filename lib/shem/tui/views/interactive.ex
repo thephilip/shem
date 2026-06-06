@@ -38,14 +38,6 @@ defmodule Shem.TUI.Views.Interactive do
           render_agent_switcher(model)
         end
       end
-
-      row do
-        column(size: 12) do
-          panel(title: "Multiline Input · /done to submit · Esc to cancel", color: color(:yellow)) do
-            label(content: "", color: color(:white))
-          end
-        end
-      end
     end
   end
 
