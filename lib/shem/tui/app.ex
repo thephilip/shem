@@ -1,7 +1,7 @@
 defmodule Shem.TUI.App do
   @behaviour Ratatouille.App
 
-  alias Shem.TUI.Views.{Dashboard, Interactive}
+  alias Shem.TUI.Views.{Dashboard, Interactive, History}
   alias Shem.TUI.{CommandDispatch, AgentView}
   alias Ratatouille.Runtime.Subscription
 
@@ -10,6 +10,8 @@ defmodule Shem.TUI.App do
   @space ?\s
   @enter 13
   @tab 9
+  @arrow_up 65517
+  @arrow_down 65516
 
   @impl true
   def init(_context) do
@@ -29,7 +31,10 @@ defmodule Shem.TUI.App do
       command_output: nil,
       trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
       multiline_buffer: [],
-      multiline_target: nil
+      multiline_target: nil,
+      history_sessions: [],
+      history_cursor: 0,
+      history_detail: nil
     }
   end
 
@@ -62,12 +67,53 @@ defmodule Shem.TUI.App do
       {:event, _} when model.mode == :multiline_input ->
         model
 
+      # --- History mode ---
+      {:event, %{ch: ?h, key: 0}} when model.mode == :history ->
+        %{model | mode: :interactive}
+
+      {:event, %{key: @esc}} when model.mode == :history ->
+        %{model | mode: :interactive}
+
+      {:event, %{key: @arrow_up}} when model.mode == :history ->
+        new_cursor = max(0, model.history_cursor - 1)
+        %{model | history_cursor: new_cursor, history_detail: load_history_detail(model.history_sessions, new_cursor)}
+
+      {:event, %{key: @arrow_down}} when model.mode == :history ->
+        new_cursor = min(max(0, length(model.history_sessions) - 1), model.history_cursor + 1)
+        %{model | history_cursor: new_cursor, history_detail: load_history_detail(model.history_sessions, new_cursor)}
+
+      {:event, %{ch: ?r, key: 0}} when model.mode == :history ->
+        case Enum.at(model.history_sessions, model.history_cursor) do
+          nil ->
+            model
+
+          %{session_id: session_id, task: task} when not is_nil(task) ->
+            case Shem.Agent.resume(session_id, task) do
+              {:ok, name} ->
+                %{model | mode: :interactive, focused_agent: name, command_error: nil, command_output: nil}
+
+              {:error, reason} ->
+                %{model | command_error: "resume failed: #{inspect(reason)}"}
+            end
+
+          _ ->
+            %{model | command_error: "cannot resume: session has no task"}
+        end
+
+      {:event, _} when model.mode == :history ->
+        model
+
       # --- Normal mode ---
       {:event, %{ch: ?d, key: 0}} when model.command_buffer == "" ->
         %{model | mode: :dashboard}
 
       {:event, %{ch: ?i, key: 0}} when model.command_buffer == "" ->
         %{model | mode: :interactive}
+
+      {:event, %{ch: ?h, key: 0}} when model.command_buffer == "" ->
+        sessions = safe_scan_history()
+        detail = load_history_detail(sessions, 0)
+        %{model | mode: :history, history_sessions: sessions, history_cursor: 0, history_detail: detail}
 
       {:event, %{key: @space}} when model.command_buffer == "" ->
         %{model | paused: !model.paused}
@@ -206,6 +252,7 @@ defmodule Shem.TUI.App do
       :dashboard -> Dashboard.render(model)
       :interactive -> Interactive.render(model)
       :multiline_input -> Interactive.render(model)
+      :history -> History.render(model)
     end
   end
 
@@ -419,6 +466,31 @@ defmodule Shem.TUI.App do
       end
     catch
       :exit, _ -> nil
+    end
+  end
+
+  defp load_history_detail([], _cursor), do: nil
+
+  defp load_history_detail(sessions, cursor) do
+    case Enum.at(sessions, cursor) do
+      nil ->
+        nil
+
+      %{session_id: session_id} ->
+        case Shem.EventLog.read_session_events(session_id) do
+          {:ok, events} -> Shem.TUI.AgentView.from_events(events)
+          _ -> nil
+        end
+    end
+  end
+
+  defp safe_scan_history do
+    try do
+      Shem.EventLog.HistoryScanner.scan()
+    rescue
+      _ -> []
+    catch
+      :exit, _ -> []
     end
   end
 end

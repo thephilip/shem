@@ -374,4 +374,77 @@ defmodule Shem.TUI.AppTest do
       assert result.command_error =~ "unknown preset"
     end
   end
+
+  describe "history mode" do
+    alias Shem.EventLog.HistoryScanner
+
+    defp history_summary(opts \\ []) do
+      %HistoryScanner{
+        session_id: Keyword.get(opts, :session_id, "ses_HIST_TEST"),
+        task: Keyword.get(opts, :task, "hist task"),
+        started_at: Keyword.get(opts, :started_at, DateTime.utc_now()),
+        status: Keyword.get(opts, :status, :done),
+        turn_count: Keyword.get(opts, :turn_count, 2)
+      }
+    end
+
+    test "h key enters :history mode" do
+      model = App.init(%{})
+      updated = App.update(model, {:event, %{ch: ?h, key: 0}})
+      assert updated.mode == :history
+    end
+
+    test "h key in :history mode returns to :interactive" do
+      model = App.init(%{}) |> Map.put(:mode, :history)
+      updated = App.update(model, {:event, %{ch: ?h, key: 0}})
+      assert updated.mode == :interactive
+    end
+
+    test "Esc in :history mode returns to :interactive" do
+      model = App.init(%{}) |> Map.put(:mode, :history)
+      updated = App.update(model, {:event, %{key: 27}})
+      assert updated.mode == :interactive
+    end
+
+    test "arrow_down increments history_cursor" do
+      summaries = [history_summary(session_id: "a"), history_summary(session_id: "b")]
+      model = App.init(%{}) |> Map.merge(%{mode: :history, history_sessions: summaries, history_cursor: 0})
+      updated = App.update(model, {:event, %{key: 65516}})
+      assert updated.history_cursor == 1
+    end
+
+    test "arrow_down clamps at last session" do
+      summaries = [history_summary()]
+      model = App.init(%{}) |> Map.merge(%{mode: :history, history_sessions: summaries, history_cursor: 0})
+      updated = App.update(model, {:event, %{key: 65516}})
+      assert updated.history_cursor == 0
+    end
+
+    test "arrow_up decrements history_cursor" do
+      summaries = [history_summary(session_id: "a"), history_summary(session_id: "b")]
+      model = App.init(%{}) |> Map.merge(%{mode: :history, history_sessions: summaries, history_cursor: 1})
+      updated = App.update(model, {:event, %{key: 65517}})
+      assert updated.history_cursor == 0
+    end
+
+    test "arrow_up clamps at 0" do
+      summaries = [history_summary()]
+      model = App.init(%{}) |> Map.merge(%{mode: :history, history_sessions: summaries, history_cursor: 0})
+      updated = App.update(model, {:event, %{key: 65517}})
+      assert updated.history_cursor == 0
+    end
+
+    test "h key does not enter history when command_buffer is non-empty" do
+      model = App.init(%{})
+      updated = App.update(model, {:event, %{ch: ?h, key: 0}})
+      # h key enters history mode since buffer is empty in init
+      assert updated.mode == :history
+
+      # But with non-empty buffer, h appends to it
+      model2 = App.init(%{}) |> Map.merge(%{mode: :interactive, command_buffer: "/foo"})
+      updated2 = App.update(model2, {:event, %{ch: ?h, key: 0}})
+      assert updated2.mode == :interactive
+      assert updated2.command_buffer == "/foo" <> <<(?h)::utf8>>
+    end
+  end
 end
