@@ -109,4 +109,37 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:error, _} = CommandDispatch.parse("/trust   ")
     end
   end
+
+  describe "parse/1 — /preset command" do
+    test "/preset list returns {:preset_list}" do
+      assert {:preset_list} = CommandDispatch.parse("/preset list")
+    end
+
+    test "/preset add <name> returns {:preset_add, name}" do
+      assert {:preset_add, "my_preset"} = CommandDispatch.parse("/preset add my_preset")
+    end
+
+    test "/preset add trims whitespace from name" do
+      assert {:preset_add, "my_preset"} = CommandDispatch.parse("/preset add  my_preset  ")
+    end
+
+    test "/preset delete <name> returns {:preset_delete, name}" do
+      assert {:preset_delete, "my_preset"} = CommandDispatch.parse("/preset delete my_preset")
+    end
+
+    test "/preset with no subcommand returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/preset")
+      assert msg =~ "usage: /preset"
+    end
+
+    test "/preset add with no name returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/preset add")
+      assert msg =~ "usage: /preset add"
+    end
+
+    test "/preset delete with no name returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/preset delete")
+      assert msg =~ "usage: /preset delete"
+    end
+  end
 end

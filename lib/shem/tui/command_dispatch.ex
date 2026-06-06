@@ -6,6 +6,9 @@ defmodule Shem.TUI.CommandDispatch do
           | {:redteam, String.t()}
           | {:tools}
           | {:trust, String.t()}
+          | {:preset_list}
+          | {:preset_add, String.t()}
+          | {:preset_delete, String.t()}
           | {:error, String.t()}
   def parse(""), do: {:error, "empty input"}
 
@@ -43,6 +46,20 @@ defmodule Shem.TUI.CommandDispatch do
         else
           {:redteam, name}
         end
+
+      ["preset", "list" | _] ->
+        {:preset_list}
+
+      ["preset", "add" | name_parts] ->
+        name = String.trim(Enum.join(name_parts, " "))
+        if name == "", do: {:error, "usage: /preset add <name>"}, else: {:preset_add, name}
+
+      ["preset", "delete" | name_parts] ->
+        name = String.trim(Enum.join(name_parts, " "))
+        if name == "", do: {:error, "usage: /preset delete <name>"}, else: {:preset_delete, name}
+
+      ["preset" | _] ->
+        {:error, "usage: /preset <list|add|delete> ..."}
 
       _ ->
         {:error, "unknown command: /#{rest}"}
