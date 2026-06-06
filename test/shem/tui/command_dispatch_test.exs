@@ -127,6 +127,10 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:preset_delete, "my_preset"} = CommandDispatch.parse("/preset delete my_preset")
     end
 
+    test "/preset delete trims whitespace from name" do
+      assert {:preset_delete, "my_preset"} = CommandDispatch.parse("/preset delete  my_preset  ")
+    end
+
     test "/preset with no subcommand returns error" do
       assert {:error, msg} = CommandDispatch.parse("/preset")
       assert msg =~ "usage: /preset"
