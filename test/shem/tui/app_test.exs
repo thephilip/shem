@@ -460,6 +460,7 @@ defmodule Shem.TUI.AppTest do
       result = App.update(model, {:event, %{ch: 0, key: 13}})
       assert result.command_output =~ "routes updated"
       assert result.command_output =~ "reasoning"
+      assert result.command_output =~ "llama_cpp"
       assert result.command_output =~ "phi4"
       assert result.command_buffer == ""
       assert result.command_error == nil

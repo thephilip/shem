@@ -230,8 +230,8 @@ defmodule Shem.TUI.App do
             end)
 
             routes_str =
-              Enum.map_join(results, "\n", fn {atom, _backend, model_string} ->
-                "  #{atom} → #{model_string}"
+              Enum.map_join(results, "\n", fn {atom, backend_key, model_string} ->
+                "  #{atom} → #{backend_key} · #{model_string}"
               end)
 
             %{model | command_buffer: "", command_output: "routes updated:\n#{routes_str}", command_error: nil}
