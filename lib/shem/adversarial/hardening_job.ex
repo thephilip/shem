@@ -205,9 +205,12 @@ defmodule Shem.Adversarial.HardeningJob do
   end
 
   defp finish(state, outcome, extra_round \\ 0) do
+    rounds = state.round + extra_round
+    Shem.Trust.Store.record(state.tool_id, %{outcome: outcome, rounds: rounds})
+
     EventLog.append(state.session_id, :hardening_completed, %{
       tool: state.tool_name,
-      rounds: state.round + extra_round,
+      rounds: rounds,
       outcome: outcome
     })
 

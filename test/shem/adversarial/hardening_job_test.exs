@@ -18,6 +18,7 @@ defmodule Shem.Adversarial.HardeningJobTest do
 
   setup do
     StubTransport.Server.reset()
+    Shem.Trust.Store.flush()
     Shem.LLM.BudgetServer.reset()
     lab_dir = Application.get_env(:shem, :lab_dir)
     on_exit(fn ->
@@ -128,6 +129,30 @@ defmodule Shem.Adversarial.HardeningJobTest do
       evts = events(session_id)
       done = Enum.find(evts, &(&1.type == :hardening_completed))
       assert done.payload.outcome == :clean
+    end
+  end
+
+  describe "trust score updated after hardening" do
+    test "clean first pass records a high trust score", %{tool: tool} do
+      stub("NO_FAILURES_FOUND")
+
+      {:ok, pid} = HardeningJob.start_link({tool.id, []})
+      wait_done(pid)
+
+      assert {:ok, score} = Shem.Trust.Store.score(tool.id)
+      assert score >= 0.8
+    end
+
+    test "max_rounds_reached records a low trust score", %{tool: tool} do
+      stub("FAILURES_FOUND: error 1"); stub("Fixed 1.")
+      stub("FAILURES_FOUND: error 2"); stub("Fixed 2.")
+      stub("FAILURES_FOUND: error 3"); stub("Fixed 3.")
+
+      {:ok, pid} = HardeningJob.start_link({tool.id, []})
+      wait_done(pid, 10_000)
+
+      assert {:ok, score} = Shem.Trust.Store.score(tool.id)
+      assert score <= 0.3
     end
   end
 end
