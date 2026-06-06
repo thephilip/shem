@@ -32,14 +32,21 @@ defmodule Shem.Agent.PresetTest do
   end
 
   describe "resolve/1 — user overrides" do
-    test "user-defined presets override built-ins entirely" do
+    test "user-defined presets in :user_presets are resolvable" do
       custom = [%{name: "custom", system_prompt: "custom prompt", tools: :all}]
-      Application.put_env(:shem, :agent_presets, custom)
-      on_exit(fn -> Application.delete_env(:shem, :agent_presets) end)
+      Application.put_env(:shem, :user_presets, custom)
+      on_exit(fn -> Application.delete_env(:shem, :user_presets) end)
 
       assert {:ok, preset} = Preset.resolve("custom")
       assert preset.system_prompt == "custom prompt"
-      assert {:error, :not_found} = Preset.resolve("general")
+    end
+
+    test "built-ins are still resolvable when :user_presets is set" do
+      custom = [%{name: "custom", system_prompt: "custom prompt", tools: :all}]
+      Application.put_env(:shem, :user_presets, custom)
+      on_exit(fn -> Application.delete_env(:shem, :user_presets) end)
+
+      assert {:ok, _} = Preset.resolve("general")
     end
   end
 
@@ -64,6 +71,57 @@ defmodule Shem.Agent.PresetTest do
       assert "general" in names
       assert "coding" in names
       assert "explore" in names
+    end
+  end
+
+  describe "resolve/1 — dynamic layer" do
+    setup do
+      Shem.Agent.PresetStore.flush()
+      on_exit(fn -> Shem.Agent.PresetStore.flush() end)
+      :ok
+    end
+
+    test "resolves a preset from PresetStore when not in static layers" do
+      Shem.Agent.PresetStore.put("dynamic_one", %{system_prompt: "Dynamic prompt", tools: :all})
+      assert {:ok, %{system_prompt: "Dynamic prompt"}} = Preset.resolve("dynamic_one")
+    end
+
+    test "static (built-in) preset wins over same-named dynamic preset" do
+      Shem.Agent.PresetStore.put("general", %{system_prompt: "Overridden", tools: :all})
+      assert {:ok, %{system_prompt: prompt}} = Preset.resolve("general")
+      refute prompt == "Overridden"
+    end
+
+    test "returns {:error, :not_found} for unknown preset not in any layer" do
+      assert {:error, :not_found} = Preset.resolve("__nonexistent__")
+    end
+  end
+
+  describe "all/0 — source annotation" do
+    setup do
+      Shem.Agent.PresetStore.flush()
+      on_exit(fn -> Shem.Agent.PresetStore.flush() end)
+      :ok
+    end
+
+    test "built-in presets have source: :builtin" do
+      presets = Preset.all()
+      builtin = Enum.filter(presets, &(&1.source == :builtin))
+      assert length(builtin) >= 3
+      assert Enum.any?(builtin, &(&1.name == "general"))
+    end
+
+    test "dynamic presets have source: :dynamic" do
+      Shem.Agent.PresetStore.put("my_dyn", %{system_prompt: "Dyn", tools: :all})
+      presets = Preset.all()
+      dynamic = Enum.filter(presets, &(&1.source == :dynamic))
+      assert Enum.any?(dynamic, &(&1.name == "my_dyn"))
+    end
+
+    test "all/0 returns a flat list" do
+      result = Preset.all()
+      assert is_list(result)
+      assert Enum.all?(result, &is_map/1)
     end
   end
 end
