@@ -224,6 +224,22 @@ defmodule Shem.TUI.App do
                 %{model | command_buffer: "", command_output: "preset '#{name}' deleted", command_error: nil}
             end
 
+          {:llm_route, results} ->
+            Enum.each(results, fn {atom, backend_key, model_string} ->
+              Shem.LLM.Router.set_route(atom, backend_key, model_string)
+            end)
+
+            routes_str =
+              Enum.map_join(results, "\n", fn {atom, _backend, model_string} ->
+                "  #{atom} → #{model_string}"
+              end)
+
+            %{model | command_buffer: "", command_output: "routes updated:\n#{routes_str}", command_error: nil}
+
+          {:llm_routes} ->
+            output = format_routes()
+            %{model | command_buffer: "", command_output: output, command_error: nil}
+
           {:error, reason} ->
             %{model | command_error: reason, command_output: nil}
         end
@@ -354,6 +370,29 @@ defmodule Shem.TUI.App do
       end
     catch
       :exit, _ -> "#{tool.name}\n  trust data unavailable"
+    end
+  end
+
+  defp format_routes do
+    try do
+      routes = Shem.LLM.Router.all()
+
+      if routes == %{} do
+        "No routes configured."
+      else
+        header = "routing table:\n"
+
+        lines =
+          routes
+          |> Enum.sort_by(fn {k, _} -> to_string(k) end)
+          |> Enum.map(fn {atom, {backend_key, model_string}} ->
+            "  #{String.pad_trailing(to_string(atom), 12)} → #{backend_key} · #{model_string}"
+          end)
+
+        header <> Enum.join(lines, "\n")
+      end
+    catch
+      :exit, _ -> "Router unavailable."
     end
   end
 

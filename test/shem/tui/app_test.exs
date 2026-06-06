@@ -447,4 +447,34 @@ defmodule Shem.TUI.AppTest do
       assert updated2.command_buffer == "/foo" <> <<(?h)::utf8>>
     end
   end
+
+  describe "update/2 — /llm commands" do
+    setup do
+      Shem.LLM.Router.flush()
+      on_exit(fn -> Shem.LLM.Router.flush() end)
+      :ok
+    end
+
+    test "/llm route sets route and updates command_output" do
+      model = %{App.init(%{}) | mode: :interactive, command_buffer: "/llm route reasoning=phi4"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output =~ "routes updated"
+      assert result.command_output =~ "reasoning"
+      assert result.command_output =~ "phi4"
+      assert result.command_buffer == ""
+      assert result.command_error == nil
+      # verify Router state was actually updated
+      assert {_, opts} = Shem.LLM.Router.resolve(:reasoning)
+      assert Keyword.get(opts, :model_string) == "phi4"
+    end
+
+    test "/llm routes renders route table into command_output" do
+      model = %{App.init(%{}) | mode: :interactive, command_buffer: "/llm routes"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output =~ "routing table"
+      assert result.command_output =~ "default"
+      assert result.command_buffer == ""
+      assert result.command_error == nil
+    end
+  end
 end
