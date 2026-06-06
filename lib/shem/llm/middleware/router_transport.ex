@@ -10,6 +10,7 @@ defmodule Shem.LLM.Middleware.RouterTransport do
         {:error, {:router, reason}}
 
       {transport_module, transport_opts} ->
+        # Only terminal transports (those that ignore `next`) may appear in the Router's backend map.
         transport_module.call(request, transport_opts, fn _ -> {:error, :no_next} end)
     end
   end

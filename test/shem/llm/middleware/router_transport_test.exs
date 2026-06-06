@@ -42,5 +42,11 @@ defmodule Shem.LLM.Middleware.RouterTransportTest do
       resolve_fn = fn _atom -> {:error, :no_default} end
       assert {:error, {:router, :no_default}} = RouterTransport.call(req(), [resolve_fn: resolve_fn], nil)
     end
+
+    test "wraps unknown_backend error from resolver" do
+      resolve_fn = fn _atom -> {:error, {:unknown_backend, :bad_key}} end
+      assert {:error, {:router, {:unknown_backend, :bad_key}}} =
+               RouterTransport.call(req(), [resolve_fn: resolve_fn], nil)
+    end
   end
 end
