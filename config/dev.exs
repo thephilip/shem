@@ -10,9 +10,11 @@ config :shem,
     {Shem.LLM.Middleware.BudgetCheck,
      [budget_server: Shem.LLM.BudgetServer]},
     {Shem.LLM.Middleware.EventLogger, []},
-    {Shem.LLM.Middleware.LlamaCppTransport,
-     [url: "http://localhost:1234"]}
+    {Shem.LLM.Middleware.RouterTransport, []}
   ],
+  llm_routes: %{
+    default: {:llama_cpp, "qwen3.6-27b-uncensored-hauhaucs-balanced"}
+  },
   llm_models: %{default: "qwen3.6-27b-uncensored-hauhaucs-balanced"},
   llm_llama_cpp_url: "http://localhost:1234",
   llm_budget_limit: 500_000,

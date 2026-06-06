@@ -10,6 +10,7 @@ defmodule Shem.Application do
         Shem.EventLog,
         Shem.Trust.Store,
         Shem.Agent.PresetStore,
+        Shem.LLM.Router,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer
