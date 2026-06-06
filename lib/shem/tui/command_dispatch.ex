@@ -10,7 +10,7 @@ defmodule Shem.TUI.CommandDispatch do
           | {:preset_add, String.t()}
           | {:preset_delete, String.t()}
           | {:llm_routes}
-          | {:llm_route, [{atom(), :llama_cpp | :ollama, String.t()}]}
+          | {:llm_route, [{atom(), :llama_cpp, String.t()}]}
           | {:error, String.t()}
   def parse(""), do: {:error, "empty input"}
 
@@ -72,6 +72,8 @@ defmodule Shem.TUI.CommandDispatch do
           |> Enum.map(&String.split(&1, "=", parts: 2))
           |> Enum.filter(&match?([_, _], &1))
           |> Enum.reject(fn [k, v] -> String.trim(k) == "" or String.trim(v) == "" end)
+          # String.to_atom is intentional: routing role atoms are user-defined and
+          # may not exist in the atom table yet. This is safe for a trusted local TUI.
           |> Enum.map(fn [k, v] -> {String.to_atom(String.trim(k)), :llama_cpp, String.trim(v)} end)
 
         if pairs == [] do
