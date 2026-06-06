@@ -52,8 +52,7 @@ defmodule Shem.Agent.PresetStore do
 
   @impl true
   def handle_call({:put, name, preset}, _from, state) do
-    entry = Map.put(preset, :name, name)
-    :ok = :dets.insert(state.table, {name, entry})
+    :ok = :dets.insert(state.table, {name, preset})
     {:reply, :ok, state}
   end
 
