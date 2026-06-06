@@ -229,4 +229,38 @@ defmodule Shem.TUI.AppTest do
       assert result.command_buffer == ""
     end
   end
+
+  describe "update/2 — command_output cleared by other commands" do
+    test "/stop clears command_output" do
+      model = %{App.init(%{}) | command_output: "some output", command_buffer: "/stop"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output == nil
+    end
+
+    test "/agents clears command_output" do
+      model = %{App.init(%{}) | command_output: "some output", command_buffer: "/agents"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output == nil
+    end
+
+    test "/redteam on a known tool clears command_output" do
+      source = """
+      defmodule AppRedteamClearTool#{System.unique_integer([:positive])} do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule AppRedteamClearToolTest#{System.unique_integer([:positive])} do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      lab_dir = Application.get_env(:shem, :lab_dir)
+      on_exit(fn -> File.rm_rf!(lab_dir); Shem.Lab.Registry.flush() end)
+
+      model = %{App.init(%{}) | command_output: "some output", command_buffer: "/redteam #{tool.name}"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output == nil
+    end
+  end
 end

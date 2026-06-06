@@ -90,7 +90,7 @@ defmodule Shem.TUI.App do
                 %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
 
               {:error, reason} ->
-                %{model | command_error: "failed to start agent: #{inspect(reason)}"}
+                %{model | command_error: "failed to start agent: #{inspect(reason)}", command_output: nil}
             end
 
           {:stop_agent} ->
@@ -111,7 +111,7 @@ defmodule Shem.TUI.App do
                 %{model | command_buffer: "", command_output: output, command_error: nil}
 
               {:error, :not_found} ->
-                %{model | command_error: "unknown tool: #{tool_name}"}
+                %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
             end
 
           {:redteam, tool_name} ->
@@ -121,7 +121,7 @@ defmodule Shem.TUI.App do
                 %{model | command_buffer: "", command_error: nil, command_output: nil}
 
               {:error, :not_found} ->
-                %{model | command_error: "unknown tool: #{tool_name}"}
+                %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
             end
 
           {:error, reason} ->
