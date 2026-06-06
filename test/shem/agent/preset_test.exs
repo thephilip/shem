@@ -92,6 +92,13 @@ defmodule Shem.Agent.PresetTest do
       refute prompt == "Overridden"
     end
 
+    test "config preset wins over same-named dynamic preset" do
+      Shem.Agent.PresetStore.put("shared_name", %{system_prompt: "Dynamic version", tools: :all})
+      Application.put_env(:shem, :user_presets, [%{name: "shared_name", system_prompt: "Config version", tools: :all}])
+      on_exit(fn -> Application.delete_env(:shem, :user_presets) end)
+      assert {:ok, %{system_prompt: "Config version"}} = Preset.resolve("shared_name")
+    end
+
     test "returns {:error, :not_found} for unknown preset not in any layer" do
       assert {:error, :not_found} = Preset.resolve("__nonexistent__")
     end
@@ -116,6 +123,14 @@ defmodule Shem.Agent.PresetTest do
       presets = Preset.all()
       dynamic = Enum.filter(presets, &(&1.source == :dynamic))
       assert Enum.any?(dynamic, &(&1.name == "my_dyn"))
+    end
+
+    test "config presets have source: :config" do
+      Application.put_env(:shem, :user_presets, [%{name: "cfg_preset", system_prompt: "Config", tools: :all}])
+      on_exit(fn -> Application.delete_env(:shem, :user_presets) end)
+      presets = Preset.all()
+      config_layer = Enum.filter(presets, &(&1.source == :config))
+      assert Enum.any?(config_layer, &(&1.name == "cfg_preset"))
     end
 
     test "all/0 returns a flat list" do
