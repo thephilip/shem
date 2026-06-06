@@ -22,6 +22,11 @@ config :shem,
   llm_budget_limit: 100_000,
   llm_soft_threshold: 0.8
 
+config :shem,
+  llm_routes: %{
+    default: {:llama_cpp, "llama3:latest"}
+  }
+
 config :shem, start_cluster: false
 config :shem, lab_executor_node: nil
 
