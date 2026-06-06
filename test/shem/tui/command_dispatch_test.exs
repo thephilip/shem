@@ -178,6 +178,11 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert msg =~ "usage: /llm route"
     end
 
+    test "/llm route with empty key returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm route =phi4")
+      assert msg =~ "usage: /llm route"
+    end
+
     test "/llm with unknown subcommand returns error" do
       assert {:error, msg} = CommandDispatch.parse("/llm unknown")
       assert msg =~ "unknown"
