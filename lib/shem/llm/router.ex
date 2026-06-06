@@ -10,7 +10,7 @@ defmodule Shem.LLM.Router do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  @spec resolve(atom()) :: {module(), keyword()} | {:error, :no_default}
+  @spec resolve(atom()) :: {module(), keyword()} | {:error, :no_default} | {:error, {:unknown_backend, atom()}}
   def resolve(model_atom) do
     GenServer.call(__MODULE__, {:resolve, model_atom})
   end
