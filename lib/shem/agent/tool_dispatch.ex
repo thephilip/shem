@@ -122,20 +122,25 @@ defmodule Shem.Agent.ToolDispatch do
   end
 
   def execute(%{tool: name, args: args}, manifest) do
-    case find_source(name, manifest) do
-      :builtin -> dispatch_builtin(name, args)
-      {:lab, id} -> dispatch_lab(id, args)
-      {:mcp, server} -> dispatch_mcp(server, name, args)
-      nil -> {:error, "unknown tool: #{name}"}
+    case Enum.find(manifest, &(&1.name == name)) do
+      nil ->
+        {:error, "unknown tool: #{name}"}
+
+      %{source: :builtin} ->
+        dispatch_builtin(name, args)
+
+      %{source: {:mcp, server}} ->
+        dispatch_mcp(server, name, args)
+
+      %{source: {:lab, id}, trust: trust} ->
+        if gate_blocks?(trust),
+          do: {:error, "tool blocked (trust: #{trust})"},
+          else: dispatch_lab(id, args)
     end
   end
 
-  defp find_source(name, manifest) do
-    case Enum.find(manifest, &(&1.name == name)) do
-      %{source: source} -> source
-      nil -> nil
-    end
-  end
+  defp gate_blocks?(:low), do: Application.get_env(:shem, :trust_gate_enabled, true)
+  defp gate_blocks?(_), do: false
 
   defp dispatch_builtin("run_code", args) do
     source = args["source"] || ""

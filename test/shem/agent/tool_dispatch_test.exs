@@ -217,7 +217,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       end
       """
       {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
-      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}}]
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :unrated}]
       assert {:ok, "2"} =
                ToolDispatch.execute(%{tool: tool.name, args: %{"x" => 1}}, manifest)
     end
@@ -297,6 +297,74 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = ToolDispatch.build_manifest(@config)
       result = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "sleep 10", "timeout_ms" => 100}}, manifest)
       assert match?({:error, "timeout after 100ms"}, result)
+    end
+  end
+
+  describe "execute/2 — trust gate" do
+    setup do
+      source = """
+      defmodule TrustGateTool do
+        def run(_args), do: :gated
+      end
+      """
+      test_src = """
+      defmodule TrustGateToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      {:ok, tool: tool}
+    end
+
+    test "low-trust tool is blocked when gate enabled", %{tool: tool} do
+      Application.put_env(:shem, :trust_gate_enabled, true)
+      on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
+
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :low}]
+      assert {:error, "tool blocked (trust: low)"} =
+               ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+    end
+
+    test "low-trust tool is allowed when gate disabled", %{tool: tool} do
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :low}]
+      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+    end
+
+    test "unrated tool is allowed when gate enabled", %{tool: tool} do
+      Application.put_env(:shem, :trust_gate_enabled, true)
+      on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
+
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :unrated}]
+      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+    end
+
+    test "medium-trust tool is allowed when gate enabled", %{tool: tool} do
+      Application.put_env(:shem, :trust_gate_enabled, true)
+      on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
+
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :medium}]
+      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+    end
+
+    test "high-trust tool is allowed when gate enabled", %{tool: tool} do
+      Application.put_env(:shem, :trust_gate_enabled, true)
+      on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
+
+      manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :high}]
+      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+    end
+
+    test "builtin is never blocked regardless of gate", %{tool: _tool} do
+      Application.put_env(:shem, :trust_gate_enabled, true)
+      on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
+
+      path = Path.join(System.tmp_dir!(), "shem_gate_#{System.unique_integer([:positive])}.txt")
+      File.write!(path, "x")
+      on_exit(fn -> File.rm(path) end)
+
+      manifest = [%{name: "read_file", description: "read", source: :builtin, trust: :builtin}]
+      assert {:ok, "x"} =
+               ToolDispatch.execute(%{tool: "read_file", args: %{"path" => path}}, manifest)
     end
   end
 end
