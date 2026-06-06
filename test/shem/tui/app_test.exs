@@ -207,5 +207,26 @@ defmodule Shem.TUI.AppTest do
       result = App.update(model, {:event, %{ch: 0, key: 13}})
       assert result.command_output == nil
     end
+
+    test "enter with '/trust <known_tool>' sets command_output" do
+      source = """
+      defmodule AppTrustQueryTool#{System.unique_integer([:positive])} do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule AppTrustQueryToolTest#{System.unique_integer([:positive])} do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      lab_dir = Application.get_env(:shem, :lab_dir)
+      on_exit(fn -> File.rm_rf!(lab_dir); Shem.Lab.Registry.flush() end)
+
+      model = %{App.init(%{}) | command_buffer: "/trust #{tool.name}"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert is_binary(result.command_output)
+      assert result.command_buffer == ""
+    end
   end
 end
