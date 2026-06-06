@@ -146,4 +146,41 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert msg =~ "usage: /preset delete"
     end
   end
+
+  describe "parse/1 — /llm commands" do
+    test "/llm routes returns {:llm_routes}" do
+      assert {:llm_routes} = CommandDispatch.parse("/llm routes")
+    end
+
+    test "/llm route single pair returns {:llm_route, list}" do
+      assert {:llm_route, [{:reasoning, :llama_cpp, "phi4"}]} =
+               CommandDispatch.parse("/llm route reasoning=phi4")
+    end
+
+    test "/llm route multiple pairs returns all routes" do
+      assert {:llm_route, results} = CommandDispatch.parse("/llm route reasoning=phi4 tools=qwen3")
+      assert {:reasoning, :llama_cpp, "phi4"} in results
+      assert {:tools, :llama_cpp, "qwen3"} in results
+    end
+
+    test "/llm route with no pairs returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm route")
+      assert msg =~ "usage: /llm route"
+    end
+
+    test "/llm route with invalid pair (no =) returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm route badformat")
+      assert msg =~ "usage: /llm route"
+    end
+
+    test "/llm route with empty value returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm route reasoning=")
+      assert msg =~ "usage: /llm route"
+    end
+
+    test "/llm with unknown subcommand returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm unknown")
+      assert msg =~ "unknown"
+    end
+  end
 end

@@ -9,6 +9,8 @@ defmodule Shem.TUI.CommandDispatch do
           | {:preset_list}
           | {:preset_add, String.t()}
           | {:preset_delete, String.t()}
+          | {:llm_routes}
+          | {:llm_route, [{atom(), :llama_cpp | :ollama, String.t()}]}
           | {:error, String.t()}
   def parse(""), do: {:error, "empty input"}
 
@@ -60,6 +62,29 @@ defmodule Shem.TUI.CommandDispatch do
 
       ["preset" | _] ->
         {:error, "usage: /preset <list|add|delete> ..."}
+
+      ["llm", "routes" | _] ->
+        {:llm_routes}
+
+      ["llm", "route" | pair_parts] when pair_parts != [] ->
+        pairs =
+          pair_parts
+          |> Enum.map(&String.split(&1, "=", parts: 2))
+          |> Enum.filter(&match?([_, _], &1))
+          |> Enum.reject(fn [k, v] -> String.trim(k) == "" or String.trim(v) == "" end)
+          |> Enum.map(fn [k, v] -> {String.to_atom(String.trim(k)), :llama_cpp, String.trim(v)} end)
+
+        if pairs == [] do
+          {:error, "usage: /llm route <role>=<model> ..."}
+        else
+          {:llm_route, pairs}
+        end
+
+      ["llm", "route"] ->
+        {:error, "usage: /llm route <role>=<model> ..."}
+
+      ["llm" | _] ->
+        {:error, "unknown /llm subcommand — try: /llm routes, /llm route <role>=<model>"}
 
       _ ->
         {:error, "unknown command: /#{rest}"}
