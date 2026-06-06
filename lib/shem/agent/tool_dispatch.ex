@@ -2,45 +2,53 @@ defmodule Shem.Agent.ToolDispatch do
   alias Shem.Agent.Config
   alias Shem.Lab
   alias Shem.MCP
+  alias Shem.Trust
 
   @builtins [
     %{
       name: "write_tool",
       description:
         "Graduate a new Elixir tool into the Lab. Args: source (string), test_source (string).",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "run_code",
       description:
         "Run Elixir source defining a module with run/0. Returns the result. Args: source (string), timeout_ms (integer, optional).",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "list_tools",
       description: "List all tools currently available.",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "read_file",
       description: "Read a file and return its contents. Args: path (string).",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "write_file",
       description: "Write content to a file. Args: path (string), content (string).",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "list_dir",
       description: "List entries in a directory. Args: path (string).",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     },
     %{
       name: "shell",
       description:
         "Run a shell command and return stdout. Args: cmd (string), timeout_ms (integer, optional, default 10000). NOTE: runs locally until Phase 9b K8s executor.",
-      source: :builtin
+      source: :builtin,
+      trust: :builtin
     }
   ]
 
@@ -68,10 +76,17 @@ defmodule Shem.Agent.ToolDispatch do
           else: Enum.filter(tools, &(&1.name in allowed_tools))
       end)
       |> Enum.map(fn tool ->
+        trust =
+          case Trust.Store.score(tool.id) do
+            {:ok, score} -> score_to_band(score)
+            {:error, :unrated} -> :unrated
+          end
+
         %{
           name: tool.name,
           description: Map.get(tool.metadata, "description", "graduated tool: #{tool.name}"),
-          source: {:lab, tool.id}
+          source: {:lab, tool.id},
+          trust: trust
         }
       end)
 
@@ -88,7 +103,7 @@ defmodule Shem.Agent.ToolDispatch do
                 else: Enum.filter(ts, &(&1["name"] in allowed_tools))
             end)
             |> Enum.map(fn t ->
-              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}}
+              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}, trust: :external}
             end)
 
           _ ->
@@ -250,4 +265,8 @@ defmodule Shem.Agent.ToolDispatch do
       {:error, reason} -> {:error, "mcp error: #{inspect(reason)}"}
     end
   end
+
+  defp score_to_band(score) when score >= 0.8, do: :high
+  defp score_to_band(score) when score >= 0.5, do: :medium
+  defp score_to_band(_score), do: :low
 end

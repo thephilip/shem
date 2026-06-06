@@ -12,6 +12,7 @@ defmodule Shem.Agent.ToolDispatchTest do
     on_exit(fn ->
       File.rm_rf!(lab_dir)
       Registry.flush()
+      Shem.Trust.Store.flush()
     end)
     :ok
   end
@@ -81,6 +82,53 @@ defmodule Shem.Agent.ToolDispatchTest do
       config_included = %Config{task: "t", system_prompt: "s", tools: [tool.name]}
       manifest_included = ToolDispatch.build_manifest(config_included)
       assert Enum.any?(manifest_included, &(&1.source == {:lab, tool.id}))
+    end
+
+    test "builtin tools have trust: :builtin" do
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      builtin = Enum.find(manifest, &(&1.name == "read_file"))
+      assert builtin.trust == :builtin
+    end
+
+    test "unrated Lab tool has trust: :unrated" do
+      source = """
+      defmodule TrustUnratedTool do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule TrustUnratedToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      Shem.Trust.Store.flush()
+
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      entry = Enum.find(manifest, &(&1.name == tool.name))
+      assert entry.trust == :unrated
+    end
+
+    test "rated Lab tool has correct trust band" do
+      source = """
+      defmodule TrustRatedTool do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule TrustRatedToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      Shem.Trust.Store.record(tool.id, %{outcome: :clean, rounds: 1})
+
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      entry = Enum.find(manifest, &(&1.name == tool.name))
+      assert entry.trust == :high
     end
   end
 
