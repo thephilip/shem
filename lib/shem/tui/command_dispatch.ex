@@ -4,6 +4,8 @@ defmodule Shem.TUI.CommandDispatch do
           | {:stop_agent}
           | {:list_agents}
           | {:redteam, String.t()}
+          | {:tools}
+          | {:trust, String.t()}
           | {:error, String.t()}
   def parse(""), do: {:error, "empty input"}
 
@@ -22,6 +24,17 @@ defmodule Shem.TUI.CommandDispatch do
 
       ["agents"] ->
         {:list_agents}
+
+      ["tools" | _] ->
+        {:tools}
+
+      ["trust" | name_parts] ->
+        name = String.trim(Enum.join(name_parts, " "))
+        if name == "" do
+          {:error, "usage: /trust <tool_name>"}
+        else
+          {:trust, name}
+        end
 
       ["redteam" | tool_parts] ->
         name = String.trim(Enum.join(tool_parts, " "))

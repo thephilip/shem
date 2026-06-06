@@ -80,4 +80,33 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:error, _} = CommandDispatch.parse("/redteam   ")
     end
   end
+
+  describe "parse/1 — /tools command" do
+    test "/tools returns {:tools}" do
+      assert {:tools} = CommandDispatch.parse("/tools")
+    end
+
+    test "/tools with trailing space returns {:tools}" do
+      assert {:tools} = CommandDispatch.parse("/tools ")
+    end
+  end
+
+  describe "parse/1 — /trust command" do
+    test "/trust <name> returns {:trust, name}" do
+      assert {:trust, "my_tool"} = CommandDispatch.parse("/trust my_tool")
+    end
+
+    test "/trust trims whitespace from tool name" do
+      assert {:trust, "my_tool"} = CommandDispatch.parse("/trust  my_tool  ")
+    end
+
+    test "/trust with no name returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/trust")
+      assert msg =~ "usage: /trust"
+    end
+
+    test "/trust with whitespace-only name returns error" do
+      assert {:error, _} = CommandDispatch.parse("/trust   ")
+    end
+  end
 end
