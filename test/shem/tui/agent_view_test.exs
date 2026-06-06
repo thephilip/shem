@@ -99,4 +99,43 @@ defmodule Shem.TUI.AgentViewTest do
       assert List.last(view.recent_events) == :agent_turn_started
     end
   end
+
+  describe "from_events/1" do
+    alias Shem.EventLog.Event
+
+    defp evt(session_id, type, payload) do
+      Event.new(session_id, type, payload)
+    end
+
+    test "returns empty struct for empty list" do
+      view = AgentView.from_events([])
+      assert view.status == :running
+      assert view.turn_count == 0
+      assert view.history == []
+    end
+
+    test "sets max_turns from agent_started payload" do
+      events = [evt("s", :agent_started, %{task: "t", model: :default, max_turns: 7})]
+      view = AgentView.from_events(events)
+      assert view.max_turns == 7
+    end
+
+    test "status becomes :done on agent_done event" do
+      events = [
+        evt("s", :agent_started, %{task: "t", model: :default, max_turns: 20}),
+        evt("s", :agent_done, %{reason: :answer})
+      ]
+      view = AgentView.from_events(events)
+      assert view.status == :done
+    end
+
+    test "recent_events contains last 10 event types" do
+      events =
+        for i <- 1..12 do
+          evt("s", :agent_turn_started, %{turn: i})
+        end
+      view = AgentView.from_events(events)
+      assert length(view.recent_events) == 10
+    end
+  end
 end

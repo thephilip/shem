@@ -24,17 +24,19 @@ defmodule Shem.TUI.AgentView do
   @spec build(String.t()) :: {:ok, t()} | :not_found
   def build(session_id) do
     case Shem.EventLog.events(session_id) do
-      {:ok, []} ->
-        :not_found
-
-      {:ok, events} ->
-        view = Enum.reduce(events, %__MODULE__{}, &fold_event/2)
-        recent = events |> Enum.map(& &1.type) |> Enum.take(-10)
-        {:ok, %{view | recent_events: recent}}
-
-      _ ->
-        :not_found
+      {:ok, []} -> :not_found
+      {:ok, events} -> {:ok, from_events(events)}
+      _ -> :not_found
     end
+  end
+
+  @spec from_events([Shem.EventLog.Event.t()]) :: t()
+  def from_events([]), do: %__MODULE__{}
+
+  def from_events(events) do
+    view = Enum.reduce(events, %__MODULE__{}, &fold_event/2)
+    recent = events |> Enum.map(& &1.type) |> Enum.take(-10)
+    %{view | recent_events: recent}
   end
 
   defp fold_event(event, acc) do
