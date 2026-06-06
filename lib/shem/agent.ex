@@ -69,4 +69,23 @@ defmodule Shem.Agent do
       start(config)
     end
   end
+
+  @spec resume(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  def resume(session_id, task) do
+    with {:ok, preset} <- Shem.Agent.Preset.resolve("general") do
+      config = %Config{
+        task: task,
+        system_prompt: preset.system_prompt,
+        tools: [],
+        max_turns: 20
+      }
+
+      name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
+
+      case AgentSupervisor.start_agent(name, config, session_id) do
+        {:ok, _pid} -> {:ok, name}
+        error -> error
+      end
+    end
+  end
 end

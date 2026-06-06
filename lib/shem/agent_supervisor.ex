@@ -14,7 +14,11 @@ defmodule Shem.AgentSupervisor do
 
   @spec start_agent(String.t(), Config.t()) :: Horde.DynamicSupervisor.on_start_child()
   def start_agent(name, %Config{} = config) do
-    session_id = generate_session_id()
+    start_agent(name, config, generate_session_id())
+  end
+
+  @spec start_agent(String.t(), Config.t(), String.t()) :: Horde.DynamicSupervisor.on_start_child()
+  def start_agent(name, %Config{} = config, session_id) do
     via = Shem.ProcessRegistry.via_tuple(name)
 
     child_spec = %{
