@@ -62,10 +62,7 @@ defmodule Shem.TUI.Views.DashboardTest do
   test "render/1 shows trust band counts from model.trust_counts" do
     model = %{base_model() | trust_counts: %{high: 2, medium: 1, low: 0, unrated: 3}}
     rendered = Dashboard.render(model) |> inspect(limit: :infinity)
-    assert rendered =~ "2"
-    assert rendered =~ "high"
-    assert rendered =~ "3"
-    assert rendered =~ "unrated"
+    assert rendered =~ "Trust: 2 high  1 med  0 low  3 unrated"
   end
 
   test "render/1 no longer shows 'Lab: idle' static string" do

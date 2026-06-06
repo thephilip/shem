@@ -91,4 +91,6 @@ defmodule Shem.TUI.Views.Dashboard do
   defp trust_summary(%{high: h, medium: m, low: l, unrated: u}) do
     "Trust: #{h} high  #{m} med  #{l} low  #{u} unrated"
   end
+
+  defp trust_summary(_), do: "Trust: —"
 end
