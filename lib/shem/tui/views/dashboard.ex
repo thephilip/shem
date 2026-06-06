@@ -48,7 +48,7 @@ defmodule Shem.TUI.Views.Dashboard do
             label(content: "")
 
             label(
-              content: "Lab: idle",
+              content: trust_summary(model.trust_counts),
               attributes: [attribute(:bold)],
               color: color(:magenta)
             )
@@ -87,4 +87,8 @@ defmodule Shem.TUI.Views.Dashboard do
 
   defp status_bar_content(%{command_buffer: ""}), do: "Shem is watching."
   defp status_bar_content(%{command_buffer: buf}), do: buf
+
+  defp trust_summary(%{high: h, medium: m, low: l, unrated: u}) do
+    "Trust: #{h} high  #{m} med  #{l} low  #{u} unrated"
+  end
 end

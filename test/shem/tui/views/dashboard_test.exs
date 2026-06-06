@@ -16,7 +16,9 @@ defmodule Shem.TUI.Views.DashboardTest do
       agents: [],
       focused_agent: nil,
       agent_view: nil,
-      command_error: nil
+      command_error: nil,
+      command_output: nil,
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0}
     }
   end
 
@@ -55,5 +57,19 @@ defmodule Shem.TUI.Views.DashboardTest do
     rendered = Dashboard.render(model) |> inspect(limit: :infinity)
     assert rendered =~ "MCP clients"
     assert rendered =~ "2"
+  end
+
+  test "render/1 shows trust band counts from model.trust_counts" do
+    model = %{base_model() | trust_counts: %{high: 2, medium: 1, low: 0, unrated: 3}}
+    rendered = Dashboard.render(model) |> inspect(limit: :infinity)
+    assert rendered =~ "2"
+    assert rendered =~ "high"
+    assert rendered =~ "3"
+    assert rendered =~ "unrated"
+  end
+
+  test "render/1 no longer shows 'Lab: idle' static string" do
+    rendered = Dashboard.render(base_model()) |> inspect(limit: :infinity)
+    refute rendered =~ "Lab: idle"
   end
 end
