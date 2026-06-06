@@ -38,6 +38,10 @@ defmodule Shem.EventLog do
   def event(session_id, event_id),
     do: GenServer.call(__MODULE__, {:event, session_id, event_id})
 
+  @spec read_session_events(String.t()) :: {:ok, [Event.t()]} | {:error, :not_found}
+  def read_session_events(session_id),
+    do: GenServer.call(__MODULE__, {:read_session_events, session_id})
+
   @spec reconstruct(String.t(), (term(), Event.t() -> term()), term()) ::
           {:ok, term()} | {:error, :session_not_found | :session_ended}
   def reconstruct(session_id, reducer, initial),
@@ -125,6 +129,38 @@ defmodule Shem.EventLog do
     case get_active_handle(state, session_id) do
       {:ok, handle} -> {:reply, state.store.read_all(handle), state}
       error -> {:reply, error, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:read_session_events, session_id}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, _}} when handle != nil ->
+        {:reply, state.store.read_all(handle), state}
+
+      _ ->
+        path = event_log_path()
+        dets_path = Path.join(path, "#{session_id}.dets")
+
+        if File.exists?(dets_path) do
+          table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
+          file_charlist = String.to_charlist(dets_path)
+
+          case :dets.open_file(table, file: file_charlist, type: :set) do
+            {:ok, tab} ->
+              events =
+                :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], tab)
+                |> Enum.sort_by(& &1.timestamp, DateTime)
+
+              :dets.close(tab)
+              {:reply, {:ok, events}, state}
+
+            {:error, _} ->
+              {:reply, {:error, :not_found}, state}
+          end
+        else
+          {:reply, {:error, :not_found}, state}
+        end
     end
   end
 

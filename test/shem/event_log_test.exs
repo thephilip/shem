@@ -150,6 +150,20 @@ defmodule Shem.EventLogTest do
     end
   end
 
+  describe "read_session_events/1" do
+    test "returns events for an active session" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, _} = EventLog.append(sid, :agent_started, %{task: "active task"})
+      assert {:ok, events} = EventLog.read_session_events(sid)
+      assert length(events) == 1
+      assert hd(events).type == :agent_started
+    end
+
+    test "returns {:error, :not_found} for an unknown session with no dets file" do
+      assert {:error, :not_found} = EventLog.read_session_events("ses_TOTALLY_UNKNOWN_XYZ")
+    end
+  end
+
   describe "start_session/1 (external id)" do
     test "opens a session with the provided id" do
       id = "ses_AABBCCDD11223344"
