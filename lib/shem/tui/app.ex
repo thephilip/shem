@@ -27,7 +27,9 @@ defmodule Shem.TUI.App do
       agent_view: nil,
       command_error: nil,
       command_output: nil,
-      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0}
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
+      multiline_buffer: [],
+      multiline_target: nil
     }
   end
 
@@ -39,6 +41,28 @@ defmodule Shem.TUI.App do
   @impl true
   def update(model, msg) do
     case msg do
+      # --- Multiline input mode (must be first) ---
+      {:event, %{key: @esc}} when model.mode == :multiline_input ->
+        %{model | mode: :interactive, multiline_buffer: [], multiline_target: nil, command_buffer: "", command_error: nil}
+
+      {:event, %{key: @enter}} when model.mode == :multiline_input and model.command_buffer == "/done" ->
+        text = Enum.join(model.multiline_buffer, "\n")
+        submit_multiline(model, text)
+
+      {:event, %{key: @enter}} when model.mode == :multiline_input ->
+        %{model | multiline_buffer: model.multiline_buffer ++ [model.command_buffer], command_buffer: ""}
+
+      {:event, %{key: @backspace}} when model.mode == :multiline_input ->
+        buf = model.command_buffer
+        %{model | command_buffer: if(buf == "", do: "", else: String.slice(buf, 0..-2//1))}
+
+      {:event, %{ch: ch}} when model.mode == :multiline_input and ch > 0 ->
+        %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
+
+      {:event, _} when model.mode == :multiline_input ->
+        model
+
+      # --- Normal mode ---
       {:event, %{ch: ?d, key: 0}} when model.command_buffer == "" ->
         %{model | mode: :dashboard}
 
@@ -124,6 +148,36 @@ defmodule Shem.TUI.App do
                 %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
             end
 
+          {:preset_list} ->
+            output = format_presets()
+            %{model | command_buffer: "", command_output: output, command_error: nil}
+
+          {:preset_add, name} ->
+            %{model |
+              mode: :multiline_input,
+              multiline_target: {:preset_add, name},
+              multiline_buffer: [],
+              command_buffer: "",
+              command_error: nil,
+              command_output: nil
+            }
+
+          {:preset_delete, name} ->
+            case Enum.find(Shem.Agent.Preset.all(), &(&1.name == name)) do
+              nil ->
+                %{model | command_error: "unknown preset: #{name}", command_output: nil}
+
+              %{source: :builtin} ->
+                %{model | command_error: "cannot delete built-in preset: #{name}", command_output: nil}
+
+              %{source: :config} ->
+                %{model | command_error: "cannot delete config preset: #{name}", command_output: nil}
+
+              %{source: :dynamic} ->
+                Shem.Agent.PresetStore.delete(name)
+                %{model | command_buffer: "", command_output: "preset '#{name}' deleted", command_error: nil}
+            end
+
           {:error, reason} ->
             %{model | command_error: reason, command_output: nil}
         end
@@ -151,6 +205,46 @@ defmodule Shem.TUI.App do
     case model.mode do
       :dashboard -> Dashboard.render(model)
       :interactive -> Interactive.render(model)
+      :multiline_input -> Interactive.render(model)
+    end
+  end
+
+  defp submit_multiline(model, text) do
+    case model.multiline_target do
+      {:preset_add, name} ->
+        Shem.Agent.PresetStore.put(name, %{system_prompt: text, tools: :all})
+
+        %{model |
+          mode: :interactive,
+          multiline_buffer: [],
+          multiline_target: nil,
+          command_buffer: "",
+          command_output: "preset '#{name}' saved",
+          command_error: nil
+        }
+    end
+  end
+
+  defp format_presets do
+    try do
+      presets = Shem.Agent.Preset.all()
+
+      if presets == [] do
+        "No presets defined."
+      else
+        header = "Presets (#{length(presets)})\n"
+
+        lines =
+          Enum.map(presets, fn p ->
+            source_str = String.pad_trailing("[#{p.source}]", 12)
+            tools_str = if p.tools == :all, do: "all tools", else: Enum.join(p.tools, ", ")
+            "  #{String.pad_trailing(p.name, 20)} #{source_str}  #{tools_str}"
+          end)
+
+        header <> Enum.join(lines, "\n")
+      end
+    catch
+      :exit, _ -> "Preset data unavailable."
     end
   end
 

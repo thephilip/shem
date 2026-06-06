@@ -263,4 +263,102 @@ defmodule Shem.TUI.AppTest do
       assert result.command_output == nil
     end
   end
+
+  describe "init/1 — Phase 12 fields" do
+    test "model has multiline_buffer defaulting to []" do
+      assert App.init(%{}).multiline_buffer == []
+    end
+
+    test "model has multiline_target defaulting to nil" do
+      assert App.init(%{}).multiline_target == nil
+    end
+  end
+
+  describe "update/2 — /preset add enters multiline mode" do
+    test "{:preset_add, name} switches mode to :multiline_input" do
+      model = %{App.init(%{}) | command_buffer: "/preset add my_preset"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.mode == :multiline_input
+      assert result.multiline_target == {:preset_add, "my_preset"}
+      assert result.multiline_buffer == []
+      assert result.command_buffer == ""
+    end
+  end
+
+  describe "update/2 — multiline mode" do
+    setup do
+      Shem.Agent.PresetStore.flush()
+      on_exit(fn -> Shem.Agent.PresetStore.flush() end)
+      :ok
+    end
+
+    test "Enter appends command_buffer as a line and clears buffer" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "p"}, command_buffer: "line one"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.multiline_buffer == ["line one"]
+      assert result.command_buffer == ""
+      assert result.mode == :multiline_input
+    end
+
+    test "Enter with '/done' submits, saves preset, returns to :interactive" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "new_p"}, multiline_buffer: ["You are a reviewer."], command_buffer: "/done"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.mode == :interactive
+      assert result.multiline_buffer == []
+      assert result.multiline_target == nil
+      assert result.command_buffer == ""
+      assert is_binary(result.command_output)
+      assert result.command_output =~ "new_p"
+      assert {:ok, _} = Shem.Agent.PresetStore.get("new_p")
+    end
+
+    test "Escape cancels and returns to :interactive" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "p"}, multiline_buffer: ["some line"], command_buffer: "partial"}
+      result = App.update(model, {:event, %{ch: 0, key: 27}})
+      assert result.mode == :interactive
+      assert result.multiline_buffer == []
+      assert result.multiline_target == nil
+      assert result.command_buffer == ""
+    end
+
+    test "typing appends to command_buffer" do
+      model = %{App.init(%{}) | mode: :multiline_input, multiline_target: {:preset_add, "p"}, command_buffer: "hel"}
+      result = App.update(model, {:event, %{ch: ?l, key: 0}})
+      assert result.command_buffer == "hell"
+    end
+  end
+
+  describe "update/2 — /preset list and /preset delete" do
+    setup do
+      Shem.Agent.PresetStore.flush()
+      on_exit(fn -> Shem.Agent.PresetStore.flush() end)
+      :ok
+    end
+
+    test "{:preset_list} sets command_output to a binary" do
+      model = %{App.init(%{}) | command_buffer: "/preset list"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert is_binary(result.command_output)
+    end
+
+    test "{:preset_delete} on a built-in sets command_error" do
+      model = %{App.init(%{}) | command_buffer: "/preset delete general"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_error =~ "cannot delete"
+    end
+
+    test "{:preset_delete} on a dynamic preset removes it and sets command_output" do
+      Shem.Agent.PresetStore.put("temp_preset", %{system_prompt: "temp", tools: :all})
+      model = %{App.init(%{}) | command_buffer: "/preset delete temp_preset"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output =~ "temp_preset"
+      assert {:error, :not_found} = Shem.Agent.PresetStore.get("temp_preset")
+    end
+
+    test "{:preset_delete} on unknown preset sets command_error" do
+      model = %{App.init(%{}) | command_buffer: "/preset delete __nope__"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_error =~ "unknown preset"
+    end
+  end
 end
