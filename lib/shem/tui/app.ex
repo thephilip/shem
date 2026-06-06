@@ -25,7 +25,9 @@ defmodule Shem.TUI.App do
       agents: [],
       focused_agent: nil,
       agent_view: nil,
-      command_error: nil
+      command_error: nil,
+      command_output: nil,
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0}
     }
   end
 
@@ -85,7 +87,7 @@ defmodule Shem.TUI.App do
           {:start_agent, preset_name, task} ->
             case Shem.Agent.start_with_preset(preset_name, task) do
               {:ok, name} ->
-                %{model | command_buffer: "", focused_agent: name, command_error: nil}
+                %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
 
               {:error, reason} ->
                 %{model | command_error: "failed to start agent: #{inspect(reason)}"}
@@ -97,6 +99,20 @@ defmodule Shem.TUI.App do
 
           {:list_agents} ->
             %{model | command_buffer: "", command_error: nil}
+
+          {:tools} ->
+            output = format_tools()
+            %{model | command_buffer: "", command_output: output, command_error: nil}
+
+          {:trust, tool_name} ->
+            case Shem.Lab.Registry.lookup_by_name(tool_name) do
+              {:ok, tool} ->
+                output = format_trust(tool)
+                %{model | command_buffer: "", command_output: output, command_error: nil}
+
+              {:error, :not_found} ->
+                %{model | command_error: "unknown tool: #{tool_name}"}
+            end
 
           {:redteam, tool_name} ->
             case Shem.Lab.Registry.lookup_by_name(tool_name) do
@@ -121,7 +137,8 @@ defmodule Shem.TUI.App do
             mcp_outbound_count: safe_mcp_outbound_count(),
             cluster_node_count: safe_cluster_count(),
             agents: safe_agent_list(),
-            agent_view: safe_agent_view(model.focused_agent)
+            agent_view: safe_agent_view(model.focused_agent),
+            trust_counts: safe_trust_counts()
         }
 
       _ ->
@@ -136,6 +153,81 @@ defmodule Shem.TUI.App do
       :interactive -> Interactive.render(model)
     end
   end
+
+  defp format_tools do
+    tools = Shem.Lab.Registry.all()
+    scored = Shem.Trust.Store.all()
+
+    if tools == [] do
+      "No Lab tools graduated yet."
+    else
+      header = "Lab Tools (#{length(tools)})\n"
+
+      lines =
+        Enum.map(tools, fn tool ->
+          {band, hardenings} =
+            case Map.fetch(scored, tool.id) do
+              {:ok, score} ->
+                count =
+                  case Shem.Trust.Store.entry(tool.id) do
+                    {:ok, entry} -> entry.hardening_count
+                    _ -> 0
+                  end
+
+                {score_to_band(score), count}
+
+              :error ->
+                {:unrated, 0}
+            end
+
+          count_str = if hardenings == 1, do: "1 hardening", else: "#{hardenings} hardenings"
+          "  #{String.pad_trailing(tool.name, 24)} #{String.pad_trailing(to_string(band), 10)} #{count_str}"
+        end)
+
+      header <> Enum.join(lines, "\n")
+    end
+  end
+
+  defp format_trust(tool) do
+    case Shem.Trust.Store.entry(tool.id) do
+      {:ok, entry} ->
+        band = score_to_band(entry.score)
+        updated = Calendar.strftime(entry.last_updated, "%Y-%m-%d %H:%M:%SZ")
+
+        "#{tool.name}\n" <>
+          "  band:       #{band}\n" <>
+          "  score:      #{Float.round(entry.score, 3)}\n" <>
+          "  hardenings: #{entry.hardening_count}\n" <>
+          "  updated:    #{updated}"
+
+      {:error, :unrated} ->
+        "#{tool.name}\n  band: unrated\n  never hardened"
+    end
+  end
+
+  defp safe_trust_counts do
+    try do
+      all_tools = Shem.Lab.Registry.all()
+      scored = Shem.Trust.Store.all()
+      base = %{high: 0, medium: 0, low: 0, unrated: 0}
+
+      Enum.reduce(all_tools, base, fn tool, acc ->
+        band =
+          case Map.fetch(scored, tool.id) do
+            {:ok, score} -> score_to_band(score)
+            :error -> :unrated
+          end
+
+        Map.update!(acc, band, &(&1 + 1))
+      end)
+    catch
+      :exit, _ -> %{high: 0, medium: 0, low: 0, unrated: 0}
+    end
+  end
+
+  defp score_to_band(score) when score >= 0.8, do: :high
+  defp score_to_band(score) when score >= 0.5, do: :medium
+  defp score_to_band(_), do: :low
 
   defp safe_stats do
     try do

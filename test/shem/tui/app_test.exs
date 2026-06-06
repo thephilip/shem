@@ -162,4 +162,50 @@ defmodule Shem.TUI.AppTest do
       assert result.focused_agent == nil
     end
   end
+
+  describe "init/1 — Phase 11 fields" do
+    test "model has command_output defaulting to nil" do
+      model = App.init(%{})
+      assert model.command_output == nil
+    end
+
+    test "model has trust_counts defaulting to all-zero map" do
+      model = App.init(%{})
+      assert model.trust_counts == %{high: 0, medium: 0, low: 0, unrated: 0}
+    end
+  end
+
+  describe "update/2 — :tick with trust_counts" do
+    test ":tick updates trust_counts to a map with the four band keys" do
+      model = App.init(%{})
+      updated = App.update(model, :tick)
+      assert Map.has_key?(updated.trust_counts, :high)
+      assert Map.has_key?(updated.trust_counts, :medium)
+      assert Map.has_key?(updated.trust_counts, :low)
+      assert Map.has_key?(updated.trust_counts, :unrated)
+    end
+  end
+
+  describe "update/2 — /tools command" do
+    test "enter with '/tools' buffer sets command_output and clears buffer" do
+      model = %{App.init(%{}) | command_buffer: "/tools"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_buffer == ""
+      assert is_binary(result.command_output)
+    end
+  end
+
+  describe "update/2 — /trust command" do
+    test "enter with '/trust unknown_tool' sets command_error for unknown tool" do
+      model = %{App.init(%{}) | command_buffer: "/trust __no_such_tool__"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_error =~ "unknown tool"
+    end
+
+    test "starting an agent clears command_output" do
+      model = %{App.init(%{}) | command_output: "some output", command_buffer: "/agent general do something"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_output == nil
+    end
+  end
 end
