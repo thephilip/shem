@@ -38,6 +38,14 @@ defmodule Shem.TUI.Views.Interactive do
     end
   end
 
+  defp render_turn_card(%{agent_view: nil, command_output: output}) when not is_nil(output) do
+    panel(title: "Shem // Interactive · Output", color: color(:cyan)) do
+      for line <- String.split(output, "\n") do
+        label(content: line, color: color(:white))
+      end
+    end
+  end
+
   defp render_turn_card(%{agent_view: nil}) do
     panel(title: "Shem // Interactive · Agent Output", color: color(:cyan)) do
       label(content: "")
