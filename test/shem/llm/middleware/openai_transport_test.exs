@@ -72,6 +72,91 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
     end
   end
 
+  describe "call/3 — tools" do
+    test "injects tools array and tool_choice into body when request.tools present" do
+      tools = [%{name: "run_code", description: "Run Elixir", schema: %{"type" => "object", "properties" => %{}, "required" => []}}]
+      request = %Request{prompt: "go", model: :default, tools: tools}
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        assert body["tool_choice"] == "auto"
+        [tool] = body["tools"]
+        assert tool["type"] == "function"
+        assert tool["function"]["name"] == "run_code"
+        {:ok, %{status: 200, body: success_body("ok", 5)}}
+      end
+
+      opts = [api_key: "sk-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = OpenAITransport.call(request, opts, nil)
+    end
+
+    test "does not inject tools when request.tools is nil" do
+      request = %Request{prompt: "hello", model: :default}
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        refute Map.has_key?(body, "tools")
+        refute Map.has_key?(body, "tool_choice")
+        {:ok, %{status: 200, body: success_body("hi", 5)}}
+      end
+
+      opts = [api_key: "sk-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = OpenAITransport.call(request, opts, nil)
+    end
+  end
+
+  describe "call/3 — tool_calls in response" do
+    test "decodes tool_calls from response, content may be nil" do
+      body = %{
+        "choices" => [%{"message" => %{
+          "role" => "assistant",
+          "content" => nil,
+          "tool_calls" => [%{
+            "id" => "call_abc",
+            "type" => "function",
+            "function" => %{"name" => "run_code", "arguments" => "{\"source\":\"IO.puts 1\"}"}
+          }]
+        }}],
+        "usage" => %{"total_tokens" => 30}
+      }
+
+      opts = [api_key: "sk-test", http_post_fn: mock_post(200, body)]
+      assert {:ok, %Response{} = resp} = OpenAITransport.call(req(), opts, nil)
+      assert resp.content == nil
+      assert [%{id: "call_abc", name: "run_code", args: %{"source" => "IO.puts 1"}}] = resp.tool_calls
+    end
+  end
+
+  describe "call/3 — message formatting" do
+    test "formats assistant message with tool_calls" do
+      calls = [%{id: "call_1", name: "run_code", args: %{"source" => "1+1"}}]
+      messages = [
+        %{role: :assistant, content: nil, tool_calls: calls},
+        %{role: :tool, content: "2", tool_call_id: "call_1"}
+      ]
+      request = %Request{prompt: "go", model: :default, messages: messages}
+
+      mock = fn _url, opts ->
+        msgs = opts[:json]["messages"]
+        # system message won't be present (no request.system)
+        [asst, tool_msg] = msgs
+        assert asst["role"] == "assistant"
+        [tc] = asst["tool_calls"]
+        assert tc["id"] == "call_1"
+        assert tc["type"] == "function"
+        assert tc["function"]["name"] == "run_code"
+        assert Jason.decode!(tc["function"]["arguments"]) == %{"source" => "1+1"}
+        assert tool_msg["role"] == "tool"
+        assert tool_msg["tool_call_id"] == "call_1"
+        assert tool_msg["content"] == "2"
+        {:ok, %{status: 200, body: success_body("done", 10)}}
+      end
+
+      opts = [api_key: "sk-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = OpenAITransport.call(request, opts, nil)
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages array and prepends system message when present" do
       messages = [
