@@ -7,8 +7,6 @@ defmodule Shem.HTTP.RouterTest do
 
   @opts Router.init([])
 
-  # Skipped until Task 2 implements the real REST.Router presets handler
-  @tag :skip
   test "GET /api/presets is forwarded to the REST router" do
     conn = conn(:get, "/api/presets") |> Router.call(@opts)
     assert conn.status == 200
