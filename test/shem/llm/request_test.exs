@@ -15,4 +15,18 @@ defmodule Shem.LLM.RequestTest do
     assert r.session_id == "ses_abc"
     assert r.options == %{temperature: 0.7}
   end
+
+  test "tools defaults to nil" do
+    r = %Request{prompt: "hello", model: :default}
+    assert is_nil(r.tools)
+  end
+
+  test "accepts tool schemas in tools field" do
+    tools = [
+      %{name: "run_code", description: "Run code.",
+        schema: %{type: "object", properties: %{"source" => %{"type" => "string"}}, required: ["source"]}}
+    ]
+    r = %Request{prompt: "hello", model: :default, tools: tools}
+    assert r.tools == tools
+  end
 end
