@@ -63,4 +63,12 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
       assert {:error, {:transport, :timeout}} = OpenAITransport.call(req(), opts, nil)
     end
   end
+
+  describe "call/3 — missing api_key" do
+    test "returns missing_api_key when no api key is configured" do
+      request = %Request{prompt: "hello", model: :default}
+      assert {:error, {:transport, :missing_api_key}} =
+        OpenAITransport.call(request, [api_key: nil], fn _, _ -> flunk("should not be called") end)
+    end
+  end
 end
