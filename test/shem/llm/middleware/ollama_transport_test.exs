@@ -14,7 +14,7 @@ defmodule Shem.LLM.Middleware.OllamaTransportTest do
 
   defp ollama_body(content, eval \\ 20, prompt_eval \\ 10) do
     %{
-      "response" => content,
+      "message" => %{"role" => "assistant", "content" => content},
       "done" => true,
       "eval_count" => eval,
       "prompt_eval_count" => prompt_eval
@@ -99,6 +99,88 @@ defmodule Shem.LLM.Middleware.OllamaTransportTest do
 
       body = Agent.get(received_body, & &1)
       assert body["model"] == "unknown_model"
+    end
+  end
+
+  describe "call/3 — /api/chat" do
+    test "uses /api/chat endpoint with messages array" do
+      mock = fn url, opts ->
+        assert String.ends_with?(url, "/api/chat")
+        msgs = opts[:json]["messages"]
+        assert [%{"role" => "user"}] = msgs
+        {:ok, %{status: 200, body: ollama_body("hi")}}
+      end
+
+      opts = [http_post_fn: mock, url: "http://localhost:11434"]
+      assert {:ok, %Response{}} = OllamaTransport.call(request(), opts, fn _ -> :unreachable end)
+    end
+
+    test "injects tools with function wrapper, no tool_choice" do
+      tools = [
+        %{
+          name: "shell",
+          description: "Run shell",
+          schema: %{"type" => "object", "properties" => %{}, "required" => []}
+        }
+      ]
+
+      request = %Request{prompt: "go", model: :default, options: %{}, tools: tools}
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        [tool] = body["tools"]
+        assert tool["type"] == "function"
+        assert tool["function"]["name"] == "shell"
+        refute Map.has_key?(body, "tool_choice")
+        {:ok, %{status: 200, body: ollama_body("done")}}
+      end
+
+      opts = [http_post_fn: mock, url: "http://localhost:11434"]
+      assert {:ok, %Response{}} = OllamaTransport.call(request, opts, fn _ -> :unreachable end)
+    end
+  end
+
+  describe "call/3 — tool_calls in response" do
+    test "decodes tool_calls from message, generates synthetic IDs" do
+      body = %{
+        "message" => %{
+          "role" => "assistant",
+          "content" => nil,
+          "tool_calls" => [
+            %{"function" => %{"name" => "shell", "arguments" => %{"cmd" => "ls"}}}
+          ]
+        },
+        "done" => true,
+        "eval_count" => 10,
+        "prompt_eval_count" => 5
+      }
+
+      mock = mock_post(200, body)
+      opts = [http_post_fn: mock, url: "http://localhost:11434"]
+      assert {:ok, %Response{} = resp} = OllamaTransport.call(request(), opts, fn _ -> :unreachable end)
+      assert resp.content == nil
+      [call] = resp.tool_calls
+      assert call.name == "shell"
+      assert call.args == %{"cmd" => "ls"}
+      assert is_binary(call.id) and String.starts_with?(call.id, "ollama_")
+    end
+  end
+
+  describe "call/3 — message formatting" do
+    test "tool result message omits tool_call_id" do
+      messages = [%{role: :tool, content: "result", tool_call_id: "ollama_123"}]
+      request = %Request{prompt: "go", model: :default, options: %{}, messages: messages}
+
+      mock = fn _url, opts ->
+        [msg] = opts[:json]["messages"]
+        assert msg["role"] == "tool"
+        assert msg["content"] == "result"
+        refute Map.has_key?(msg, "tool_call_id")
+        {:ok, %{status: 200, body: ollama_body("done")}}
+      end
+
+      opts = [http_post_fn: mock, url: "http://localhost:11434"]
+      assert {:ok, %Response{}} = OllamaTransport.call(request, opts, fn _ -> :unreachable end)
     end
   end
 end
