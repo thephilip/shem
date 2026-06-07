@@ -139,6 +139,63 @@ defmodule Shem.Agent.TurnTest do
     end
   end
 
+  describe "build_request/4" do
+    @req_manifest [
+      %{name: "list_tools", description: "List tools.", source: :builtin},
+      %{name: "run_code", description: "Run code.", source: :builtin}
+    ]
+
+    test "prompt field is populated via build_prompt" do
+      request = Turn.build_request(:default, "Be helpful.", @req_manifest, [%{role: :user, content: "task"}])
+      assert request.prompt =~ "Be helpful."
+      assert request.prompt =~ "task"
+    end
+
+    test "system field matches the system_prompt argument" do
+      request = Turn.build_request(:default, "You are precise.", @req_manifest, [%{role: :user, content: "task"}])
+      assert request.system == "You are precise."
+    end
+
+    test "model field matches the model argument" do
+      request = Turn.build_request(:openai, "sys", @req_manifest, [%{role: :user, content: "task"}])
+      assert request.model == :openai
+    end
+
+    test "messages contains tool header when manifest is non-empty" do
+      request = Turn.build_request(:default, "sys", @req_manifest, [%{role: :user, content: "task"}])
+      tool_msg = hd(request.messages)
+      assert tool_msg.role == :user
+      assert tool_msg.content =~ "list_tools"
+      assert tool_msg.content =~ "run_code"
+    end
+
+    test "messages has no tool header when manifest is empty" do
+      request = Turn.build_request(:default, "sys", [], [%{role: :user, content: "task"}])
+      assert Enum.all?(request.messages, fn m -> not String.contains?(m.content, "Available tools") end)
+    end
+
+    test "history :tool role maps to :user in messages" do
+      history = [
+        %{role: :user, content: "task"},
+        %{role: :assistant, content: "calling"},
+        %{role: :tool, content: "Tool result: 42"}
+      ]
+      request = Turn.build_request(:default, "sys", [], history)
+      roles = Enum.map(request.messages, & &1.role)
+      assert :tool not in roles
+      assert Enum.count(request.messages, &(&1.role == :user)) == 2
+    end
+
+    test "history :assistant role preserved in messages" do
+      history = [
+        %{role: :user, content: "hi"},
+        %{role: :assistant, content: "hello"}
+      ]
+      request = Turn.build_request(:default, "sys", [], history)
+      assert Enum.any?(request.messages, &(&1.role == :assistant and &1.content == "hello"))
+    end
+  end
+
   describe "step/4" do
     alias Shem.Agent.Config
     alias Shem.LLM.{Response, StubTransport}
