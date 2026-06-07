@@ -8,7 +8,8 @@ defmodule Shem.MixProject do
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      releases: releases()
     ]
   end
 
@@ -38,6 +39,15 @@ defmodule Shem.MixProject do
     [
       "deps.get": ["deps.get", &patch_waf/1],
       "deps.compile": [&patch_waf/1, "deps.compile"]
+    ]
+  end
+
+  defp releases do
+    [
+      shem: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent]
+      ]
     ]
   end
 
