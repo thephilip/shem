@@ -126,7 +126,7 @@ defmodule Shem.Agent.Server do
 
   defp execute_tool_calls(calls, manifest, history, session_id) do
     Enum.reduce(calls, history, fn call, acc ->
-      EventLog.append(session_id, :agent_tool_called, %{tool: call.tool, args: call.args})
+      EventLog.append(session_id, :agent_tool_called, %{tool: call.name, args: call.args})
 
       result_str =
         case ToolDispatch.execute(call, manifest) do
@@ -134,8 +134,8 @@ defmodule Shem.Agent.Server do
           {:error, reason} -> "Error: #{reason}"
         end
 
-      EventLog.append(session_id, :agent_tool_result, %{tool: call.tool, result: result_str})
-      acc ++ [%{role: :tool, content: "Tool result (#{call.tool}): #{result_str}"}]
+      EventLog.append(session_id, :agent_tool_result, %{tool: call.name, result: result_str})
+      acc ++ [%{role: :tool, content: "Tool result (#{call.name}): #{result_str}"}]
     end)
   end
 

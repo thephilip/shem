@@ -17,7 +17,7 @@ defmodule Shem.Agent.Turn do
   end
 
   @spec parse_response(String.t()) ::
-          {:tool_calls, [%{tool: String.t(), args: map()}], String.t()}
+          {:tool_calls, [%{id: nil, name: String.t(), args: map()}], String.t()}
           | {:done, String.t()}
   def parse_response(content) do
     pattern = ~r/\{(?:[^{}]|\{[^{}]*\})*\}/
@@ -28,10 +28,10 @@ defmodule Shem.Agent.Turn do
       |> Enum.flat_map(fn json_str ->
         case Jason.decode(json_str) do
           {:ok, %{"tool" => tool, "args" => args}} when is_binary(tool) and is_map(args) ->
-            [%{tool: tool, args: args}]
+            [%{id: nil, name: tool, args: args}]
 
           {:ok, %{"tool" => tool}} when is_binary(tool) ->
-            [%{tool: tool, args: %{}}]
+            [%{id: nil, name: tool, args: %{}}]
 
           _ ->
             []
@@ -84,37 +84,43 @@ defmodule Shem.Agent.Turn do
   @spec build_request(atom(), String.t(), [map()], [map()]) :: Request.t()
   def build_request(model, system_prompt, tools_manifest, history) do
     prompt = build_prompt(system_prompt, tools_manifest, history)
-    messages = case build_messages(tools_manifest, history) do
-      [] -> nil
-      msgs -> msgs
-    end
-    %Request{prompt: prompt, model: model, system: system_prompt, messages: messages}
-  end
 
-  defp build_messages(tools_manifest, history) do
-    tool_header =
-      if tools_manifest == [] do
-        []
-      else
-        lines =
-          tools_manifest
-          |> Enum.map(fn %{name: name, description: desc} -> "- #{name}: #{desc}" end)
-          |> Enum.join("\n")
-        [%{role: :user, content: "Available tools:\n#{lines}"}]
+    messages =
+      case build_messages(history) do
+        [] -> nil
+        msgs -> msgs
       end
 
-    history_messages =
-      Enum.map(history, fn
-        %{role: :user, content: c}      -> %{role: :user, content: c}
-        %{role: :assistant, content: c} -> %{role: :assistant, content: c}
-        %{role: :tool, content: c}      -> %{role: :user, content: c}
-      end)
+    tools =
+      case Enum.map(tools_manifest, &Map.take(&1, [:name, :description, :schema])) do
+        [] -> nil
+        ts -> ts
+      end
 
-    tool_header ++ history_messages
+    %Request{prompt: prompt, model: model, system: system_prompt, messages: messages, tools: tools}
+  end
+
+  defp build_messages(history) do
+    Enum.map(history, fn
+      %{role: :user, content: c} ->
+        %{role: :user, content: c}
+
+      %{role: :assistant, content: c, tool_calls: calls} ->
+        %{role: :assistant, content: c, tool_calls: calls}
+
+      %{role: :assistant, content: c} ->
+        %{role: :assistant, content: c}
+
+      %{role: :tool, content: c, tool_call_id: id} ->
+        %{role: :tool, content: c, tool_call_id: id}
+
+      %{role: :tool, content: c} ->
+        %{role: :tool, content: c}
+    end)
   end
 
   @spec step(Config.t(), String.t(), [map()], [map()]) ::
-          {:tool_calls, [%{tool: String.t(), args: map()}], String.t()}
+          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t()}
           | {:done, String.t()}
           | {:error, term()}
   def step(%Config{} = config, session_id, history, tools_manifest) do
@@ -124,8 +130,14 @@ defmodule Shem.Agent.Turn do
       |> Map.put(:session_id, session_id)
 
     case LLM.complete(request) do
-      {:ok, %Response{content: content}} -> content |> strip_thinking() |> parse_response()
-      {:error, reason} -> {:error, reason}
+      {:ok, %Response{tool_calls: [_ | _] = calls, content: content}} ->
+        {:tool_calls, calls, content || ""}
+
+      {:ok, %Response{content: content}} ->
+        content |> strip_thinking() |> parse_response()
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 end

@@ -12,14 +12,14 @@ defmodule Shem.Agent.TurnTest do
     test "extracts a single tool call embedded in prose" do
       content = ~s(I'll write a tool.\n{"tool": "write_tool", "args": {"name": "Foo"}}\nDone.)
       assert {:tool_calls, [call], ^content} = Turn.parse_response(content)
-      assert call == %{tool: "write_tool", args: %{"name" => "Foo"}}
+      assert call == %{id: nil, name: "write_tool", args: %{"name" => "Foo"}}
     end
 
     test "extracts multiple tool calls" do
       content = ~s({"tool": "run_code", "args": {"source": "x"}}\n{"tool": "list_tools", "args": {}})
       assert {:tool_calls, [c1, c2], ^content} = Turn.parse_response(content)
-      assert c1.tool == "run_code"
-      assert c2.tool == "list_tools"
+      assert c1.name == "run_code"
+      assert c2.name == "list_tools"
     end
 
     test "ignores non-tool JSON objects" do
@@ -29,7 +29,8 @@ defmodule Shem.Agent.TurnTest do
 
     test "handles tool call with no args key — defaults to empty map" do
       content = ~s({"tool": "list_tools"})
-      assert {:tool_calls, [%{tool: "list_tools", args: %{}}], ^content} = Turn.parse_response(content)
+      assert {:tool_calls, [%{id: nil, name: "list_tools", args: %{}}], ^content} =
+               Turn.parse_response(content)
     end
 
     test "returns {:done, content} on empty string" do
@@ -47,7 +48,7 @@ defmodule Shem.Agent.TurnTest do
     # The non-map args value is silently dropped.
     test "tool call where args is not a map — falls back to empty args" do
       content = ~s({"tool": "foo", "args": "not_a_map"})
-      assert {:tool_calls, [%{tool: "foo", args: %{}}], ^content} = Turn.parse_response(content)
+      assert {:tool_calls, [%{id: nil, name: "foo", args: %{}}], ^content} = Turn.parse_response(content)
     end
 
     # The regex ~r/\{(?:[^{}]|\{[^{}]*\})*\}/ only handles 1 level of {} nesting.
@@ -63,12 +64,13 @@ defmodule Shem.Agent.TurnTest do
   describe "strip_thinking/1" do
     test "parse_response strips <think> block before extracting tool calls" do
       content = "<think>\nLet me think. {\"tool\": \"fake\", \"args\": {}}\n</think>\n{\"tool\": \"list_tools\", \"args\": {}}"
-      assert {:tool_calls, [%{tool: "list_tools"}], _} = Turn.parse_response(Turn.strip_thinking(content))
+      assert {:tool_calls, [%{name: "list_tools"}], _} =
+               Turn.parse_response(Turn.strip_thinking(content))
     end
 
     test "parse_response on content without <think> block is unchanged" do
       content = "{\"tool\": \"list_tools\", \"args\": {}}"
-      assert Turn.strip_thinking(content) == content
+      assert {:tool_calls, [%{name: "list_tools"}], _} = Turn.parse_response(content)
     end
 
     test "strip_thinking removes multiline think block" do
@@ -161,29 +163,55 @@ defmodule Shem.Agent.TurnTest do
       assert request.model == :openai
     end
 
-    test "messages contains tool header when manifest is non-empty" do
+    test "tools field populated from manifest when non-empty" do
       request = Turn.build_request(:default, "sys", @req_manifest, [%{role: :user, content: "task"}])
-      tool_msg = hd(request.messages)
-      assert tool_msg.role == :user
-      assert tool_msg.content =~ "list_tools"
-      assert tool_msg.content =~ "run_code"
+      assert is_list(request.tools)
+      assert length(request.tools) == length(@req_manifest)
+      assert hd(request.tools).name == "list_tools"
     end
 
-    test "messages has no tool header when manifest is empty" do
+    test "tools field is nil when manifest is empty" do
       request = Turn.build_request(:default, "sys", [], [%{role: :user, content: "task"}])
-      assert Enum.all?(request.messages, fn m -> not String.contains?(m.content, "Available tools") end)
+      assert is_nil(request.tools)
     end
 
-    test "history :tool role maps to :user in messages" do
+    test "messages has no tool header — tool manifest no longer injected as user message" do
+      request = Turn.build_request(:default, "sys", @req_manifest, [%{role: :user, content: "task"}])
+      refute Enum.any?(request.messages, fn m ->
+        is_binary(m.content) and String.contains?(m.content, "Available tools")
+      end)
+    end
+
+    test "history :tool role is preserved in messages (no longer mapped to :user)" do
       history = [
-        %{role: :user, content: "task"},
+        %{role: :user,      content: "task"},
         %{role: :assistant, content: "calling"},
-        %{role: :tool, content: "Tool result: 42"}
+        %{role: :tool,      content: "Tool result: 42"}
       ]
       request = Turn.build_request(:default, "sys", [], history)
       roles = Enum.map(request.messages, & &1.role)
-      assert :tool not in roles
-      assert Enum.count(request.messages, &(&1.role == :user)) == 2
+      assert :tool in roles
+    end
+
+    test "assistant tool_calls preserved in messages" do
+      history = [
+        %{role: :user,      content: "task"},
+        %{role: :assistant, content: nil,
+          tool_calls: [%{id: "c1", name: "run_code", args: %{"source" => "1"}}]}
+      ]
+      request = Turn.build_request(:default, "sys", [], history)
+      assistant = Enum.find(request.messages, &(&1.role == :assistant))
+      assert assistant.tool_calls == [%{id: "c1", name: "run_code", args: %{"source" => "1"}}]
+    end
+
+    test "tool result with tool_call_id preserved in messages" do
+      history = [
+        %{role: :user, content: "task"},
+        %{role: :tool, content: "42", tool_call_id: "c1"}
+      ]
+      request = Turn.build_request(:default, "sys", [], history)
+      tool_msg = Enum.find(request.messages, &(&1.role == :tool))
+      assert tool_msg.tool_call_id == "c1"
     end
 
     test "history :assistant role preserved in messages" do
@@ -229,7 +257,7 @@ defmodule Shem.Agent.TurnTest do
         {:ok, %Response{content: raw, tokens_used: 10, model: :default, latency_ms: 1}}
       )
       {:ok, sid} = Shem.EventLog.start_session()
-      assert {:tool_calls, [%{tool: "list_tools", args: %{}}], ^raw} =
+      assert {:tool_calls, [%{name: "list_tools", args: %{}}], ^raw} =
                Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
     end
 
@@ -238,6 +266,33 @@ defmodule Shem.Agent.TurnTest do
       {:ok, sid} = Shem.EventLog.start_session()
       assert {:error, _} =
                Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
+    end
+  end
+
+  describe "step/4 — native tool_calls path" do
+    test "returns {:tool_calls, calls, content} when Response has tool_calls" do
+      tool_call = %{id: "call_1", name: "run_code", args: %{"source" => "1 + 1"}}
+      stub_response = %Shem.LLM.Response{
+        content: nil,
+        tool_calls: [tool_call],
+        tokens_used: 5,
+        model: :default,
+        latency_ms: 10
+      }
+
+      config = %Shem.Agent.Config{
+        task: "t",
+        system_prompt: "sys",
+        model: :default,
+        max_turns: 5
+      }
+
+      Shem.LLM.StubTransport.Server.push_response({:ok, stub_response})
+      Shem.LLM.BudgetServer.reset()
+
+      {:ok, sid} = Shem.EventLog.start_session()
+      result = Turn.step(config, sid, [], [])
+      assert {:tool_calls, [^tool_call], ""} = result
     end
   end
 end
