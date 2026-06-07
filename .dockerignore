@@ -1,0 +1,11 @@
+_build/
+deps/
+tmp/
+.git/
+test/
+docs/
+erl_crash.dump
+run_qwen.sh
+smoke_test.exs
+OPENCODE_PROMPT.txt
+*.md
