@@ -1,4 +1,5 @@
 defmodule Shem.REST.Handlers.Routes do
+  # Stub — replaced by Task 5
   use Plug.Router
   plug :match
   plug :dispatch

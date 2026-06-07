@@ -7,6 +7,19 @@ defmodule Shem.REST.PresetsTest do
 
   @opts Router.init([])
 
+  test "GET /presets reaches the presets handler (stub returns 501)" do
+    conn = conn(:get, "/presets") |> Router.call(@opts)
+    assert conn.status == 501
+  end
+
+  test "GET /unknown returns JSON 404" do
+    conn = conn(:get, "/unknown") |> Router.call(@opts)
+    assert conn.status == 404
+    assert Jason.decode!(conn.resp_body) == %{"error" => "not found"}
+  end
+
+  # Un-skip in Task 4 when the real presets handler is implemented
+  @tag :skip
   test "GET /presets returns JSON list with name and description" do
     conn = conn(:get, "/presets") |> Router.call(@opts)
     assert conn.status == 200
@@ -17,10 +30,5 @@ defmodule Shem.REST.PresetsTest do
     first = hd(body)
     assert Map.has_key?(first, "name")
     assert Map.has_key?(first, "description")
-  end
-
-  test "GET /unknown returns 404" do
-    conn = conn(:get, "/unknown") |> Router.call(@opts)
-    assert conn.status == 404
   end
 end
