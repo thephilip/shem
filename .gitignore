@@ -22,3 +22,9 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 shem-*.tar
 .superpowers/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
