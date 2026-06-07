@@ -90,9 +90,10 @@ defmodule Shem.REST.AgentsTest do
   test "GET /agents/:id/result returns running when agent has not completed" do
     # Set a default response that triggers a tool call loop so the agent
     # stays in :running state for longer than the handler's 100ms await.
+    # list_tools is a real builtin that always succeeds with no required args.
     # Use max_turns: 1_000_000 to prevent the agent finishing via turn limit.
     looping_response = %Response{
-      content: ~s({"tool": "noop", "args": {}}),
+      content: ~s({"tool": "list_tools", "args": {}}),
       tokens_used: 1,
       model: :default,
       latency_ms: 1

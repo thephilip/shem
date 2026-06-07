@@ -28,8 +28,11 @@ defmodule Shem.REST.Handlers.Agents do
   get "/:id/result" do
     case Shem.Agent.await(id, 100) do
       {:ok, :done} ->
-        {:ok, session_id} = Shem.Agent.session_id(id)
-        content = read_done_content(session_id)
+        content =
+          case Shem.Agent.session_id(id) do
+            {:ok, session_id} -> read_done_content(session_id)
+            {:error, :not_found} -> ""
+          end
         send_json(conn, 200, %{status: "done", content: content})
 
       {:ok, :error} ->
