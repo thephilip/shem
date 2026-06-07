@@ -237,6 +237,42 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "native tool_calls path" do
+    test "history has structured assistant entry and tool_call_id after native tool call" do
+      # Push a native tool-calls response (no text content)
+      tool_resp = {:ok, %Shem.LLM.Response{
+        content: nil,
+        tool_calls: [%{id: "call_1", name: "list_tools", args: %{}}],
+        tokens_used: 5,
+        model: :default,
+        latency_ms: 1
+      }}
+      StubTransport.Server.push_response(tool_resp)
+      stub("All tools listed.")
+
+      name = start_agent("list the tools")
+      assert {:ok, :done} = Agent.await(name, 2_000)
+
+      {:ok, session_id} = Agent.session_id(name)
+
+      # The checkpoint saved at the start of turn 2 contains the post-turn-1 history
+      {:ok, checkpoint} = Shem.Agent.Checkpoint.reconstruct(session_id)
+      history = checkpoint.history
+
+      # Find the assistant entry that has tool_calls
+      asst_entry = Enum.find(history, fn e -> e.role == :assistant and Map.get(e, :tool_calls) end)
+      assert asst_entry != nil
+      assert asst_entry.content == nil
+      assert [%{id: "call_1", name: "list_tools"}] = asst_entry.tool_calls
+
+      # Find the tool result entry
+      tool_entry = Enum.find(history, fn e -> e.role == :tool end)
+      assert tool_entry != nil
+      assert tool_entry.tool_call_id == "call_1"
+      assert String.contains?(tool_entry.content, "list_tools")
+    end
+  end
+
   describe "start_with_preset/2" do
     test "starts an agent using a named preset" do
       stub("done")

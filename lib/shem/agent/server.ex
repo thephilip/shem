@@ -103,7 +103,12 @@ defmodule Shem.Agent.Server do
              finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
 
           {:tool_calls, calls, raw} ->
-            history = state.history ++ [%{role: :assistant, content: raw}]
+            assistant_entry = %{
+              role: :assistant,
+              content: (if raw == "", do: nil, else: raw),
+              tool_calls: calls
+            }
+            history = state.history ++ [assistant_entry]
             history = execute_tool_calls(calls, manifest, history, state.session_id)
             EventLog.append(state.session_id, :agent_turn_completed, %{
               turn: state.turn_count + 1,
@@ -135,7 +140,7 @@ defmodule Shem.Agent.Server do
         end
 
       EventLog.append(session_id, :agent_tool_result, %{tool: call.name, result: result_str})
-      acc ++ [%{role: :tool, content: "Tool result (#{call.name}): #{result_str}"}]
+      acc ++ [%{role: :tool, tool_call_id: call.id, content: "Tool result (#{call.name}): #{result_str}"}]
     end)
   end
 
