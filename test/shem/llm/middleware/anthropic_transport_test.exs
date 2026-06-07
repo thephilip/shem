@@ -81,4 +81,47 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
         AnthropicTransport.call(request, [api_key: nil], fn _, _ -> flunk("should not be called") end)
     end
   end
+
+  describe "call/3 — structured messages" do
+    test "uses request.messages and top-level system field when present" do
+      messages = [
+        %{role: :user, content: "What is 2+2?"},
+        %{role: :assistant, content: "Let me compute."}
+      ]
+      request = %Request{
+        prompt: "fallback prompt",
+        model: :default,
+        system: "Be concise.",
+        messages: messages
+      }
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        assert body["system"] == "Be concise."
+        assert body["messages"] == [
+          %{"role" => "user", "content" => "What is 2+2?"},
+          %{"role" => "assistant", "content" => "Let me compute."}
+        ]
+        assert not Map.has_key?(hd(body["messages"]), "system")
+        {:ok, %{status: 200, body: success_body("4", 5, 2)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{content: "4"}} = AnthropicTransport.call(request, opts, nil)
+    end
+
+    test "falls back to prompt-wrap and no system field when request.messages is nil" do
+      request = %Request{prompt: "hello", model: :default}
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        assert body["messages"] == [%{"role" => "user", "content" => "hello"}]
+        assert not Map.has_key?(body, "system")
+        {:ok, %{status: 200, body: success_body("hi", 5, 2)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{content: "hi"}} = AnthropicTransport.call(request, opts, nil)
+    end
+  end
 end

@@ -14,11 +14,27 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       max_tokens = Map.get(request.options, :max_tokens, 512)
       base_url = Keyword.get(opts, :base_url, "https://api.anthropic.com")
 
-      body = %{
+      {body_messages, maybe_system} =
+        case request.messages do
+          nil ->
+            {[%{"role" => "user", "content" => request.prompt}], nil}
+
+          msgs ->
+            formatted =
+              Enum.map(msgs, fn %{role: role, content: content} ->
+                %{"role" => to_string(role), "content" => content}
+              end)
+
+            {formatted, request.system}
+        end
+
+      base_body = %{
         "model" => model_string,
-        "messages" => [%{"role" => "user", "content" => request.prompt}],
+        "messages" => body_messages,
         "max_tokens" => max_tokens
       }
+
+      body = if maybe_system, do: Map.put(base_body, "system", maybe_system), else: base_body
 
       headers = [
         {"x-api-key", api_key},
