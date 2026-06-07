@@ -30,6 +30,9 @@ FROM docker.io/debian:trixie-slim AS runtime
 
 WORKDIR /app
 
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libncurses6 libssl3 libstdc++6 && \
     rm -rf /var/lib/apt/lists/*
