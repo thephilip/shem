@@ -82,6 +82,87 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
     end
   end
 
+  describe "call/3 — tools" do
+    test "injects tools array with input_schema format into body" do
+      tools = [%{name: "run_code", description: "Run Elixir", schema: %{"type" => "object", "properties" => %{}, "required" => []}}]
+      request = %Request{prompt: "go", model: :default, tools: tools}
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        [tool] = body["tools"]
+        assert tool["name"] == "run_code"
+        assert Map.has_key?(tool, "input_schema")
+        refute Map.has_key?(tool, "type")
+        refute Map.has_key?(body, "tool_choice")
+        {:ok, %{status: 200, body: success_body("ok", 5, 3)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = AnthropicTransport.call(request, opts, nil)
+    end
+  end
+
+  describe "call/3 — tool_calls in response" do
+    test "decodes tool_use blocks from response content array" do
+      body = %{
+        "content" => [
+          %{"type" => "tool_use", "id" => "toolu_abc", "name" => "run_code", "input" => %{"source" => "IO.puts 1"}}
+        ],
+        "usage" => %{"input_tokens" => 10, "output_tokens" => 5}
+      }
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock_post(200, body)]
+      assert {:ok, %Response{} = resp} = AnthropicTransport.call(req(), opts, nil)
+      assert resp.content == nil
+      assert [%{id: "toolu_abc", name: "run_code", args: %{"source" => "IO.puts 1"}}] = resp.tool_calls
+    end
+  end
+
+  describe "call/3 — message formatting" do
+    test "formats tool result as user message with tool_result block" do
+      messages = [
+        %{role: :tool, content: "result text", tool_call_id: "toolu_abc"}
+      ]
+      request = %Request{prompt: "go", model: :default, messages: messages}
+
+      mock = fn _url, opts ->
+        [msg] = opts[:json]["messages"]
+        assert msg["role"] == "user"
+        [block] = msg["content"]
+        assert block["type"] == "tool_result"
+        assert block["tool_use_id"] == "toolu_abc"
+        assert block["content"] == "result text"
+        {:ok, %{status: 200, body: success_body("done", 5, 3)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = AnthropicTransport.call(request, opts, nil)
+    end
+
+    test "formats assistant message with tool_calls as content block array" do
+      calls = [%{id: "toolu_1", name: "run_code", args: %{"source" => "1+1"}}]
+      messages = [
+        %{role: :assistant, content: "Let me run that.", tool_calls: calls}
+      ]
+      request = %Request{prompt: "go", model: :default, messages: messages}
+
+      mock = fn _url, opts ->
+        [msg] = opts[:json]["messages"]
+        assert msg["role"] == "assistant"
+        [text_block, call_block] = msg["content"]
+        assert text_block == %{"type" => "text", "text" => "Let me run that."}
+        assert call_block["type"] == "tool_use"
+        assert call_block["id"] == "toolu_1"
+        assert call_block["name"] == "run_code"
+        assert call_block["input"] == %{"source" => "1+1"}
+        {:ok, %{status: 200, body: success_body("done", 5, 3)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = AnthropicTransport.call(request, opts, nil)
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages and top-level system field when present" do
       messages = [

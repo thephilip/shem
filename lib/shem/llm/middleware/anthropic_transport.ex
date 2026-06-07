@@ -20,11 +20,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
             {[%{"role" => "user", "content" => request.prompt}], nil}
 
           msgs ->
-            formatted =
-              Enum.map(msgs, fn %{role: role, content: content} ->
-                %{"role" => to_string(role), "content" => content}
-              end)
-
+            formatted = Enum.map(msgs, &format_message/1)
             {formatted, request.system}
         end
 
@@ -35,6 +31,22 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       }
 
       body = if maybe_system, do: Map.put(base_body, "system", maybe_system), else: base_body
+
+      tools_fields =
+        case request.tools do
+          nil ->
+            %{}
+
+          tools ->
+            %{
+              "tools" =>
+                Enum.map(tools, fn %{name: n, description: d, schema: s} ->
+                  %{"name" => n, "description" => d, "input_schema" => s}
+                end)
+            }
+        end
+
+      body = Map.merge(body, tools_fields)
 
       headers = [
         {"x-api-key", api_key},
@@ -66,17 +78,62 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
     end
   end
 
+  defp format_message(%{role: :assistant, tool_calls: calls} = msg) when not is_nil(calls) do
+    c = Map.get(msg, :content)
+    text_blocks = if c && c != "", do: [%{"type" => "text", "text" => c}], else: []
+
+    call_blocks =
+      Enum.map(calls, fn %{id: id, name: n, args: a} ->
+        %{"type" => "tool_use", "id" => id, "name" => n, "input" => a}
+      end)
+
+    %{"role" => "assistant", "content" => text_blocks ++ call_blocks}
+  end
+
+  defp format_message(%{role: :tool, content: c, tool_call_id: id}) do
+    %{
+      "role" => "user",
+      "content" => [%{"type" => "tool_result", "tool_use_id" => id, "content" => c}]
+    }
+  end
+
+  defp format_message(%{role: role, content: content}) do
+    %{"role" => to_string(role), "content" => content}
+  end
+
   defp parse_response(
-         %{"content" => [%{"text" => text} | _], "usage" => usage},
+         %{"content" => content_blocks, "usage" => usage},
          model,
          start_ms
-       ) do
+       )
+       when is_list(content_blocks) do
     tokens_used = Map.get(usage, "input_tokens", 0) + Map.get(usage, "output_tokens", 0)
     latency_ms = System.monotonic_time(:millisecond) - start_ms
 
+    text =
+      content_blocks
+      |> Enum.filter(&(&1["type"] == "text"))
+      |> Enum.map_join("", & &1["text"])
+
+    content = if text == "", do: nil, else: text
+
+    raw_tool_calls = Enum.filter(content_blocks, &(&1["type"] == "tool_use"))
+
+    tool_calls =
+      case raw_tool_calls do
+        [] ->
+          nil
+
+        calls ->
+          Enum.map(calls, fn %{"id" => id, "name" => n, "input" => a} ->
+            %{id: id, name: n, args: a}
+          end)
+      end
+
     {:ok,
      %Shem.LLM.Response{
-       content: text,
+       content: content,
+       tool_calls: tool_calls,
        tokens_used: tokens_used,
        model: model,
        latency_ms: latency_ms
