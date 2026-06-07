@@ -14,9 +14,30 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
       model_string = Keyword.get(opts, :model_string, "gpt-4o")
       max_tokens = Map.get(request.options, :max_tokens, 512)
 
+      messages =
+        case request.messages do
+          nil ->
+            [%{"role" => "user", "content" => request.prompt}]
+
+          msgs ->
+            system_msgs =
+              if request.system do
+                [%{"role" => "system", "content" => request.system}]
+              else
+                []
+              end
+
+            formatted =
+              Enum.map(msgs, fn %{role: role, content: content} ->
+                %{"role" => to_string(role), "content" => content}
+              end)
+
+            system_msgs ++ formatted
+        end
+
       body = %{
         "model" => model_string,
-        "messages" => [%{"role" => "user", "content" => request.prompt}],
+        "messages" => messages,
         "max_tokens" => max_tokens
       }
 

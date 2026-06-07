@@ -71,4 +71,45 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
         OpenAITransport.call(request, [api_key: nil], fn _, _ -> flunk("should not be called") end)
     end
   end
+
+  describe "call/3 — structured messages" do
+    test "uses request.messages array and prepends system message when present" do
+      messages = [
+        %{role: :user, content: "Available tools:\n- shell: Run shell"},
+        %{role: :user, content: "What is 2+2?"},
+        %{role: :assistant, content: "Let me compute."}
+      ]
+      request = %Request{
+        prompt: "fallback prompt",
+        model: :default,
+        system: "Be concise.",
+        messages: messages
+      }
+
+      mock = fn _url, opts ->
+        body = opts[:json]
+        msgs = body["messages"]
+        assert hd(msgs) == %{"role" => "system", "content" => "Be concise."}
+        assert Enum.any?(msgs, &(&1["content"] == "What is 2+2?"))
+        assert Enum.any?(msgs, &(&1["role"] == "assistant"))
+        {:ok, %{status: 200, body: success_body("4", 10)}}
+      end
+
+      opts = [api_key: "sk-test", http_post_fn: mock]
+      assert {:ok, %Response{content: "4"}} = OpenAITransport.call(request, opts, nil)
+    end
+
+    test "falls back to prompt-wrap when request.messages is nil" do
+      request = %Request{prompt: "hello", model: :default}
+
+      mock = fn _url, opts ->
+        msgs = opts[:json]["messages"]
+        assert msgs == [%{"role" => "user", "content" => "hello"}]
+        {:ok, %{status: 200, body: success_body("hi", 5)}}
+      end
+
+      opts = [api_key: "sk-test", http_post_fn: mock]
+      assert {:ok, %Response{content: "hi"}} = OpenAITransport.call(request, opts, nil)
+    end
+  end
 end
