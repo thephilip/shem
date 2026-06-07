@@ -1,0 +1,33 @@
+services:
+  shem1:
+    build: .
+    hostname: shem1
+    environment:
+      RELEASE_COOKIE: shem_cookie
+      RELEASE_NODE: shem1@shem1
+      LIBCLUSTER_STRATEGY: dns
+      LIBCLUSTER_DNS_QUERY: shem
+    volumes:
+      - shem1_data:/data/shem
+    networks:
+      - shem
+
+  shem2:
+    build: .
+    hostname: shem2
+    environment:
+      RELEASE_COOKIE: shem_cookie
+      RELEASE_NODE: shem2@shem2
+      LIBCLUSTER_STRATEGY: dns
+      LIBCLUSTER_DNS_QUERY: shem
+    volumes:
+      - shem2_data:/data/shem
+    networks:
+      - shem
+
+volumes:
+  shem1_data:
+  shem2_data:
+
+networks:
+  shem: {}
