@@ -1,11 +1,21 @@
 defmodule Shem.REST.Router do
-  # Stub — Task 2 will replace this with the real REST router implementation.
   use Plug.Router
+
+  plug Plug.Parsers,
+    parsers: [:json],
+    json_decoder: Jason,
+    pass: ["*/*"]
 
   plug :match
   plug :dispatch
 
+  forward "/agents", to: Shem.REST.Handlers.Agents
+  forward "/presets", to: Shem.REST.Handlers.Presets
+  forward "/routes", to: Shem.REST.Handlers.Routes
+
   match _ do
-    send_resp(conn, 404, "not found")
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(404, Jason.encode!(%{error: "not found"}))
   end
 end
