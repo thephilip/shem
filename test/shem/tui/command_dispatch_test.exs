@@ -187,5 +187,28 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:error, msg} = CommandDispatch.parse("/llm unknown")
       assert msg =~ "unknown"
     end
+
+    test "/llm route with backend:model prefix" do
+      assert {:llm_route, [{:default, :openai, "gpt-4o"}]} =
+             CommandDispatch.parse("/llm route default=openai:gpt-4o")
+    end
+
+    test "/llm route with anthropic backend" do
+      assert {:llm_route, [{:reasoning, :anthropic, "claude-sonnet-4-6"}]} =
+             CommandDispatch.parse("/llm route reasoning=anthropic:claude-sonnet-4-6")
+    end
+
+    test "/llm route with unknown backend returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/llm route default=badbackend:model")
+      assert msg =~ "unknown backend: badbackend"
+      assert msg =~ "valid:"
+    end
+
+    test "/llm route mixed batch with and without backend prefix" do
+      assert {:llm_route, pairs} =
+             CommandDispatch.parse("/llm route default=openai:gpt-4o tools=phi4")
+      assert {:default, :openai, "gpt-4o"} in pairs
+      assert {:tools, :llama_cpp, "phi4"} in pairs
+    end
   end
 end

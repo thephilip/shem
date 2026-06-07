@@ -1,4 +1,6 @@
 defmodule Shem.TUI.CommandDispatch do
+  @known_backends ~w[llama_cpp ollama openai anthropic]
+
   @spec parse(String.t()) ::
           {:start_agent, String.t(), String.t()}
           | {:stop_agent}
@@ -10,8 +12,31 @@ defmodule Shem.TUI.CommandDispatch do
           | {:preset_add, String.t()}
           | {:preset_delete, String.t()}
           | {:llm_routes}
-          | {:llm_route, [{atom(), :llama_cpp, String.t()}]}
+          | {:llm_route, [{atom(), :llama_cpp | :ollama | :openai | :anthropic, String.t()}]}
           | {:error, String.t()}
+  defp parse_route_pair([key, value]) do
+    trimmed_key = String.trim(key)
+    trimmed_value = String.trim(value)
+
+    case String.split(trimmed_value, ":", parts: 2) do
+      [backend_str, model_string] when model_string != "" ->
+        if backend_str in @known_backends do
+          {:ok, {String.to_atom(trimmed_key), String.to_atom(backend_str), model_string}}
+        else
+          valid = Enum.join(@known_backends, ", ")
+          {:error, "unknown backend: #{backend_str} — valid: #{valid}"}
+        end
+
+      [_backend_str, ""] ->
+        # empty model after colon — fall through to existing empty-value error
+        {:ok, {String.to_atom(trimmed_key), :llama_cpp, ""}}
+
+      [model_string] ->
+        # no colon — backward compat, default to :llama_cpp
+        {:ok, {String.to_atom(trimmed_key), :llama_cpp, model_string}}
+    end
+  end
+
   def parse(""), do: {:error, "empty input"}
 
   def parse("/" <> rest) do
@@ -67,19 +92,30 @@ defmodule Shem.TUI.CommandDispatch do
         {:llm_routes}
 
       ["llm", "route" | pair_parts] when pair_parts != [] ->
-        pairs =
+        raw_pairs =
           pair_parts
           |> Enum.map(&String.split(&1, "=", parts: 2))
           |> Enum.filter(&match?([_, _], &1))
-          |> Enum.reject(fn [k, v] -> String.trim(k) == "" or String.trim(v) == "" end)
-          # String.to_atom is intentional: routing role atoms are user-defined and
-          # may not exist in the atom table yet. This is safe for a trusted local TUI.
-          |> Enum.map(fn [k, v] -> {String.to_atom(String.trim(k)), :llama_cpp, String.trim(v)} end)
+          |> Enum.reject(fn [k, _v] -> String.trim(k) == "" end)
 
-        if pairs == [] do
-          {:error, "usage: /llm route <role>=<model> ..."}
-        else
-          {:llm_route, pairs}
+        result =
+          Enum.reduce_while(raw_pairs, {:ok, []}, fn pair, {:ok, acc} ->
+            case parse_route_pair(pair) do
+              {:ok, {_key, _backend, value}} when value == "" ->
+                {:halt, {:error, "usage: /llm route <role>=<model> ..."}}
+
+              {:ok, entry} ->
+                {:cont, {:ok, [entry | acc]}}
+
+              {:error, msg} ->
+                {:halt, {:error, msg}}
+            end
+          end)
+
+        case result do
+          {:ok, []} -> {:error, "usage: /llm route <role>=<model> ..."}
+          {:ok, pairs} -> {:llm_route, Enum.reverse(pairs)}
+          {:error, msg} -> {:error, msg}
         end
 
       ["llm", "route"] ->
