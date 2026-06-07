@@ -6,49 +6,89 @@ defmodule Shem.Agent.ToolDispatch do
 
   @builtins [
     %{
-      name: "write_tool",
-      description:
-        "Graduate a new Elixir tool into the Lab. Args: source (string), test_source (string).",
-      source: :builtin,
-      trust: :builtin
-    },
-    %{
-      name: "run_code",
-      description:
-        "Run Elixir source defining a module with run/0. Returns the result. Args: source (string), timeout_ms (integer, optional).",
-      source: :builtin,
-      trust: :builtin
-    },
-    %{
       name: "list_tools",
       description: "List all tools currently available.",
       source: :builtin,
-      trust: :builtin
+      trust: :builtin,
+      schema: %{type: "object", properties: %{}, required: []}
+    },
+    %{
+      name: "run_code",
+      description: "Run Elixir source defining a module with run/0. Returns the result.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "source"     => %{"type" => "string"},
+          "timeout_ms" => %{"type" => "integer"}
+        },
+        required: ["source"]
+      }
+    },
+    %{
+      name: "write_tool",
+      description: "Graduate a new Elixir tool into the Lab.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "source"      => %{"type" => "string"},
+          "test_source" => %{"type" => "string"}
+        },
+        required: ["source", "test_source"]
+      }
     },
     %{
       name: "read_file",
-      description: "Read a file and return its contents. Args: path (string).",
+      description: "Read a file and return its contents.",
       source: :builtin,
-      trust: :builtin
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{"path" => %{"type" => "string"}},
+        required: ["path"]
+      }
     },
     %{
       name: "write_file",
-      description: "Write content to a file. Args: path (string), content (string).",
+      description: "Write content to a file.",
       source: :builtin,
-      trust: :builtin
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "path"    => %{"type" => "string"},
+          "content" => %{"type" => "string"}
+        },
+        required: ["path", "content"]
+      }
     },
     %{
       name: "list_dir",
-      description: "List entries in a directory. Args: path (string).",
+      description: "List entries in a directory.",
       source: :builtin,
-      trust: :builtin
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{"path" => %{"type" => "string"}},
+        required: ["path"]
+      }
     },
     %{
       name: "shell",
-      description:
-        "Run a shell command and return stdout. Args: cmd (string), timeout_ms (integer, optional, default 10000). NOTE: runs locally until Phase 9b K8s executor.",
+      description: "Run a shell command and return stdout. Args: cmd (string), timeout_ms (integer, optional, default 10000). NOTE: runs locally until Phase 9b K8s executor.",
       source: :builtin,
-      trust: :builtin
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "cmd"        => %{"type" => "string"},
+          "timeout_ms" => %{"type" => "integer"}
+        },
+        required: ["cmd"]
+      }
     }
   ]
 
@@ -86,7 +126,8 @@ defmodule Shem.Agent.ToolDispatch do
           name: tool.name,
           description: Map.get(tool.metadata, "description", "graduated tool: #{tool.name}"),
           source: {:lab, tool.id},
-          trust: trust
+          trust: trust,
+          schema: %{type: "object", properties: %{}, required: []}
         }
       end)
 
@@ -103,7 +144,7 @@ defmodule Shem.Agent.ToolDispatch do
                 else: Enum.filter(ts, &(&1["name"] in allowed_tools))
             end)
             |> Enum.map(fn t ->
-              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}, trust: :external}
+              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}, trust: :external, schema: %{type: "object", properties: %{}, required: []}}
             end)
 
           _ ->
@@ -114,14 +155,14 @@ defmodule Shem.Agent.ToolDispatch do
     builtins ++ lab_tools ++ mcp_tools
   end
 
-  @spec execute(%{tool: String.t(), args: map()}, [map()]) ::
+  @spec execute(%{name: String.t(), args: map()}, [map()]) ::
           {:ok, String.t()} | {:error, String.t()}
-  def execute(%{tool: "list_tools"}, manifest) do
+  def execute(%{name: "list_tools"}, manifest) do
     lines = Enum.map(manifest, fn %{name: n, description: d} -> "- #{n}: #{d}" end)
     {:ok, "Available tools:\n" <> Enum.join(lines, "\n")}
   end
 
-  def execute(%{tool: name, args: args}, manifest) do
+  def execute(%{name: name, args: args}, manifest) do
     case Enum.find(manifest, &(&1.name == name)) do
       nil ->
         {:error, "unknown tool: #{name}"}

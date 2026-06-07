@@ -130,12 +130,52 @@ defmodule Shem.Agent.ToolDispatchTest do
       entry = Enum.find(manifest, &(&1.name == tool.name))
       assert entry.trust == :high
     end
+
+    test "builtin tools carry a :schema map with type, properties, required" do
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      builtins = Enum.filter(manifest, &(&1.source == :builtin))
+      Enum.each(builtins, fn entry ->
+        assert is_map(entry.schema), "#{entry.name} missing :schema"
+        assert entry.schema.type == "object"
+        assert is_map(entry.schema.properties)
+        assert is_list(entry.schema.required)
+      end)
+    end
+
+    test "run_code schema requires source, makes timeout_ms optional" do
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      run_code = Enum.find(manifest, &(&1.name == "run_code"))
+      assert "source" in run_code.schema.required
+      refute "timeout_ms" in run_code.schema.required
+      assert Map.has_key?(run_code.schema.properties, "source")
+      assert Map.has_key?(run_code.schema.properties, "timeout_ms")
+    end
+
+    test "Lab tools carry a permissive fallback schema" do
+      source = """
+      defmodule SchemaFallbackTool do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule SchemaFallbackToolTest do
+        def run, do: :ok
+      end
+      """
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      entry = Enum.find(manifest, &(&1.name == tool.name))
+      assert entry.schema == %{type: "object", properties: %{}, required: []}
+    end
   end
 
   describe "execute/2 — list_tools built-in" do
     test "returns {:ok, formatted string} listing manifest tools" do
       manifest = [%{name: "foo", description: "does foo", source: :builtin}]
-      assert {:ok, result} = ToolDispatch.execute(%{tool: "list_tools", args: %{}}, manifest)
+      assert {:ok, result} = ToolDispatch.execute(%{name: "list_tools", args: %{}}, manifest)
       assert result =~ "foo"
       assert result =~ "does foo"
     end
@@ -149,14 +189,14 @@ defmodule Shem.Agent.ToolDispatchTest do
       end
       """
       manifest = [%{name: "run_code", description: "run", source: :builtin}]
-      assert {:ok, "2"} = ToolDispatch.execute(%{tool: "run_code", args: %{"source" => source}}, manifest)
+      assert {:ok, "2"} = ToolDispatch.execute(%{name: "run_code", args: %{"source" => source}}, manifest)
     end
 
     test "returns {:error, msg} for source with compile error" do
       manifest = [%{name: "run_code", description: "run", source: :builtin}]
       assert {:error, msg} =
                ToolDispatch.execute(
-                 %{tool: "run_code", args: %{"source" => "this is not valid elixir !!!"}},
+                 %{name: "run_code", args: %{"source" => "this is not valid elixir !!!"}},
                  manifest
                )
       assert msg =~ "compile error"
@@ -178,7 +218,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = [%{name: "write_tool", description: "write", source: :builtin}]
       assert {:ok, "graduated: WriteToolTarget1"} =
                ToolDispatch.execute(
-                 %{tool: "write_tool", args: %{"source" => source, "test_source" => test_src}},
+                 %{name: "write_tool", args: %{"source" => source, "test_source" => test_src}},
                  manifest
                )
     end
@@ -197,7 +237,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = [%{name: "write_tool", description: "write", source: :builtin}]
       assert {:error, msg} =
                ToolDispatch.execute(
-                 %{tool: "write_tool", args: %{"source" => source, "test_source" => test_src}},
+                 %{name: "write_tool", args: %{"source" => source, "test_source" => test_src}},
                  manifest
                )
       assert msg =~ "test failed"
@@ -219,14 +259,14 @@ defmodule Shem.Agent.ToolDispatchTest do
       {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src)
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :unrated}]
       assert {:ok, "2"} =
-               ToolDispatch.execute(%{tool: tool.name, args: %{"x" => 1}}, manifest)
+               ToolDispatch.execute(%{name: tool.name, args: %{"x" => 1}}, manifest)
     end
   end
 
   describe "execute/2 — unknown tool" do
     test "returns {:error, 'unknown tool: name'} when not in manifest" do
       assert {:error, "unknown tool: ghost"} =
-               ToolDispatch.execute(%{tool: "ghost", args: %{}}, [])
+               ToolDispatch.execute(%{name: "ghost", args: %{}}, [])
     end
   end
 
@@ -237,12 +277,12 @@ defmodule Shem.Agent.ToolDispatchTest do
       on_exit(fn -> File.rm(path) end)
 
       manifest = ToolDispatch.build_manifest(@config)
-      assert {:ok, "hello world"} = ToolDispatch.execute(%{tool: "read_file", args: %{"path" => path}}, manifest)
+      assert {:ok, "hello world"} = ToolDispatch.execute(%{name: "read_file", args: %{"path" => path}}, manifest)
     end
 
     test "returns error for missing file" do
       manifest = ToolDispatch.build_manifest(@config)
-      result = ToolDispatch.execute(%{tool: "read_file", args: %{"path" => "/nonexistent/path/xyz"}}, manifest)
+      result = ToolDispatch.execute(%{name: "read_file", args: %{"path" => "/nonexistent/path/xyz"}}, manifest)
       assert match?({:error, _}, result)
     end
   end
@@ -253,14 +293,14 @@ defmodule Shem.Agent.ToolDispatchTest do
       on_exit(fn -> File.rm(path) end)
 
       manifest = ToolDispatch.build_manifest(@config)
-      assert {:ok, msg} = ToolDispatch.execute(%{tool: "write_file", args: %{"path" => path, "content" => "test content"}}, manifest)
+      assert {:ok, msg} = ToolDispatch.execute(%{name: "write_file", args: %{"path" => path, "content" => "test content"}}, manifest)
       assert String.contains?(msg, "bytes")
       assert File.read!(path) == "test content"
     end
 
     test "returns error for unwritable path" do
       manifest = ToolDispatch.build_manifest(@config)
-      result = ToolDispatch.execute(%{tool: "write_file", args: %{"path" => "/nonexistent_dir/file.txt", "content" => "x"}}, manifest)
+      result = ToolDispatch.execute(%{name: "write_file", args: %{"path" => "/nonexistent_dir/file.txt", "content" => "x"}}, manifest)
       assert match?({:error, _}, result)
     end
   end
@@ -268,14 +308,14 @@ defmodule Shem.Agent.ToolDispatchTest do
   describe "list_dir built-in" do
     test "returns newline-joined directory entries" do
       manifest = ToolDispatch.build_manifest(@config)
-      assert {:ok, entries} = ToolDispatch.execute(%{tool: "list_dir", args: %{"path" => "lib/shem"}}, manifest)
+      assert {:ok, entries} = ToolDispatch.execute(%{name: "list_dir", args: %{"path" => "lib/shem"}}, manifest)
       assert String.contains?(entries, "agent")
       assert String.contains?(entries, "event_log.ex")
     end
 
     test "returns error for missing directory" do
       manifest = ToolDispatch.build_manifest(@config)
-      result = ToolDispatch.execute(%{tool: "list_dir", args: %{"path" => "/nonexistent_xyz"}}, manifest)
+      result = ToolDispatch.execute(%{name: "list_dir", args: %{"path" => "/nonexistent_xyz"}}, manifest)
       assert match?({:error, _}, result)
     end
   end
@@ -283,19 +323,19 @@ defmodule Shem.Agent.ToolDispatchTest do
   describe "shell built-in" do
     test "returns stdout for successful command" do
       manifest = ToolDispatch.build_manifest(@config)
-      assert {:ok, output} = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "echo hello"}}, manifest)
+      assert {:ok, output} = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "echo hello"}}, manifest)
       assert String.trim(output) == "hello"
     end
 
     test "returns exit code error for failing command" do
       manifest = ToolDispatch.build_manifest(@config)
-      result = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "exit 1"}}, manifest)
+      result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "exit 1"}}, manifest)
       assert match?({:error, "exit 1:" <> _}, result)
     end
 
     test "returns timeout error when exceeded" do
       manifest = ToolDispatch.build_manifest(@config)
-      result = ToolDispatch.execute(%{tool: "shell", args: %{"cmd" => "sleep 10", "timeout_ms" => 100}}, manifest)
+      result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "sleep 10", "timeout_ms" => 100}}, manifest)
       assert match?({:error, "timeout after 100ms"}, result)
     end
   end
@@ -322,12 +362,12 @@ defmodule Shem.Agent.ToolDispatchTest do
 
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :low}]
       assert {:error, "tool blocked (trust: low)"} =
-               ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+               ToolDispatch.execute(%{name: tool.name, args: %{}}, manifest)
     end
 
     test "low-trust tool is allowed when gate disabled", %{tool: tool} do
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :low}]
-      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+      assert {:ok, _} = ToolDispatch.execute(%{name: tool.name, args: %{}}, manifest)
     end
 
     test "unrated tool is allowed when gate enabled", %{tool: tool} do
@@ -335,7 +375,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
 
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :unrated}]
-      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+      assert {:ok, _} = ToolDispatch.execute(%{name: tool.name, args: %{}}, manifest)
     end
 
     test "medium-trust tool is allowed when gate enabled", %{tool: tool} do
@@ -343,7 +383,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
 
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :medium}]
-      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+      assert {:ok, _} = ToolDispatch.execute(%{name: tool.name, args: %{}}, manifest)
     end
 
     test "high-trust tool is allowed when gate enabled", %{tool: tool} do
@@ -351,7 +391,7 @@ defmodule Shem.Agent.ToolDispatchTest do
       on_exit(fn -> Application.put_env(:shem, :trust_gate_enabled, false) end)
 
       manifest = [%{name: tool.name, description: "", source: {:lab, tool.id}, trust: :high}]
-      assert {:ok, _} = ToolDispatch.execute(%{tool: tool.name, args: %{}}, manifest)
+      assert {:ok, _} = ToolDispatch.execute(%{name: tool.name, args: %{}}, manifest)
     end
 
     test "builtin is never blocked regardless of gate", %{tool: _tool} do
@@ -364,7 +404,7 @@ defmodule Shem.Agent.ToolDispatchTest do
 
       manifest = [%{name: "read_file", description: "read", source: :builtin, trust: :builtin}]
       assert {:ok, "x"} =
-               ToolDispatch.execute(%{tool: "read_file", args: %{"path" => path}}, manifest)
+               ToolDispatch.execute(%{name: "read_file", args: %{"path" => path}}, manifest)
     end
   end
 end
