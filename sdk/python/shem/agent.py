@@ -28,7 +28,8 @@ class Agent:
         return resp.json()["status"]
 
     def stop(self) -> None:
-        requests.delete(f"{self._base}/api/agents/{self._id}")
+        resp = requests.delete(f"{self._base}/api/agents/{self._id}")
+        resp.raise_for_status()
 
     def await_result(self, timeout: float = 120.0) -> Result:
         deadline = time.monotonic() + timeout

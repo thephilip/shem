@@ -61,7 +61,8 @@ class TestAgentAwaitResult:
 
     def test_raises_timeout_error(self):
         with patch("requests.get") as mock_get, \
-             patch("time.monotonic", side_effect=[0.0, 0.0, 200.0]):
+             patch("time.monotonic", side_effect=[0.0, 0.0, 200.0]), \
+             patch("time.sleep"):
             mock_get.return_value = mock_response({"status": "running"})
             agent = Agent("agent_AA", "sess_01", "http://localhost:4000")
             with pytest.raises(TimeoutError, match="agent_AA"):
