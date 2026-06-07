@@ -12,6 +12,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       timeout_ms = Keyword.get(opts, :timeout_ms, Application.get_env(:shem, :llm_timeout_ms, 120_000))
       model_string = Keyword.get(opts, :model_string, "claude-sonnet-4-6")
       max_tokens = Map.get(request.options, :max_tokens, 512)
+      base_url = Keyword.get(opts, :base_url, "https://api.anthropic.com")
 
       body = %{
         "model" => model_string,
@@ -26,7 +27,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
 
       start_ms = System.monotonic_time(:millisecond)
 
-      case http_post.("https://api.anthropic.com/v1/messages",
+      case http_post.(base_url <> "/v1/messages",
              json: body,
              headers: headers,
              receive_timeout: timeout_ms

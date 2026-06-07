@@ -31,6 +31,16 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
       assert resp.latency_ms >= 0
       assert resp.model == :default
     end
+
+    test "respects base_url opt for proxy compatibility" do
+      custom_url = "https://proxy.example.com"
+      mock = fn url, _opts ->
+        assert url == custom_url <> "/v1/messages"
+        {:ok, %{status: 200, body: success_body("Hello", 10, 5)}}
+      end
+      opts = [api_key: "sk-ant-test", http_post_fn: mock, base_url: custom_url]
+      assert {:ok, _resp} = AnthropicTransport.call(req(), opts, nil)
+    end
   end
 
   describe "call/3 — HTTP errors" do
