@@ -33,6 +33,18 @@ defmodule Shem.LLM.RouterTest do
       assert {Shem.LLM.Middleware.OllamaTransport, opts} = Router.resolve(:local)
       assert Keyword.get(opts, :model_string) == "mistral"
     end
+
+    test "returns OpenAITransport for :openai backend" do
+      :ok = Router.set_route(:default, :openai, "gpt-4o")
+      assert {Shem.LLM.Middleware.OpenAITransport, opts} = Router.resolve(:default)
+      assert Keyword.get(opts, :model_string) == "gpt-4o"
+    end
+
+    test "returns AnthropicTransport for :anthropic backend" do
+      :ok = Router.set_route(:reasoning, :anthropic, "claude-sonnet-4-6")
+      assert {Shem.LLM.Middleware.AnthropicTransport, opts} = Router.resolve(:reasoning)
+      assert Keyword.get(opts, :model_string) == "claude-sonnet-4-6"
+    end
   end
 
   describe "set_route/3" do

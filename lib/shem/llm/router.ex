@@ -3,7 +3,9 @@ defmodule Shem.LLM.Router do
 
   @backend_modules %{
     llama_cpp: Shem.LLM.Middleware.LlamaCppTransport,
-    ollama: Shem.LLM.Middleware.OllamaTransport
+    ollama: Shem.LLM.Middleware.OllamaTransport,
+    openai: Shem.LLM.Middleware.OpenAITransport,
+    anthropic: Shem.LLM.Middleware.AnthropicTransport
   }
 
   def start_link(_opts \\ []) do
@@ -15,12 +17,12 @@ defmodule Shem.LLM.Router do
     GenServer.call(__MODULE__, {:resolve, model_atom})
   end
 
-  @spec set_route(atom(), :llama_cpp | :ollama, String.t()) :: :ok
+  @spec set_route(atom(), :llama_cpp | :ollama | :openai | :anthropic, String.t()) :: :ok
   def set_route(model_atom, backend_key, model_string) do
     GenServer.call(__MODULE__, {:set_route, model_atom, backend_key, model_string})
   end
 
-  @spec all() :: %{atom() => {:llama_cpp | :ollama, String.t()}}
+  @spec all() :: %{atom() => {:llama_cpp | :ollama | :openai | :anthropic, String.t()}}
   def all do
     GenServer.call(__MODULE__, :all)
   end
