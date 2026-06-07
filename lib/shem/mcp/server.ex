@@ -11,7 +11,7 @@ defmodule Shem.MCP.Server do
 
     children = [
       Shem.MCP.SessionRegistry,
-      {Bandit, plug: Shem.MCP.Router, port: port, ip: {127, 0, 0, 1}, scheme: :http}
+      {Bandit, plug: Shem.HTTP.Router, port: port, ip: {127, 0, 0, 1}, scheme: :http}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
