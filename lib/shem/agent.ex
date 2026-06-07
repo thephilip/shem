@@ -44,7 +44,12 @@ defmodule Shem.Agent do
   def await(name, timeout \\ 5_000) do
     case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
       nil -> {:error, :not_found}
-      pid -> GenServer.call(pid, :await, timeout)
+      pid ->
+        try do
+          GenServer.call(pid, :await, timeout)
+        catch
+          :exit, {:timeout, _} -> {:error, :timeout}
+        end
     end
   end
 
