@@ -84,7 +84,10 @@ defmodule Shem.Agent.Turn do
   @spec build_request(atom(), String.t(), [map()], [map()]) :: Request.t()
   def build_request(model, system_prompt, tools_manifest, history) do
     prompt = build_prompt(system_prompt, tools_manifest, history)
-    messages = build_messages(tools_manifest, history)
+    messages = case build_messages(tools_manifest, history) do
+      [] -> nil
+      msgs -> msgs
+    end
     %Request{prompt: prompt, model: model, system: system_prompt, messages: messages}
   end
 

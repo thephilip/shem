@@ -194,6 +194,11 @@ defmodule Shem.Agent.TurnTest do
       request = Turn.build_request(:default, "sys", [], history)
       assert Enum.any?(request.messages, &(&1.role == :assistant and &1.content == "hello"))
     end
+
+    test "messages is nil when both manifest and history are empty" do
+      request = Turn.build_request(:default, "sys", [], [])
+      assert request.messages == nil
+    end
   end
 
   describe "step/4" do
