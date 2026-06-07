@@ -20,7 +20,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
             {[%{"role" => "user", "content" => request.prompt}], nil}
 
           msgs ->
-            formatted = Enum.map(msgs, &format_message/1)
+            formatted = format_messages(msgs)
             {formatted, request.system}
         end
 
@@ -78,6 +78,25 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
     end
   end
 
+  defp format_messages(msgs) do
+    msgs
+    |> Enum.chunk_by(fn m -> m[:role] == :tool end)
+    |> Enum.flat_map(fn chunk ->
+      case chunk do
+        [%{role: :tool} | _] ->
+          blocks =
+            Enum.map(chunk, fn %{role: :tool, content: c, tool_call_id: id} ->
+              %{"type" => "tool_result", "tool_use_id" => id, "content" => c}
+            end)
+
+          [%{"role" => "user", "content" => blocks}]
+
+        other ->
+          Enum.map(other, &format_message/1)
+      end
+    end)
+  end
+
   defp format_message(%{role: :assistant, tool_calls: calls} = msg) when not is_nil(calls) do
     c = Map.get(msg, :content)
     text_blocks = if c && c != "", do: [%{"type" => "text", "text" => c}], else: []
@@ -88,13 +107,6 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       end)
 
     %{"role" => "assistant", "content" => text_blocks ++ call_blocks}
-  end
-
-  defp format_message(%{role: :tool, content: c, tool_call_id: id}) do
-    %{
-      "role" => "user",
-      "content" => [%{"type" => "tool_result", "tool_use_id" => id, "content" => c}]
-    }
   end
 
   defp format_message(%{role: role, content: content}) do

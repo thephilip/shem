@@ -163,6 +163,41 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
     end
   end
 
+  describe "call/3 — multi-tool result grouping" do
+    test "consecutive tool results are merged into a single user message" do
+      calls = [
+        %{id: "t1", name: "run_code", args: %{"source" => "1+1"}},
+        %{id: "t2", name: "shell", args: %{"cmd" => "ls"}}
+      ]
+      messages = [
+        %{role: :assistant, content: nil, tool_calls: calls},
+        %{role: :tool, content: "result A", tool_call_id: "t1"},
+        %{role: :tool, content: "result B", tool_call_id: "t2"}
+      ]
+      request = %Request{prompt: "go", model: :default, messages: messages}
+
+      mock = fn _url, opts ->
+        msgs = opts[:json]["messages"]
+        # assistant message first
+        [asst, tool_msg] = msgs
+        assert asst["role"] == "assistant"
+        # single user message with two tool_result blocks
+        assert tool_msg["role"] == "user"
+        [block_a, block_b] = tool_msg["content"]
+        assert block_a["type"] == "tool_result"
+        assert block_a["tool_use_id"] == "t1"
+        assert block_a["content"] == "result A"
+        assert block_b["type"] == "tool_result"
+        assert block_b["tool_use_id"] == "t2"
+        assert block_b["content"] == "result B"
+        {:ok, %{status: 200, body: success_body("done", 10, 5)}}
+      end
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock]
+      assert {:ok, %Response{}} = AnthropicTransport.call(request, opts, nil)
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages and top-level system field when present" do
       messages = [
