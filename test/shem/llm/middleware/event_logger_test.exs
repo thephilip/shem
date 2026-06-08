@@ -79,4 +79,37 @@ defmodule Shem.LLM.Middleware.EventLoggerTest do
       assert {:ok, _} = EventLogger.call(request(nil), [], next)
     end
   end
+
+  describe "stream/4" do
+    test "appends llm_call_started and llm_call_completed events around the stream" do
+      {:ok, session_id} = Shem.EventLog.start_session("eltest_stream_#{System.unique_integer()}")
+
+      next = fn req, cf ->
+        cf.("token")
+        {:ok, %Shem.LLM.Response{content: "token", tokens_used: 2, model: req.model, latency_ms: 0}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "p", model: :default, session_id: session_id}
+      assert {:ok, _} = EventLogger.stream(request, [], fn _t -> :ok end, next)
+
+      {:ok, events} = Shem.EventLog.events(session_id)
+      types = Enum.map(events, & &1.type)
+      assert :llm_call_started in types
+      assert :llm_call_completed in types
+    end
+
+    test "passes chunk_fn through to next unchanged" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &[t | &1]) end
+
+      next = fn _req, cf ->
+        cf.("live")
+        {:ok, %Shem.LLM.Response{content: "live", tokens_used: 1, model: :default, latency_ms: 0}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "p", model: :default, session_id: nil}
+      assert {:ok, _} = EventLogger.stream(request, [], chunk_fn, next)
+      assert Agent.get(collector, & &1) == ["live"]
+    end
+  end
 end
