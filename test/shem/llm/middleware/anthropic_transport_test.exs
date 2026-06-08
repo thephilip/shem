@@ -198,6 +198,122 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
     end
   end
 
+  describe "stream/4 — text response" do
+    test "calls chunk_fn per text token" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      http_stream_fn = fn _url, _body, _headers, _timeout, _model, cf ->
+        cf.("Hello ")
+        cf.("Claude")
+        {:ok, %Shem.LLM.Response{
+          content: "Hello Claude",
+          tool_calls: nil,
+          tokens_used: 12,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "test-key", http_stream_fn: http_stream_fn]
+
+      assert {:ok, %{content: "Hello Claude"}} =
+               AnthropicTransport.stream(request, opts, chunk_fn, fn _, _ -> :ok end)
+
+      assert Agent.get(collector, & &1) == ["Hello ", "Claude"]
+    end
+  end
+
+  describe "stream/4 — tool call" do
+    test "returns tool_calls in Response" do
+      http_stream_fn = fn _url, _body, _headers, _timeout, _model, cf ->
+        cf.("I'll use a tool")
+        {:ok, %Shem.LLM.Response{
+          content: "I'll use a tool",
+          tool_calls: [%{id: "toolu_abc", name: "shell", args: %{"cmd" => "ls"}}],
+          tokens_used: 20,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "ls", model: :default}
+      opts = [api_key: "test-key", http_stream_fn: http_stream_fn]
+
+      assert {:ok, %{tool_calls: [%{id: "toolu_abc", name: "shell"}]}} =
+               AnthropicTransport.stream(request, opts, fn _ -> :ok end, fn _, _ -> :ok end)
+    end
+  end
+
+  describe "stream/4 — error" do
+    test "returns {:error, {:transport, :missing_api_key}} when api_key absent" do
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+
+      assert {:error, {:transport, :missing_api_key}} =
+               AnthropicTransport.stream(request, [api_key: nil], fn _ -> :ok end, fn _, _ -> :ok end)
+    end
+  end
+
+  describe "stream/4 — SSE parser via req_fn injection" do
+    test "text_delta events call chunk_fn and assemble content" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        events = [
+          ~s|event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":5}}}\n\n|,
+          ~s|event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello "}}\n\n|,
+          ~s|event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"world"}}\n\n|,
+          ~s|event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":3}}\n\n|
+        ]
+        Enum.reduce(events, "", fn event, acc ->
+          {:cont, new_acc} = into_fn.({:data, event}, acc)
+          new_acc
+        end)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default, tools: nil}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{content: "Hello world", tokens_used: 8}} =
+               AnthropicTransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == ["Hello ", "world"]
+    end
+
+    test "tool_use block accumulates args via input_json_delta" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        events = [
+          ~s|event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10}}}\n\n|,
+          ~s|event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_1","name":"shell"}}\n\n|,
+          ~s|event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"cmd\\":"}}\n\n|,
+          ~s|event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"\\"ls\\"}"}} \n\n|,
+          ~s|event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":5}}\n\n|
+        ]
+        Enum.reduce(events, "", fn event, acc ->
+          {:cont, new_acc} = into_fn.({:data, event}, acc)
+          new_acc
+        end)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "ls", model: :default, tools: nil}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{tool_calls: [%{id: "toolu_1", name: "shell", args: %{"cmd" => "ls"}}], tokens_used: 15}} =
+               AnthropicTransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == []
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages and top-level system field when present" do
       messages = [
