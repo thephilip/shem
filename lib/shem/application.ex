@@ -1,8 +1,11 @@
 defmodule Shem.Application do
   use Application
+  require Logger
 
   @impl true
   def start(_type, _args) do
+    resolve_executor_backend()
+
     children =
       [
         {Horde.Registry, [name: Shem.Registry, keys: :unique, members: :auto]},
@@ -69,6 +72,57 @@ defmodule Shem.Application do
       [Shem.TUI.RuntimeSupervisor]
     else
       []
+    end
+  end
+
+  def resolve_executor_backend(detect_fn \\ &detect_container_runtime/0) do
+    case Application.get_env(:shem, :executor_backend, :auto) do
+      :local ->
+        Application.put_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
+        Application.put_env(:shem, :container_runtime_bin, nil)
+
+      :container ->
+        runtime = detect_fn.()
+
+        if is_nil(runtime) do
+          Logger.error(
+            "Shem: no container runtime found (tried podman, docker). " <>
+              "Shell tool will return errors until a container runtime is installed."
+          )
+        end
+
+        Application.put_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Container)
+        Application.put_env(:shem, :container_runtime_bin, runtime)
+
+      :auto ->
+        case detect_fn.() do
+          nil ->
+            Logger.warning(
+              "Shem: no container runtime found (tried podman, docker). " <>
+                "Shell tool will run without isolation. " <>
+                "Install podman or docker to enable sandboxed execution."
+            )
+
+            Application.put_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
+            Application.put_env(:shem, :container_runtime_bin, nil)
+
+          runtime ->
+            Application.put_env(
+              :shem,
+              :resolved_executor_backend,
+              Shem.Lab.Executor.Backend.Container
+            )
+
+            Application.put_env(:shem, :container_runtime_bin, runtime)
+        end
+    end
+  end
+
+  defp detect_container_runtime do
+    cond do
+      System.find_executable("podman") != nil -> "podman"
+      System.find_executable("docker") != nil -> "docker"
+      true -> nil
     end
   end
 end
