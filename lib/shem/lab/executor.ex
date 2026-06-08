@@ -20,6 +20,16 @@ defmodule Shem.Lab.Executor do
     end
   end
 
+  @spec run_shell(String.t(), non_neg_integer(), keyword()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  def run_shell(cmd, timeout_ms, opts \\ []) do
+    backend =
+      Process.get(:shem_executor_backend) ||
+        Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
+
+    backend.run_shell(cmd, timeout_ms, opts)
+  end
+
   defp run_remote(source, fun, timeout, node) do
     case :rpc.call(node, __MODULE__, :run, [source, fun, [timeout: timeout]], timeout + 1_000) do
       {:badrpc, reason} -> {:error, reason}
