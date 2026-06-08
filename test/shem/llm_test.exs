@@ -78,6 +78,41 @@ defmodule Shem.LLMTest do
     end
   end
 
+  describe "stream_complete/2" do
+    setup do
+      Shem.LLM.BudgetServer.reset()
+      Shem.LLM.StubTransport.Server.reset()
+      :ok
+    end
+
+    test "calls chunk_fn with response content and returns {:ok, response}" do
+      Shem.LLM.StubTransport.Server.push_response(
+        {:ok, %Shem.LLM.Response{content: "hello world", tool_calls: nil, tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn token -> Agent.update(collector, &[token | &1]) end
+
+      request = %Shem.LLM.Request{prompt: "test", model: :default}
+      assert {:ok, %Shem.LLM.Response{content: "hello world"}} = Shem.LLM.stream_complete(request, chunk_fn)
+
+      chunks = Agent.get(collector, & &1) |> Enum.reverse()
+      assert chunks != []
+      assert Enum.join(chunks) =~ "hello"
+    end
+
+    test "returns {:error, :budget_exhausted} without calling chunk_fn when budget is depleted" do
+      Shem.LLM.BudgetServer.deduct(100_001)
+
+      called = :atomics.new(1, signed: false)
+      chunk_fn = fn _token -> :atomics.add(called, 1, 1) end
+
+      request = %Shem.LLM.Request{prompt: "test", model: :default}
+      assert {:error, :budget_exhausted} = Shem.LLM.stream_complete(request, chunk_fn)
+      assert :atomics.get(called, 1) == 0
+    end
+  end
+
   describe "Shem.StreamRegistry" do
     test "allows multiple subscribers on the same session_id (duplicate key semantics)" do
       session_id = "test_stream_#{System.unique_integer()}"

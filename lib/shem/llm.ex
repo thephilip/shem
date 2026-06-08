@@ -23,6 +23,11 @@ defmodule Shem.LLM do
     end
   end
 
+  @spec stream_complete(Request.t(), (String.t() -> :ok)) :: {:ok, Response.t()} | {:error, term()}
+  def stream_complete(%Request{} = request, chunk_fn) when is_function(chunk_fn, 1) do
+    build_stream_pipeline().(request, chunk_fn)
+  end
+
   defp build_pipeline do
     pipeline =
       Process.get(:shem_replay_pipeline) ||
@@ -35,6 +40,27 @@ defmodule Shem.LLM do
     |> Enum.reverse()
     |> Enum.reduce(terminal, fn {mod, opts}, next ->
       fn req -> mod.call(req, opts, next) end
+    end)
+  end
+
+  defp build_stream_pipeline do
+    pipeline =
+      Process.get(:shem_replay_pipeline) ||
+        Application.get_env(:shem, :llm_pipeline, [])
+
+    # Each step is fn(req, chunk_fn) -> pipeline_result()
+    terminal = fn _req, _chunk_fn -> {:error, :no_terminal} end
+
+    pipeline
+    |> normalize_pipeline()
+    |> Enum.reverse()
+    |> Enum.reduce(terminal, fn {mod, opts}, next ->
+      if function_exported?(mod, :stream, 4) do
+        fn req, chunk_fn -> mod.stream(req, opts, chunk_fn, next) end
+      else
+        # Fallback: call/3 with a next that threads chunk_fn down
+        fn req, chunk_fn -> mod.call(req, opts, fn r -> next.(r, chunk_fn) end) end
+      end
     end)
   end
 
