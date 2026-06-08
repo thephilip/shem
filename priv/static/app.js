@@ -23,6 +23,7 @@ function shem() {
     },
 
     async run() {
+      if (this.status === 'running') return;
       this.status = 'running';
       this.output = '';
       this.errorMsg = '';
@@ -47,7 +48,14 @@ function shem() {
         return;
       }
 
-      const { agent_id } = await res.json();
+      let agent_id;
+      try {
+        ({ agent_id } = await res.json());
+      } catch (e) {
+        this.status = 'error';
+        this.errorMsg = 'Invalid server response.';
+        return;
+      }
       this.agentId = agent_id;
 
       const es = new EventSource('/api/agents/' + agent_id + '/stream');
@@ -92,6 +100,7 @@ function shem() {
     },
 
     reset() {
+      if (this.eventSource) { this.eventSource.close(); this.eventSource = null; }
       this.output = '';
       this.errorMsg = '';
       this.task = '';
