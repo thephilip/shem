@@ -21,7 +21,8 @@ defmodule Shem.Lab.Executor.Backend.Container do
       network =
         Keyword.get(opts, :network, Application.get_env(:shem, :executor_network, :default))
 
-      args = build_args(image, network, cmd)
+      name = "shem-#{:erlang.unique_integer([:positive])}"
+      args = build_args(image, network, name, cmd)
 
       task =
         Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
@@ -40,12 +41,13 @@ defmodule Shem.Lab.Executor.Backend.Container do
 
         nil ->
           Task.shutdown(task, :brutal_kill)
+          System.cmd(bin, ["rm", "-f", name], stderr_to_stdout: true)
           {:error, "timeout after #{timeout_ms}ms"}
       end
     end
   end
 
-  defp build_args(image, network, cmd) do
+  defp build_args(image, network, name, cmd) do
     network_args =
       case network do
         :none -> ["--network=none"]
@@ -53,6 +55,6 @@ defmodule Shem.Lab.Executor.Backend.Container do
         _ -> []
       end
 
-    ["run", "--rm", "-i"] ++ network_args ++ [image, "sh", "-c", cmd]
+    ["run", "--rm", "--name", name, "-i"] ++ network_args ++ [image, "sh", "-c", cmd]
   end
 end
