@@ -49,6 +49,7 @@ defmodule Shem.TUI.Views.InteractiveTest do
       turn_count: 1,
       max_turns: 10,
       current_reasoning: "thinking...",
+      streaming_buffer: nil,
       last_tool_call: nil,
       history: [],
       recent_events: [],

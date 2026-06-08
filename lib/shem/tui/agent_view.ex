@@ -5,6 +5,7 @@ defmodule Shem.TUI.AgentView do
     turn_count: 0,
     max_turns: 20,
     current_reasoning: nil,
+    streaming_buffer: nil,
     last_tool_call: nil,
     history: [],
     recent_events: []
@@ -16,6 +17,7 @@ defmodule Shem.TUI.AgentView do
           turn_count: non_neg_integer(),
           max_turns: pos_integer(),
           current_reasoning: String.t() | nil,
+          streaming_buffer: String.t() | nil,
           last_tool_call: %{name: String.t(), args: map(), result: String.t() | nil} | nil,
           history: [%{turn: non_neg_integer(), tool: String.t() | nil}],
           recent_events: [atom()]

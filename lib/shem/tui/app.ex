@@ -2,7 +2,7 @@ defmodule Shem.TUI.App do
   @behaviour Ratatouille.App
 
   alias Shem.TUI.Views.{Dashboard, Interactive, History}
-  alias Shem.TUI.{CommandDispatch, AgentView}
+  alias Shem.TUI.{CommandDispatch, AgentView, StreamSink}
   alias Ratatouille.Runtime.Subscription
 
   @esc 27
@@ -27,6 +27,7 @@ defmodule Shem.TUI.App do
       agents: [],
       focused_agent: nil,
       agent_view: nil,
+      stream_sink: nil,
       command_error: nil,
       command_output: nil,
       trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
@@ -40,7 +41,7 @@ defmodule Shem.TUI.App do
 
   @impl true
   def subscribe(_model) do
-    Subscription.interval(500, :tick)
+    Subscription.interval(100, :tick)
   end
 
   @impl true
@@ -90,7 +91,8 @@ defmodule Shem.TUI.App do
           %{session_id: session_id, task: task} when not is_nil(task) ->
             case Shem.Agent.resume(session_id, task) do
               {:ok, name} ->
-                %{model | mode: :interactive, focused_agent: name, command_error: nil, command_output: nil}
+                model = %{model | mode: :interactive, focused_agent: name, command_error: nil, command_output: nil}
+                start_stream_sink_for_focused(model)
 
               {:error, reason} ->
                 %{model | command_error: "resume failed: #{inspect(reason)}"}
@@ -149,7 +151,8 @@ defmodule Shem.TUI.App do
                   Enum.at(names, rem(idx + 1, length(names)))
               end
 
-            %{model | focused_agent: next}
+            model = %{model | focused_agent: next}
+            start_stream_sink_for_focused(model)
         end
 
       {:event, %{key: @enter}} when model.command_buffer != "" ->
@@ -157,7 +160,8 @@ defmodule Shem.TUI.App do
           {:start_agent, preset_name, task} ->
             case Shem.Agent.start_with_preset(preset_name, task) do
               {:ok, name} ->
-                %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
+                model = %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
+                start_stream_sink_for_focused(model)
 
               {:error, reason} ->
                 %{model | command_error: "failed to start agent: #{inspect(reason)}", command_output: nil}
@@ -245,7 +249,7 @@ defmodule Shem.TUI.App do
         end
 
       :tick ->
-        %{
+        model = %{
           model
           | event_log_stats: safe_stats(),
             tool_count: safe_tool_count(),
@@ -256,6 +260,44 @@ defmodule Shem.TUI.App do
             agent_view: safe_agent_view(model.focused_agent),
             trust_counts: safe_trust_counts()
         }
+
+        # Drain streaming tokens from StreamSink into streaming_buffer
+        model =
+          case model.stream_sink do
+            nil -> model
+            pid when is_pid(pid) ->
+              if Process.alive?(pid) do
+                tokens = StreamSink.take_tokens(pid)
+                case tokens do
+                  [] -> model
+                  _ ->
+                    new_buf = (model.agent_view && (model.agent_view.streaming_buffer || "")) <> Enum.join(tokens)
+                    agent_view = model.agent_view && %{model.agent_view | streaming_buffer: new_buf}
+                    %{model | agent_view: agent_view}
+                end
+              else
+                %{model | stream_sink: nil}
+              end
+          end
+
+        # Clear streaming_buffer when llm_call_completed is the most recent event
+        model =
+          if model.agent_view && :llm_call_completed in Enum.take(model.agent_view.recent_events, 3) do
+            %{model | agent_view: %{model.agent_view | streaming_buffer: nil}}
+          else
+            model
+          end
+
+        # Stop StreamSink when agent is done or errored
+        model =
+          if model.agent_view && model.agent_view.status in [:done, :error] && model.stream_sink do
+            StreamSink.stop(model.stream_sink)
+            %{model | stream_sink: nil}
+          else
+            model
+          end
+
+        model
 
       _ ->
         model
@@ -530,6 +572,41 @@ defmodule Shem.TUI.App do
       _ -> []
     catch
       :exit, _ -> []
+    end
+  end
+
+  defp start_stream_sink(model, session_id) do
+    StreamSink.stop(model.stream_sink)
+    {:ok, pid} = StreamSink.start_link(session_id)
+    %{model | stream_sink: pid}
+  end
+
+  defp start_stream_sink_for_focused(model) do
+    case model.focused_agent do
+      nil ->
+        StreamSink.stop(model.stream_sink)
+        %{model | stream_sink: nil}
+
+      name ->
+        try do
+          via = Shem.ProcessRegistry.via_tuple(name)
+
+          case GenServer.whereis(via) do
+            nil ->
+              model
+
+            pid ->
+              case GenServer.call(pid, :session_id, 200) do
+                session_id when is_binary(session_id) ->
+                  start_stream_sink(model, session_id)
+
+                _ ->
+                  model
+              end
+          end
+        catch
+          :exit, _ -> model
+        end
     end
   end
 end

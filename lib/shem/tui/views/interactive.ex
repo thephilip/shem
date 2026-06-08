@@ -129,7 +129,7 @@ defmodule Shem.TUI.Views.Interactive do
       )
 
       label(
-        content: truncate(view.current_reasoning || "waiting...", 200),
+        content: truncate(view.streaming_buffer || view.current_reasoning || "waiting...", 200),
         color: color(:cyan)
       )
 
