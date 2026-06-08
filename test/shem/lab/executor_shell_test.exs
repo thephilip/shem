@@ -1,4 +1,5 @@
 defmodule Shem.Lab.ExecutorShellTest do
+  # process-dict mutation — must not run concurrently
   use ExUnit.Case, async: false
 
   alias Shem.Lab.Executor
@@ -26,7 +27,7 @@ defmodule Shem.Lab.ExecutorShellTest do
     assert {:ok, "container result"} = Executor.run_shell("ls", 5_000, run_fn: run_fn)
   end
 
-  test "returns error when no backend resolved and no process override" do
+  test "falls back to Application env backend when no process override" do
     Process.delete(:shem_executor_backend)
     # Application env in test is :local, so this should succeed via Local
     assert {:ok, output} = Executor.run_shell("echo configured", 5_000)
