@@ -55,6 +55,7 @@ defmodule Shem.LLM do
     |> normalize_pipeline()
     |> Enum.reverse()
     |> Enum.reduce(terminal, fn {mod, opts}, next ->
+      Code.ensure_loaded!(mod)
       if function_exported?(mod, :stream, 4) do
         fn req, chunk_fn -> mod.stream(req, opts, chunk_fn, next) end
       else

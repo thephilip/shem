@@ -119,6 +119,34 @@ defmodule Shem.Agent.Turn do
     end)
   end
 
+  @spec stream_step(Config.t(), String.t(), [map()], [map()]) ::
+          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t()}
+          | {:done, String.t()}
+          | {:error, term()}
+  def stream_step(%Config{} = config, session_id, history, tools_manifest) do
+    chunk_fn = fn token ->
+      Registry.dispatch(Shem.StreamRegistry, session_id, fn entries ->
+        Enum.each(entries, fn {pid, _} -> send(pid, {:stream_chunk, session_id, token}) end)
+      end)
+    end
+
+    request =
+      config.model
+      |> build_request(config.system_prompt, tools_manifest, history)
+      |> Map.put(:session_id, session_id)
+
+    case LLM.stream_complete(request, chunk_fn) do
+      {:ok, %Response{tool_calls: [_ | _] = calls, content: content}} ->
+        {:tool_calls, calls, content || ""}
+
+      {:ok, %Response{content: content}} ->
+        content |> strip_thinking() |> parse_response()
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
   @spec step(Config.t(), String.t(), [map()], [map()]) ::
           {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t()}
           | {:done, String.t()}

@@ -269,6 +269,83 @@ defmodule Shem.Agent.TurnTest do
     end
   end
 
+  describe "stream_step/4" do
+    alias Shem.Agent.Config
+    alias Shem.LLM.{Response, StubTransport}
+
+    setup do
+      Shem.LLM.BudgetServer.reset()
+      StubTransport.Server.reset()
+      :ok
+    end
+
+    defp stream_stub(content, tokens \\ 5) do
+      StubTransport.Server.push_response(
+        {:ok, %Response{content: content, tokens_used: tokens, model: :default, latency_ms: 1}}
+      )
+    end
+
+    test "broadcasts {:stream_chunk, session_id, token} to StreamRegistry subscribers" do
+      stream_stub("The answer is 42.")
+      session_id = "stream_test_#{System.unique_integer()}"
+
+      {:ok, _} = Registry.register(Shem.StreamRegistry, session_id, nil)
+
+      config = %Config{task: "test", system_prompt: "be helpful"}
+      history = [%{role: :user, content: "what is 6*7?"}]
+
+      assert {:done, _} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
+
+      messages =
+        receive do
+          {:stream_chunk, ^session_id, token} -> [token]
+        after
+          500 -> []
+        end
+
+      assert messages != []
+    end
+
+    test "returns {:done, answer} for a plain text response" do
+      stream_stub("42 is the answer.")
+      session_id = "stream_test_#{System.unique_integer()}"
+      config = %Config{task: "test", system_prompt: "be helpful"}
+      history = [%{role: :user, content: "compute"}]
+
+      assert {:done, answer} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
+      assert answer =~ "42"
+    end
+
+    test "returns {:tool_calls, calls, raw} for a native tool_calls response" do
+      StubTransport.Server.push_response(
+        {:ok, %Response{
+          content: nil,
+          tool_calls: [%{id: "call_1", name: "list_tools", args: %{}}],
+          tokens_used: 5,
+          model: :default,
+          latency_ms: 1
+        }}
+      )
+
+      session_id = "stream_test_#{System.unique_integer()}"
+      config = %Config{task: "test", system_prompt: "be helpful"}
+      history = [%{role: :user, content: "list tools"}]
+
+      assert {:tool_calls, [%{name: "list_tools"}], _raw} =
+               Shem.Agent.Turn.stream_step(config, session_id, history, [])
+    end
+
+    test "returns {:error, reason} when LLM returns error" do
+      StubTransport.Server.push_response({:error, :transport_down})
+      session_id = "stream_test_#{System.unique_integer()}"
+      config = %Config{task: "test", system_prompt: "be helpful"}
+      history = [%{role: :user, content: "task"}]
+
+      assert {:error, :transport_down} =
+               Shem.Agent.Turn.stream_step(config, session_id, history, [])
+    end
+  end
+
   describe "step/4 — native tool_calls path" do
     test "returns {:tool_calls, calls, content} when Response has tool_calls" do
       tool_call = %{id: "call_1", name: "run_code", args: %{"source" => "1 + 1"}}
