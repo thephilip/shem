@@ -157,6 +157,67 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
     end
   end
 
+  describe "stream/4 — text response" do
+    test "calls chunk_fn per text token and returns assembled Response" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      http_stream_fn = fn _url, _body, cf ->
+        cf.("Hello ")
+        cf.("world")
+        {:ok, %Shem.LLM.Response{
+          content: "Hello world",
+          tool_calls: nil,
+          tokens_used: 10,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", http_stream_fn: http_stream_fn]
+
+      assert {:ok, %{content: "Hello world", tool_calls: nil, tokens_used: 10}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == ["Hello ", "world"]
+    end
+  end
+
+  describe "stream/4 — tool call response" do
+    test "returns tool_calls in Response; mock controls chunk emission" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      http_stream_fn = fn _url, _body, cf ->
+        cf.("Let me check")
+        {:ok, %Shem.LLM.Response{
+          content: "Let me check",
+          tool_calls: [%{id: "call_1", name: "shell", args: %{"cmd" => "ls"}}],
+          tokens_used: 15,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "ls", model: :default, tools: nil}
+      opts = [api_key: "sk-test", http_stream_fn: http_stream_fn]
+
+      assert {:ok, %{tool_calls: [%{name: "shell"}]}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == ["Let me check"]
+    end
+  end
+
+  describe "stream/4 — error handling" do
+    test "returns {:error, {:transport, :missing_api_key}} when api_key is nil" do
+      request = %Shem.LLM.Request{prompt: "test", model: :default}
+      assert {:error, {:transport, :missing_api_key}} =
+               OpenAITransport.stream(request, [api_key: nil], fn _ -> :ok end, fn _, _ -> :ok end)
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages array and prepends system message when present" do
       messages = [
