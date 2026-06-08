@@ -282,7 +282,7 @@ defmodule Shem.TUI.App do
 
         # Clear streaming_buffer when llm_call_completed is the most recent event
         model =
-          if model.agent_view && :llm_call_completed in Enum.take(model.agent_view.recent_events, 3) do
+          if model.agent_view && :llm_call_completed in model.agent_view.recent_events do
             %{model | agent_view: %{model.agent_view | streaming_buffer: nil}}
           else
             model
@@ -604,6 +604,8 @@ defmodule Shem.TUI.App do
                   model
               end
           end
+        rescue
+          _ -> model
         catch
           :exit, _ -> model
         end
