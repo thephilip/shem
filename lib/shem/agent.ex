@@ -3,14 +3,15 @@ defmodule Shem.Agent do
 
   defmodule Config do
     @enforce_keys [:task, :system_prompt]
-    defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20]
+    defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20, spawn_depth: 0]
 
     @type t :: %__MODULE__{
             task: String.t(),
             system_prompt: String.t(),
             model: atom(),
             tools: [String.t()],
-            max_turns: pos_integer()
+            max_turns: pos_integer(),
+            spawn_depth: non_neg_integer()
           }
   end
 
@@ -61,15 +62,16 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec start_with_preset(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
-  def start_with_preset(preset_name, task) do
+  @spec start_with_preset(String.t(), String.t(), keyword()) :: {:ok, String.t()} | {:error, term()}
+  def start_with_preset(preset_name, task, opts \\ []) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do
       config = %Config{
         task: task,
         system_prompt: preset.system_prompt,
         # tools: [] means allow-all in Config; :all is preset-only shorthand
         tools: if(preset.tools == :all, do: [], else: preset.tools),
-        max_turns: 20
+        max_turns: 20,
+        spawn_depth: Keyword.get(opts, :spawn_depth, 0)
       }
       start(config)
     end

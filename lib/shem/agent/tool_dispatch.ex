@@ -374,7 +374,7 @@ defmodule Shem.Agent.ToolDispatch do
 
         result =
           try do
-            case Agent.start_with_preset(preset, task) do
+            case Agent.start_with_preset(preset, task, spawn_depth: depth + 1) do
               {:ok, name} ->
                 case Agent.await_result(name, timeout) do
                   {:ok, answer} -> {:ok, answer}

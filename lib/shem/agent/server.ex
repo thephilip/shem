@@ -31,6 +31,7 @@ defmodule Shem.Agent.Server do
 
   @impl true
   def init({name, config, session_id}) do
+    Process.put(:spawn_agent_depth, config.spawn_depth)
     {:ok, ^session_id} = EventLog.start_session(session_id)
 
     {history, turn_count} =
