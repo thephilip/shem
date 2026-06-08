@@ -80,9 +80,12 @@ defmodule Shem.Agent do
     with {:ok, sid} <- session_id(name),
          {:ok, :done} <- await(name, timeout),
          {:ok, events} <- Shem.EventLog.events(sid),
-         %{payload: %{content: content}} <-
+         %{payload: payload} <-
            Enum.find(Enum.reverse(events), &(&1.type == :agent_done)) do
-      {:ok, content}
+      case payload do
+        %{reason: :answer, content: content} -> {:ok, content}
+        %{reason: reason} -> {:error, {:agent_stopped, reason}}
+      end
     else
       {:ok, :error} -> {:error, :sub_agent_failed}
       {:error, reason} -> {:error, reason}
