@@ -105,9 +105,11 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
       body = Map.merge(base_body, tools_fields)
       headers = [{"authorization", "Bearer #{api_key}"}]
 
+      req_fn = Keyword.get(opts, :req_fn, &Req.post/2)
+
       http_stream =
         Keyword.get(opts, :http_stream_fn, fn url, b, cf ->
-          do_sse_stream_openai(url, b, headers, timeout_ms, request.model, cf)
+          do_sse_stream_openai(url, b, headers, timeout_ms, request.model, cf, req_fn)
         end)
 
       http_stream.(base_url <> "/v1/chat/completions", body, chunk_fn)
@@ -132,7 +134,7 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
     end
   end
 
-  defp do_sse_stream_openai(url, body, headers, timeout_ms, model, chunk_fn) do
+  defp do_sse_stream_openai(url, body, headers, timeout_ms, model, chunk_fn, req_fn) do
     start_ms = System.monotonic_time(:millisecond)
     ref = make_ref()
 
@@ -145,36 +147,40 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
       completion_tokens: 0
     })
 
-    result =
-      Req.post(url,
-        json: body,
-        headers: headers,
-        receive_timeout: timeout_ms,
-        into: fn {:data, data}, acc ->
-          st = process_openai_data(data, Process.get(ref), chunk_fn)
-          Process.put(ref, st)
-          {:cont, acc}
-        end
-      )
+    try do
+      result =
+        req_fn.(url,
+          json: body,
+          headers: headers,
+          receive_timeout: timeout_ms,
+          into: fn {:data, data}, acc ->
+            st = process_openai_data(data, Process.get(ref), chunk_fn)
+            Process.put(ref, st)
+            {:cont, acc}
+          end
+        )
 
-    final = Process.delete(ref)
-    latency_ms = System.monotonic_time(:millisecond) - start_ms
+      final = Process.get(ref)
+      latency_ms = System.monotonic_time(:millisecond) - start_ms
 
-    case result do
-      {:ok, %{status: 200}} ->
-        assemble_openai_response(final, model, latency_ms)
+      case result do
+        {:ok, %{status: 200}} ->
+          assemble_openai_response(final, model, latency_ms)
 
-      {:ok, %{status: 401}} ->
-        {:error, {:transport, :unauthorized}}
+        {:ok, %{status: 401}} ->
+          {:error, {:transport, :unauthorized}}
 
-      {:ok, %{status: 429}} ->
-        {:error, {:transport, :rate_limited}}
+        {:ok, %{status: 429}} ->
+          {:error, {:transport, :rate_limited}}
 
-      {:ok, %{status: status}} ->
-        {:error, {:transport, {:http_error, status}}}
+        {:ok, %{status: status}} ->
+          {:error, {:transport, {:http_error, status}}}
 
-      {:error, reason} ->
-        {:error, {:transport, reason}}
+        {:error, reason} ->
+          {:error, {:transport, reason}}
+      end
+    after
+      Process.delete(ref)
     end
   end
 
@@ -274,7 +280,11 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
         final.tool_calls
         |> Enum.sort_by(fn {idx, _} -> idx end)
         |> Enum.map(fn {_, %{id: id, name: name, args_buf: args_buf}} ->
-          %{id: id, name: name, args: Jason.decode!(args_buf)}
+          args = case Jason.decode(args_buf) do
+            {:ok, decoded} -> decoded
+            {:error, _} -> %{}
+          end
+          %{id: id, name: name, args: args}
         end)
       end
 
@@ -329,7 +339,11 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
 
         raw ->
           Enum.map(raw, fn %{"id" => id, "function" => %{"name" => n, "arguments" => args_str}} ->
-            %{id: id, name: n, args: Jason.decode!(args_str)}
+            args = case Jason.decode(args_str) do
+              {:ok, decoded} -> decoded
+              {:error, _} -> %{}
+            end
+            %{id: id, name: n, args: args}
           end)
       end
 

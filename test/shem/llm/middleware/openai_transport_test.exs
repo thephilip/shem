@@ -218,6 +218,96 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
     end
   end
 
+  describe "stream/4 — SSE parser via req_fn injection" do
+    test "two-chunk content stream assembles content via SSE parser" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        chunk1 = "data: {\"choices\":[{\"delta\":{\"content\":\"Hello \"}}]}\n\n"
+        chunk2 = "data: {\"choices\":[{\"delta\":{\"content\":\"world\"}}]}\n\ndata: {\"usage\":{\"prompt_tokens\":5,\"completion_tokens\":3}}\n\n"
+        {:cont, acc1} = into_fn.({:data, chunk1}, "")
+        {:cont, _acc2} = into_fn.({:data, chunk2}, acc1)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{content: "Hello world", tokens_used: 8}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == ["Hello ", "world"]
+    end
+
+    test "tool call stream accumulates tool_calls and suppresses chunk_fn" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        tc1 = "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"shell\",\"arguments\":\"\"}}]}}]}\n\n"
+        tc2 = "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0,\"function\":{\"arguments\":\"{\\\"cmd\\\":\\\"ls\\\"}\"}}]}}]}\n\ndata: {\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}\n\n"
+        {:cont, acc} = into_fn.({:data, tc1}, "")
+        {:cont, _} = into_fn.({:data, tc2}, acc)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "ls", model: :default, tools: nil}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{tool_calls: [%{id: "call_1", name: "shell", args: %{"cmd" => "ls"}}], tokens_used: 15}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == []
+    end
+
+    test "[DONE] event is ignored and doesn't break parsing" do
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        chunk1 = "data: {\"choices\":[{\"delta\":{\"content\":\"hi\"}}]}\n\n"
+        chunk2 = "data: [DONE]\n\n"
+        {:cont, acc} = into_fn.({:data, chunk1}, "")
+        {:cont, _} = into_fn.({:data, chunk2}, acc)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+      chunk_fn = fn _ -> :ok end
+
+      assert {:ok, %{content: "hi"}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+    end
+
+    test "malformed tool call args_buf falls back to empty map" do
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        # Tool call with invalid JSON in arguments (simulates partial/broken stream)
+        tc = "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_bad\",\"type\":\"function\",\"function\":{\"name\":\"shell\",\"arguments\":\"NOT_JSON\"}}]}}]}\n\ndata: {\"usage\":{\"prompt_tokens\":1,\"completion_tokens\":1}}\n\n"
+        {:cont, _} = into_fn.({:data, tc}, "")
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{tool_calls: [%{id: "call_bad", name: "shell", args: %{}}]}} =
+               OpenAITransport.stream(request, opts, fn _ -> :ok end, fn _, _ -> {:error, :no_next} end)
+    end
+
+    test "401 from req_fn returns {:error, {:transport, :unauthorized}}" do
+      req_fn = fn _url, _opts -> {:ok, %{status: 401}} end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:error, {:transport, :unauthorized}} =
+               OpenAITransport.stream(request, opts, fn _ -> :ok end, fn _, _ -> {:error, :no_next} end)
+    end
+  end
+
   describe "call/3 — structured messages" do
     test "uses request.messages array and prepends system message when present" do
       messages = [
