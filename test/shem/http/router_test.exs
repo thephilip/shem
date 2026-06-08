@@ -15,17 +15,17 @@ defmodule Shem.HTTP.RouterTest do
     assert is_list(body)
   end
 
-  test "GET /unknown-path-xyz returns 404 (MCP router handles it)" do
-    conn = conn(:get, "/unknown-path-xyz") |> Router.call(@opts)
-    assert conn.status == 404
-  end
-
-  test "POST /message with a JSON-RPC notification (no id) returns 204" do
+  test "POST /mcp/message with a JSON-RPC notification (no id) returns 204" do
     body = Jason.encode!(%{"jsonrpc" => "2.0", "method" => "notifications/initialized", "params" => %{}})
     conn =
-      conn(:post, "/message", body)
+      conn(:post, "/mcp/message", body)
       |> put_req_header("content-type", "application/json")
       |> Router.call(@opts)
     assert conn.status == 204
+  end
+
+  test "GET /unknown-path-xyz returns 404" do
+    conn = conn(:get, "/unknown-path-xyz") |> Router.call(@opts)
+    assert conn.status == 404
   end
 end
