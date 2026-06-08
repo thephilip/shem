@@ -11,6 +11,7 @@ defmodule Shem.TUI.CommandDispatch do
           | {:preset_list}
           | {:preset_add, String.t()}
           | {:preset_delete, String.t()}
+          | {:hire, String.t(), String.t()}
           | {:llm_routes}
           | {:llm_route, [{atom(), :llama_cpp | :ollama | :openai | :anthropic, String.t()}]}
           | {:error, String.t()}
@@ -123,6 +124,12 @@ defmodule Shem.TUI.CommandDispatch do
 
       ["llm" | _] ->
         {:error, "unknown /llm subcommand — try: /llm routes, /llm route <role>=<model>"}
+
+      ["hire", name | role_parts] when role_parts != [] ->
+        {:hire, name, Enum.join(role_parts, " ")}
+
+      ["hire" | _] ->
+        {:error, "usage: /hire <name> <role description>"}
 
       _ ->
         {:error, "unknown command: /#{rest}"}

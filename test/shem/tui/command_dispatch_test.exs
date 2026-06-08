@@ -211,4 +211,25 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:tools, :llama_cpp, "phi4"} in pairs
     end
   end
+
+  describe "parse/1 — /hire command" do
+    test "/hire <name> <role> returns {:hire, name, role}" do
+      assert {:hire, "researcher", "summarises academic papers"} =
+               CommandDispatch.parse("/hire researcher summarises academic papers")
+    end
+
+    test "/hire with single-word role works" do
+      assert {:hire, "coder", "codes"} = CommandDispatch.parse("/hire coder codes")
+    end
+
+    test "/hire with no name returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/hire")
+      assert msg =~ "usage: /hire"
+    end
+
+    test "/hire with name but no role returns error" do
+      assert {:error, msg} = CommandDispatch.parse("/hire researcher")
+      assert msg =~ "usage: /hire"
+    end
+  end
 end
