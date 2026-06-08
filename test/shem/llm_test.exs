@@ -79,11 +79,26 @@ defmodule Shem.LLMTest do
   end
 
   describe "Shem.StreamRegistry" do
-    test "is a duplicate-key Registry in the supervision tree" do
+    test "allows multiple subscribers on the same session_id (duplicate key semantics)" do
       session_id = "test_stream_#{System.unique_integer()}"
-      assert {:ok, _pid} = Registry.register(Shem.StreamRegistry, session_id, nil)
+
+      # Register from the test process
+      {:ok, _} = Registry.register(Shem.StreamRegistry, session_id, nil)
+
+      # Register from a second process
+      test_pid = self()
+      task = Task.async(fn ->
+        result = Registry.register(Shem.StreamRegistry, session_id, nil)
+        send(test_pid, {:registered, result})
+        Process.sleep(200)
+      end)
+
+      assert_receive {:registered, {:ok, _}}, 500
+
       entries = Registry.lookup(Shem.StreamRegistry, session_id)
-      assert length(entries) == 1
+      assert length(entries) == 2
+
+      Task.shutdown(task, :brutal_kill)
     end
   end
 end

@@ -14,7 +14,7 @@ defmodule Shem.LLM.Middleware do
               opts :: keyword(),
               chunk_fn :: chunk_fn(),
               next :: stream_next()
-            ) :: {:ok, Response.t()} | {:error, term()}
+            ) :: pipeline_result()
 
   @optional_callbacks stream: 4
 end
