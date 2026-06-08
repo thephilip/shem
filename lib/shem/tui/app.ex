@@ -244,6 +244,29 @@ defmodule Shem.TUI.App do
             output = format_routes()
             %{model | command_buffer: "", command_output: output, command_error: nil}
 
+          {:hire, name, role} ->
+            tui_pid = self()
+
+            Task.start(fn ->
+              prompt =
+                "You are writing a system prompt for an AI agent.\n" <>
+                "Role description: \"#{role}\"\n" <>
+                "Write a concise system prompt (2-4 sentences) that describes the agent's purpose, approach, and any constraints.\n" <>
+                "Return ONLY the system prompt text. No explanation, no preamble, no quotes."
+
+              result = Shem.LLM.complete(%Shem.LLM.Request{prompt: prompt, model: :default})
+
+              case result do
+                {:ok, response} ->
+                  send(tui_pid, {:hire_complete, name, {:ok, response.content}})
+
+                {:error, reason} ->
+                  send(tui_pid, {:hire_complete, name, {:error, reason}})
+              end
+            end)
+
+            %{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}
+
           {:error, reason} ->
             %{model | command_error: reason, command_output: nil}
         end
