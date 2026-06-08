@@ -10,7 +10,11 @@ defmodule Shem.ApplicationExecutorTest do
     old_bin = Application.get_env(:shem, :container_runtime_bin)
 
     on_exit(fn ->
-      if old_backend, do: Application.put_env(:shem, :executor_backend, old_backend)
+      if old_backend do
+        Application.put_env(:shem, :executor_backend, old_backend)
+      else
+        Application.delete_env(:shem, :executor_backend)
+      end
       if old_resolved do
         Application.put_env(:shem, :resolved_executor_backend, old_resolved)
       else
@@ -33,11 +37,26 @@ defmodule Shem.ApplicationExecutorTest do
              Shem.Lab.Executor.Backend.Local
   end
 
-  test ":container resolves to Backend.Container regardless of detection" do
+  test ":container with runtime resolves to Backend.Container" do
     Application.put_env(:shem, :executor_backend, :container)
-    ShemApp.resolve_executor_backend()
+    ShemApp.resolve_executor_backend(fn -> "docker" end)
     assert Application.get_env(:shem, :resolved_executor_backend) ==
              Shem.Lab.Executor.Backend.Container
+    assert Application.get_env(:shem, :container_runtime_bin) == "docker"
+  end
+
+  test ":container with no runtime resolves to Backend.Container and logs error" do
+    Application.put_env(:shem, :executor_backend, :container)
+
+    log =
+      capture_log(fn ->
+        ShemApp.resolve_executor_backend(fn -> nil end)
+      end)
+
+    assert Application.get_env(:shem, :resolved_executor_backend) ==
+             Shem.Lab.Executor.Backend.Container
+    assert Application.get_env(:shem, :container_runtime_bin) == nil
+    assert log =~ "no container runtime found"
   end
 
   test ":auto with no runtime falls back to Local and emits warning" do
