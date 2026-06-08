@@ -140,7 +140,7 @@ defmodule Shem.Agent.Turn do
         {:tool_calls, calls, content || ""}
 
       {:ok, %Response{content: content}} ->
-        content |> strip_thinking() |> parse_response()
+        (content || "") |> strip_thinking() |> parse_response()
 
       {:error, reason} ->
         {:error, reason}
@@ -162,7 +162,7 @@ defmodule Shem.Agent.Turn do
         {:tool_calls, calls, content || ""}
 
       {:ok, %Response{content: content}} ->
-        content |> strip_thinking() |> parse_response()
+        (content || "") |> strip_thinking() |> parse_response()
 
       {:error, reason} ->
         {:error, reason}
