@@ -321,10 +321,10 @@ defmodule Shem.TUI.App do
 
       {{:hire_complete, name}, {:ok, system_prompt}} ->
         Shem.Agent.PresetStore.put(name, %{system_prompt: system_prompt, tools: :all})
-        %{model | command_output: "hired: #{name}"}
+        %{model | command_output: "hired: #{name}", command_error: nil}
 
       {{:hire_complete, _name}, {:error, reason}} ->
-        %{model | command_output: "hire failed: #{inspect(reason)}"}
+        %{model | command_output: "hire failed: #{inspect(reason)}", command_error: nil}
 
       _ ->
         model
