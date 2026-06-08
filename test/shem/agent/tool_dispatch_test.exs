@@ -407,6 +407,12 @@ defmodule Shem.Agent.ToolDispatchTest do
       assert {:ok, "no memory at key: missing_key"} =
         ToolDispatch.execute(%{name: "recall", args: %{"key" => "missing_key"}}, manifest)
     end
+
+    test "returns error when key is missing" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "recall requires key"} =
+        ToolDispatch.execute(%{name: "recall", args: %{}}, manifest)
+    end
   end
 
   describe "forget built-in" do
@@ -428,6 +434,12 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = ToolDispatch.build_manifest(@config)
       assert {:ok, "no memory at key: ghost_key"} =
         ToolDispatch.execute(%{name: "forget", args: %{"key" => "ghost_key"}}, manifest)
+    end
+
+    test "returns error when key is missing" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "forget requires key"} =
+        ToolDispatch.execute(%{name: "forget", args: %{}}, manifest)
     end
   end
 

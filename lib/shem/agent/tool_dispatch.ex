@@ -302,20 +302,28 @@ defmodule Shem.Agent.ToolDispatch do
   end
 
   defp dispatch_builtin("recall", args) do
-    key = args["key"] || ""
+    key = args["key"]
 
-    case Memory.Store.get(key) do
-      {:ok, value} -> {:ok, value}
-      {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+    if is_binary(key) do
+      case Memory.Store.get(key) do
+        {:ok, value} -> {:ok, value}
+        {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+      end
+    else
+      {:error, "recall requires key"}
     end
   end
 
   defp dispatch_builtin("forget", args) do
-    key = args["key"] || ""
+    key = args["key"]
 
-    case Memory.Store.delete(key) do
-      :ok -> {:ok, "forgotten: #{key}"}
-      {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+    if is_binary(key) do
+      case Memory.Store.delete(key) do
+        :ok -> {:ok, "forgotten: #{key}"}
+        {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+      end
+    else
+      {:error, "forget requires key"}
     end
   end
 
