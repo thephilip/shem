@@ -1,4 +1,5 @@
 defmodule Shem.Agent.ToolDispatch do
+  alias Shem.Agent
   alias Shem.Agent.Config
   alias Shem.Lab
   alias Shem.Memory
@@ -136,6 +137,20 @@ defmodule Shem.Agent.ToolDispatch do
         type: "object",
         properties: %{"prefix" => %{"type" => "string"}},
         required: []
+      }
+    },
+    %{
+      name: "spawn_agent",
+      description: "Delegate a task to a sub-agent. Specify the task and optionally a preset name (default: general). Returns the sub-agent's final answer.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "task"   => %{"type" => "string"},
+          "preset" => %{"type" => "string"}
+        },
+        required: ["task"]
       }
     }
   ]
@@ -337,6 +352,35 @@ defmodule Shem.Agent.ToolDispatch do
       entries ->
         lines = Enum.map(entries, fn {k, v} -> "#{k} = #{v}" end)
         {:ok, Enum.join(lines, "\n")}
+    end
+  end
+
+  defp dispatch_builtin("spawn_agent", args) do
+    task = args["task"]
+    preset = args["preset"] || "general"
+    depth = Process.get(:spawn_agent_depth, 0)
+    max_depth = Application.get_env(:shem, :spawn_agent_max_depth, 3)
+    timeout = Application.get_env(:shem, :spawn_agent_timeout_ms, 300_000)
+
+    if depth >= max_depth do
+      {:error, "spawn_agent depth limit reached (#{max_depth})"}
+    else
+      Process.put(:spawn_agent_depth, depth + 1)
+
+      result =
+        case Agent.start_with_preset(preset, task) do
+          {:ok, name} ->
+            case Agent.await_result(name, timeout) do
+              {:ok, answer} -> {:ok, answer}
+              {:error, reason} -> {:error, "sub-agent failed: #{inspect(reason)}"}
+            end
+
+          {:error, reason} ->
+            {:error, "sub-agent failed: #{inspect(reason)}"}
+        end
+
+      Process.put(:spawn_agent_depth, depth)
+      result
     end
   end
 

@@ -4,6 +4,7 @@ defmodule Shem.Agent.ToolDispatchTest do
 
   alias Shem.Agent.{Config, ToolDispatch}
   alias Shem.Lab.Registry
+  alias Shem.LLM.{Response, StubTransport}
 
   @config %Config{task: "t", system_prompt: "s"}
 
@@ -29,7 +30,7 @@ defmodule Shem.Agent.ToolDispatchTest do
     test "built-in entries have :builtin source" do
       manifest = ToolDispatch.build_manifest(@config)
       builtins = Enum.filter(manifest, &(&1.source == :builtin))
-      assert length(builtins) == 11
+      assert length(builtins) == 12
     end
 
     test "includes graduated Lab tools with {:lab, id} source" do
@@ -475,6 +476,59 @@ defmodule Shem.Agent.ToolDispatchTest do
         ToolDispatch.execute(%{name: "list_memories", args: %{"prefix" => "coding/"}}, manifest)
       assert String.contains?(result, "coding/style")
       refute String.contains?(result, "user/name")
+    end
+  end
+
+  describe "spawn_agent built-in" do
+    setup do
+      Shem.LLM.BudgetServer.reset()
+      StubTransport.Server.reset()
+      :ok
+    end
+
+    test "returns sub-agent final answer on success" do
+      StubTransport.Server.push_response(
+        {:ok, %Response{content: "Sub-task complete.", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "Sub-task complete."} =
+        ToolDispatch.execute(
+          %{name: "spawn_agent", args: %{"task" => "do the sub-task", "preset" => "general"}},
+          manifest
+        )
+    end
+
+    test "returns error result when preset does not exist" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, reason} =
+        ToolDispatch.execute(
+          %{name: "spawn_agent", args: %{"task" => "do something", "preset" => "no_such_preset"}},
+          manifest
+        )
+      assert String.contains?(reason, "sub-agent failed")
+    end
+
+    test "returns depth limit error without starting an agent" do
+      Process.put(:spawn_agent_depth, 2)
+      on_exit(fn -> Process.delete(:spawn_agent_depth) end)
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "spawn_agent depth limit reached (2)"} =
+        ToolDispatch.execute(
+          %{name: "spawn_agent", args: %{"task" => "do something"}},
+          manifest
+        )
+    end
+
+    test "defaults preset to general when omitted" do
+      StubTransport.Server.push_response(
+        {:ok, %Response{content: "Done with default preset.", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "Done with default preset."} =
+        ToolDispatch.execute(
+          %{name: "spawn_agent", args: %{"task" => "do the sub-task"}},
+          manifest
+        )
     end
   end
 
