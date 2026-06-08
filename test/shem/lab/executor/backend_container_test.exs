@@ -1,5 +1,5 @@
 defmodule Shem.Lab.Executor.Backend.ContainerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Shem.Lab.Executor.Backend.Container
 
