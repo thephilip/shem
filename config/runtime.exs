@@ -14,7 +14,8 @@ case System.get_env("SHEM_DATA_DIR") do
   data_dir ->
     config :shem,
       trust_store_path: Path.join(data_dir, "trust.dets"),
-      preset_store_path: Path.join(data_dir, "preset_store.dets")
+      preset_store_path: Path.join(data_dir, "preset_store.dets"),
+      memory_store_path: Path.join(data_dir, "memory.dets")
 end
 
 # Cluster topology — "dns" for Docker/K8s, default "gossip" for bare metal
