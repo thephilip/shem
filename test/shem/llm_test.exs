@@ -77,4 +77,13 @@ defmodule Shem.LLMTest do
       assert {:error, :transport_down} = LLM.stream(request, fn _chunk -> :ok end)
     end
   end
+
+  describe "Shem.StreamRegistry" do
+    test "is a duplicate-key Registry in the supervision tree" do
+      session_id = "test_stream_#{System.unique_integer()}"
+      assert {:ok, _pid} = Registry.register(Shem.StreamRegistry, session_id, nil)
+      entries = Registry.lookup(Shem.StreamRegistry, session_id)
+      assert length(entries) == 1
+    end
+  end
 end

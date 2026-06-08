@@ -13,7 +13,8 @@ defmodule Shem.Application do
         Shem.LLM.Router,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
-        Shem.LLM.BudgetServer
+        Shem.LLM.BudgetServer,
+        {Registry, keys: :duplicate, name: Shem.StreamRegistry}
       ] ++
         adversarial_children() ++
         llm_stub_children() ++
