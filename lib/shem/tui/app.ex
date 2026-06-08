@@ -3,7 +3,7 @@ defmodule Shem.TUI.App do
 
   alias Shem.TUI.Views.{Dashboard, Interactive, History}
   alias Shem.TUI.{CommandDispatch, AgentView, StreamSink}
-  alias Ratatouille.Runtime.Subscription
+  alias Ratatouille.Runtime.{Command, Subscription}
 
   @esc 27
   @backspace 127
@@ -245,27 +245,24 @@ defmodule Shem.TUI.App do
             %{model | command_buffer: "", command_output: output, command_error: nil}
 
           {:hire, name, role} ->
-            tui_pid = self()
+            command =
+              Command.new(
+                fn ->
+                  prompt =
+                    "You are writing a system prompt for an AI agent.\n" <>
+                    "Role description: \"#{role}\"\n" <>
+                    "Write a concise system prompt (2-4 sentences) that describes the agent's purpose, approach, and any constraints.\n" <>
+                    "Return ONLY the system prompt text. No explanation, no preamble, no quotes."
 
-            Task.start(fn ->
-              prompt =
-                "You are writing a system prompt for an AI agent.\n" <>
-                "Role description: \"#{role}\"\n" <>
-                "Write a concise system prompt (2-4 sentences) that describes the agent's purpose, approach, and any constraints.\n" <>
-                "Return ONLY the system prompt text. No explanation, no preamble, no quotes."
+                  case Shem.LLM.complete(%Shem.LLM.Request{prompt: prompt, model: :default}) do
+                    {:ok, response} -> {:ok, response.content}
+                    {:error, reason} -> {:error, reason}
+                  end
+                end,
+                {:hire_complete, name}
+              )
 
-              result = Shem.LLM.complete(%Shem.LLM.Request{prompt: prompt, model: :default})
-
-              case result do
-                {:ok, response} ->
-                  send(tui_pid, {:hire_complete, name, {:ok, response.content}})
-
-                {:error, reason} ->
-                  send(tui_pid, {:hire_complete, name, {:error, reason}})
-              end
-            end)
-
-            %{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}
+            {%{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}, command}
 
           {:error, reason} ->
             %{model | command_error: reason, command_output: nil}
@@ -322,11 +319,11 @@ defmodule Shem.TUI.App do
 
         model
 
-      {:hire_complete, name, {:ok, system_prompt}} ->
+      {{:hire_complete, name}, {:ok, system_prompt}} ->
         Shem.Agent.PresetStore.put(name, %{system_prompt: system_prompt, tools: :all})
         %{model | command_output: "hired: #{name}"}
 
-      {:hire_complete, _name, {:error, reason}} ->
+      {{:hire_complete, _name}, {:error, reason}} ->
         %{model | command_output: "hire failed: #{inspect(reason)}"}
 
       _ ->

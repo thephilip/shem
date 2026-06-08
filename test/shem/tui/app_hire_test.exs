@@ -11,10 +11,10 @@ defmodule Shem.TUI.AppHireTest do
 
   defp base_model, do: App.init(%{})
 
-  describe "update/2 — {:hire_complete, name, result}" do
+  describe "update/2 — {{:hire_complete, name}, result}" do
     test "on success: stores preset and sets command_output to 'hired: <name>'" do
       model = base_model()
-      new_model = App.update(model, {:hire_complete, "researcher", {:ok, "You summarise papers."}})
+      new_model = App.update(model, {{:hire_complete, "researcher"}, {:ok, "You summarise papers."}})
 
       assert new_model.command_output == "hired: researcher"
       assert {:ok, %{system_prompt: "You summarise papers.", tools: :all}} =
@@ -23,7 +23,7 @@ defmodule Shem.TUI.AppHireTest do
 
     test "on error: sets command_output to failure message, no preset stored" do
       model = base_model()
-      new_model = App.update(model, {:hire_complete, "researcher", {:error, :timeout}})
+      new_model = App.update(model, {{:hire_complete, "researcher"}, {:error, :timeout}})
 
       assert new_model.command_output =~ "hire failed"
       assert new_model.command_output =~ "timeout"
@@ -33,7 +33,7 @@ defmodule Shem.TUI.AppHireTest do
     test "on success: silently overwrites existing preset" do
       PresetStore.put("researcher", %{system_prompt: "old", tools: :all})
       model = base_model()
-      App.update(model, {:hire_complete, "researcher", {:ok, "new prompt"}})
+      App.update(model, {{:hire_complete, "researcher"}, {:ok, "new prompt"}})
 
       assert {:ok, %{system_prompt: "new prompt"}} = PresetStore.get("researcher")
     end
@@ -49,28 +49,28 @@ defmodule Shem.TUI.AppHireTest do
       :ok
     end
 
-    test "fires LLM call and sends {:hire_complete, name, {:ok, content}} to caller" do
+    test "fires LLM call and returns command with correct message and function" do
       StubTransport.Server.push_response(
         {:ok, %Response{content: "You are a researcher.", tokens_used: 10, model: :default, latency_ms: 1}}
       )
 
       model = %{base_model() | command_buffer: "/hire analyst examines data"}
-      new_model = App.update(model, {:event, %{key: @enter}})
+      {new_model, command} = App.update(model, {:event, %{key: @enter}})
 
       assert new_model.command_buffer == ""
       assert new_model.command_output == "hiring analyst..."
       assert new_model.command_error == nil
-
-      assert_receive {:hire_complete, "analyst", {:ok, "You are a researcher."}}, 2000
+      assert command.message == {:hire_complete, "analyst"}
+      assert command.function.() == {:ok, "You are a researcher."}
     end
 
-    test "on LLM failure: sends {:hire_complete, name, {:error, reason}}" do
+    test "on LLM failure: command function returns {:error, reason}" do
       StubTransport.Server.push_response({:error, :transport_down})
 
       model = %{base_model() | command_buffer: "/hire analyst examines data"}
-      App.update(model, {:event, %{key: @enter}})
+      {_new_model, command} = App.update(model, {:event, %{key: @enter}})
 
-      assert_receive {:hire_complete, "analyst", {:error, _reason}}, 2000
+      assert {:error, _reason} = command.function.()
     end
 
     test "full round-trip: hire fires, completes, stores preset" do
@@ -79,11 +79,10 @@ defmodule Shem.TUI.AppHireTest do
       )
 
       model = %{base_model() | command_buffer: "/hire devops reads logs"}
-      after_hire = App.update(model, {:event, %{key: @enter}})
+      {after_hire, command} = App.update(model, {:event, %{key: @enter}})
 
-      assert_receive {:hire_complete, "devops", {:ok, "Generated prompt."}}, 2000
-
-      final = App.update(after_hire, {:hire_complete, "devops", {:ok, "Generated prompt."}})
+      result = command.function.()
+      final = App.update(after_hire, {command.message, result})
       assert final.command_output == "hired: devops"
       assert {:ok, %{system_prompt: "Generated prompt.", tools: :all}} = PresetStore.get("devops")
     end
