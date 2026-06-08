@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shem</title>
+  <script src="/alpine.min.js" defer></script>
+  <script src="/app.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f0f1a;
+      --surface: #1a1a2e;
+      --border:  #2a2a4a;
+      --accent:  #7c6af7;
+      --text:    #e0e0f0;
+      --muted:   #666688;
+      --green:   #8be9a0;
+      --red:     #ff6b6b;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+    }
+
+    .layout { display: flex; height: 100vh; }
+
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .field label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    select, textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+    .btn {
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      width: 100%;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:not(:disabled):hover { opacity: 0.85; }
+    .btn-stop { background: transparent; border: 1px solid var(--red); color: var(--red); }
+    .btn-stop:hover { background: var(--red); color: #fff; }
+    .btn-reset { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+    .output { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .output-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .task-label {
+      color: var(--muted);
+      font-size: 12px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .badge-running { background: var(--accent); color: #fff; }
+    .badge-done    { background: #2a4a3a; color: var(--green); }
+    .badge-error   { background: #4a2a2a; color: var(--red); }
+
+    .output-body { flex: 1; overflow-y: auto; padding: 20px; line-height: 1.7; }
+
+    .placeholder { color: var(--muted); font-style: italic; }
+
+    .stream {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .cursor { color: var(--accent); animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .error-bar {
+      padding: 10px 20px;
+      background: #4a2a2a;
+      color: var(--red);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .action-bar {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body x-data="shem()" x-init="init()">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">⬡ shem</div>
+
+      <div class="field">
+        <label>Preset</label>
+        <select x-model="preset" :disabled="status === 'running'">
+          <template x-for="p in presets" :key="p">
+            <option :value="p" x-text="p"></option>
+          </template>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Task</label>
+        <textarea
+          x-model="task"
+          placeholder="What should the agent do?"
+          :disabled="status === 'running'"></textarea>
+      </div>
+
+      <button class="btn btn-primary"
+        @click="run()"
+        :disabled="status === 'running' || task.trim() === ''"
+        x-show="status !== 'running'">
+        Run Agent
+      </button>
+
+      <button class="btn btn-stop"
+        @click="stop()"
+        x-show="status === 'running'">
+        Stop
+      </button>
+    </aside>
+
+    <main class="output">
+      <div class="output-header" x-show="status !== 'idle'">
+        <span class="task-label" x-text="task"></span>
+        <span class="badge"
+          :class="{
+            'badge-running': status === 'running',
+            'badge-done':    status === 'done',
+            'badge-error':   status === 'error'
+          }"
+          x-text="status">
+        </span>
+      </div>
+
+      <div class="output-body" x-ref="outputBody">
+        <span class="placeholder" x-show="status === 'idle'">
+          Start an agent to see output here.
+        </span>
+        <template x-if="status !== 'idle'">
+          <span>
+            <pre class="stream" x-text="output"></pre><span
+              class="cursor"
+              x-show="status === 'running'">▌</span>
+          </span>
+        </template>
+      </div>
+
+      <div class="error-bar" x-show="errorMsg !== ''" x-text="errorMsg"></div>
+
+      <div class="action-bar" x-show="status === 'done' || status === 'error'">
+        <button class="btn btn-reset" @click="reset()">New Task</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

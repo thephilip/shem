@@ -28,4 +28,10 @@ defmodule Shem.HTTP.RouterTest do
     conn = conn(:get, "/unknown-path-xyz") |> Router.call(@opts)
     assert conn.status == 404
   end
+
+  test "GET / returns 200 with text/html" do
+    conn = conn(:get, "/") |> Router.call(@opts)
+    assert conn.status == 200
+    assert get_resp_header(conn, "content-type") |> hd() =~ "text/html"
+  end
 end
