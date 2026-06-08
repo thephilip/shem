@@ -1,6 +1,7 @@
 defmodule Shem.Agent.ToolDispatch do
   alias Shem.Agent.Config
   alias Shem.Lab
+  alias Shem.Memory
   alias Shem.MCP
   alias Shem.Trust
 
@@ -88,6 +89,53 @@ defmodule Shem.Agent.ToolDispatch do
           "timeout_ms" => %{"type" => "integer"}
         },
         required: ["cmd"]
+      }
+    },
+    %{
+      name: "remember",
+      description: "Store a value under a key in persistent memory. Use namespaced keys like \"coding/style\" or \"user/name\" to avoid collisions.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "key"   => %{"type" => "string"},
+          "value" => %{"type" => "string"}
+        },
+        required: ["key", "value"]
+      }
+    },
+    %{
+      name: "recall",
+      description: "Retrieve a previously stored memory by key. Returns the value or a miss message.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{"key" => %{"type" => "string"}},
+        required: ["key"]
+      }
+    },
+    %{
+      name: "forget",
+      description: "Delete a memory entry by key.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{"key" => %{"type" => "string"}},
+        required: ["key"]
+      }
+    },
+    %{
+      name: "list_memories",
+      description: "List all stored memories, optionally filtered by key prefix (e.g. \"coding/\"). Returns sorted key = value lines.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{"prefix" => %{"type" => "string"}},
+        required: []
       }
     }
   ]
@@ -239,6 +287,49 @@ defmodule Shem.Agent.ToolDispatch do
     cmd = args["cmd"] || ""
     timeout = args["timeout_ms"] || 10_000
     Lab.Executor.run_shell(cmd, timeout)
+  end
+
+  defp dispatch_builtin("remember", args) do
+    key = args["key"]
+    value = args["value"]
+
+    if is_binary(key) and is_binary(value) do
+      Memory.Store.put(key, value)
+      {:ok, "stored: #{key}"}
+    else
+      {:error, "remember requires key and value"}
+    end
+  end
+
+  defp dispatch_builtin("recall", args) do
+    key = args["key"] || ""
+
+    case Memory.Store.get(key) do
+      {:ok, value} -> {:ok, value}
+      {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+    end
+  end
+
+  defp dispatch_builtin("forget", args) do
+    key = args["key"] || ""
+
+    case Memory.Store.delete(key) do
+      :ok -> {:ok, "forgotten: #{key}"}
+      {:error, :not_found} -> {:ok, "no memory at key: #{key}"}
+    end
+  end
+
+  defp dispatch_builtin("list_memories", args) do
+    prefix = args["prefix"] || ""
+
+    case Memory.Store.all(prefix) do
+      [] ->
+        {:ok, "no memories found"}
+
+      entries ->
+        lines = Enum.map(entries, fn {k, v} -> "#{k} = #{v}" end)
+        {:ok, Enum.join(lines, "\n")}
+    end
   end
 
   defp dispatch_builtin(name, _args), do: {:error, "unknown built-in: #{name}"}

@@ -29,7 +29,7 @@ defmodule Shem.Agent.ToolDispatchTest do
     test "built-in entries have :builtin source" do
       manifest = ToolDispatch.build_manifest(@config)
       builtins = Enum.filter(manifest, &(&1.source == :builtin))
-      assert length(builtins) == 7
+      assert length(builtins) == 11
     end
 
     test "includes graduated Lab tools with {:lab, id} source" do
@@ -359,6 +359,110 @@ defmodule Shem.Agent.ToolDispatchTest do
       result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "echo hi"}}, manifest)
 
       assert {:error, "no container runtime available" <> _} = result
+    end
+  end
+
+  describe "remember built-in" do
+    setup do
+      Shem.Memory.Store.flush()
+      on_exit(fn -> Shem.Memory.Store.flush() end)
+      :ok
+    end
+
+    test "stores value and returns confirmation" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "stored: user/name"} =
+        ToolDispatch.execute(%{name: "remember", args: %{"key" => "user/name", "value" => "alice"}}, manifest)
+    end
+
+    test "returns error when key is missing" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "remember requires key and value"} =
+        ToolDispatch.execute(%{name: "remember", args: %{"value" => "alice"}}, manifest)
+    end
+
+    test "returns error when value is missing" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "remember requires key and value"} =
+        ToolDispatch.execute(%{name: "remember", args: %{"key" => "user/name"}}, manifest)
+    end
+  end
+
+  describe "recall built-in" do
+    setup do
+      Shem.Memory.Store.flush()
+      on_exit(fn -> Shem.Memory.Store.flush() end)
+      :ok
+    end
+
+    test "returns stored value" do
+      Shem.Memory.Store.put("recall/key", "recall_value")
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "recall_value"} =
+        ToolDispatch.execute(%{name: "recall", args: %{"key" => "recall/key"}}, manifest)
+    end
+
+    test "returns miss message for unknown key" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "no memory at key: missing_key"} =
+        ToolDispatch.execute(%{name: "recall", args: %{"key" => "missing_key"}}, manifest)
+    end
+  end
+
+  describe "forget built-in" do
+    setup do
+      Shem.Memory.Store.flush()
+      on_exit(fn -> Shem.Memory.Store.flush() end)
+      :ok
+    end
+
+    test "deletes an existing key and returns confirmation" do
+      Shem.Memory.Store.put("forget/key", "bye")
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "forgotten: forget/key"} =
+        ToolDispatch.execute(%{name: "forget", args: %{"key" => "forget/key"}}, manifest)
+      assert {:error, :not_found} = Shem.Memory.Store.get("forget/key")
+    end
+
+    test "returns miss message for unknown key" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "no memory at key: ghost_key"} =
+        ToolDispatch.execute(%{name: "forget", args: %{"key" => "ghost_key"}}, manifest)
+    end
+  end
+
+  describe "list_memories built-in" do
+    setup do
+      Shem.Memory.Store.flush()
+      on_exit(fn -> Shem.Memory.Store.flush() end)
+      :ok
+    end
+
+    test "returns 'no memories found' when store is empty" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, "no memories found"} =
+        ToolDispatch.execute(%{name: "list_memories", args: %{}}, manifest)
+    end
+
+    test "returns sorted key = value lines" do
+      Shem.Memory.Store.put("b/key", "2")
+      Shem.Memory.Store.put("a/key", "1")
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, result} =
+        ToolDispatch.execute(%{name: "list_memories", args: %{}}, manifest)
+      lines = String.split(result, "\n")
+      assert Enum.at(lines, 0) == "a/key = 1"
+      assert Enum.at(lines, 1) == "b/key = 2"
+    end
+
+    test "filters by prefix when prefix arg is provided" do
+      Shem.Memory.Store.put("coding/style", "functional")
+      Shem.Memory.Store.put("user/name", "alice")
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:ok, result} =
+        ToolDispatch.execute(%{name: "list_memories", args: %{"prefix" => "coding/"}}, manifest)
+      assert String.contains?(result, "coding/style")
+      refute String.contains?(result, "user/name")
     end
   end
 
