@@ -25,6 +25,24 @@ defmodule Shem.REST.Handlers.Agents do
     end
   end
 
+  get "/:id/stream" do
+    case Shem.Agent.session_id(id) do
+      {:error, :not_found} ->
+        send_json(conn, 404, %{error: "agent not found"})
+
+      {:ok, session_id} ->
+        conn =
+          conn
+          |> put_resp_header("content-type", "text/event-stream")
+          |> put_resp_header("cache-control", "no-cache")
+          |> put_resp_header("x-accel-buffering", "no")
+          |> send_chunked(200)
+
+        Registry.register(Shem.StreamRegistry, session_id, nil)
+        stream_loop(conn, session_id)
+    end
+  end
+
   get "/:id/result" do
     case Shem.Agent.await(id, 100) do
       {:ok, :done} ->
@@ -77,6 +95,33 @@ defmodule Shem.REST.Handlers.Agents do
 
       _ ->
         ""
+    end
+  end
+
+  defp stream_loop(conn, session_id) do
+    receive do
+      {:stream_chunk, ^session_id, token} ->
+        event = Jason.encode!(%{type: "chunk", content: token})
+
+        case Plug.Conn.chunk(conn, "data: #{event}\n\n") do
+          {:ok, conn} -> stream_loop(conn, session_id)
+          {:error, _} ->
+            Registry.unregister(Shem.StreamRegistry, session_id)
+            conn
+        end
+
+      {:stream_done, ^session_id} ->
+        event = Jason.encode!(%{type: "done", status: "done"})
+        Plug.Conn.chunk(conn, "data: #{event}\n\n")
+        Registry.unregister(Shem.StreamRegistry, session_id)
+        conn
+
+      _other ->
+        stream_loop(conn, session_id)
+    after
+      30_000 ->
+        Registry.unregister(Shem.StreamRegistry, session_id)
+        conn
     end
   end
 

@@ -123,6 +123,35 @@ defmodule Shem.REST.AgentsTest do
     assert is_binary(body["content"])
   end
 
+  # GET /agents/:id/stream ────────────────────────────────────────────────────
+
+  test "GET /agents/:id/stream returns 404 for unknown agent" do
+    conn = get_path("/agents/no_such_agent/stream")
+    assert conn.status == 404
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] =~ "not found"
+  end
+
+  test "GET /agents/:id/stream streams SSE for running agent and receives stream_done" do
+    stub("streamed answer")
+
+    # Pre-generate session_id and register BEFORE starting the agent,
+    # so we don't miss the stream_done broadcast.
+    session_id = "ses_" <> Base.encode16(:crypto.strong_rand_bytes(8))
+    agent_name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
+
+    Registry.register(Shem.StreamRegistry, session_id, nil)
+
+    config = %Shem.Agent.Config{
+      task: "sse test",
+      system_prompt: "be helpful",
+      max_turns: 1
+    }
+    {:ok, _pid} = Shem.AgentSupervisor.start_agent(agent_name, config, session_id)
+
+    assert_receive {:stream_done, ^session_id}, 2_000
+  end
+
   # DELETE /agents/:id ─────────────────────────────────────────────────────────
 
   test "DELETE /agents/:id returns 404 for unknown agent" do
