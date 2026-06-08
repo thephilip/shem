@@ -273,6 +273,33 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "streaming" do
+    test "broadcasts {:stream_chunk, session_id, token} during a turn" do
+      stub("Streaming answer here.")
+      session_id = "ses_stream_chunk_" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      Registry.register(Shem.StreamRegistry, session_id, nil)
+      name = start_agent_with_session("streaming test", session_id)
+
+      assert {:ok, :done} = Agent.await(name, 2_000)
+
+      # Drain all stream_chunk messages
+      chunks = collect_stream_chunks(session_id)
+      assert chunks != []
+      assert Enum.join(chunks) =~ "Streaming"
+    end
+
+    test "broadcasts {:stream_done, session_id} when agent finishes" do
+      stub("done")
+      session_id = "ses_stream_done_" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      Registry.register(Shem.StreamRegistry, session_id, nil)
+      name = start_agent_with_session("stream done test", session_id)
+
+      assert {:ok, :done} = Agent.await(name, 2_000)
+
+      assert_receive {:stream_done, ^session_id}, 500
+    end
+  end
+
   describe "start_with_preset/2" do
     test "starts an agent using a named preset" do
       stub("done")
@@ -283,6 +310,33 @@ defmodule Shem.Agent.ServerTest do
 
     test "returns error for unknown preset" do
       assert {:error, :not_found} = Agent.start_with_preset("no_such_preset", "task")
+    end
+  end
+
+  defp start_agent_with_session(task, session_id, opts \\ []) do
+    system_prompt = Keyword.get(opts, :system_prompt, "be helpful")
+    max_turns = Keyword.get(opts, :max_turns, 10)
+    config = %Agent.Config{task: task, system_prompt: system_prompt, max_turns: max_turns}
+    name = "agent_#{System.unique_integer([:positive])}"
+    via = Shem.ProcessRegistry.via_tuple(name)
+    child_spec = %{
+      id: name,
+      start: {Shem.Agent.Server, :start_link, [{name, config, session_id, [name: via]}]},
+      restart: :temporary
+    }
+    {:ok, _pid} = Horde.DynamicSupervisor.start_child(Shem.AgentSupervisor, child_spec)
+    name
+  end
+
+  defp collect_stream_chunks(session_id) do
+    collect_stream_chunks(session_id, [])
+  end
+
+  defp collect_stream_chunks(session_id, acc) do
+    receive do
+      {:stream_chunk, ^session_id, token} -> collect_stream_chunks(session_id, [token | acc])
+    after
+      200 -> Enum.reverse(acc)
     end
   end
 end

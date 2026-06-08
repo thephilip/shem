@@ -92,7 +92,7 @@ defmodule Shem.Agent.Server do
         EventLog.append(state.session_id, :agent_turn_started, %{turn: state.turn_count + 1})
         manifest = ToolDispatch.build_manifest(state.config)
 
-        case Turn.step(state.config, state.session_id, state.history, manifest) do
+        case Turn.stream_step(state.config, state.session_id, state.history, manifest) do
           {:done, answer} ->
             history = state.history ++ [%{role: :assistant, content: answer}]
             EventLog.append(state.session_id, :agent_turn_completed, %{
@@ -152,13 +152,21 @@ defmodule Shem.Agent.Server do
       |> Map.get(:content, "")
 
     EventLog.append(state.session_id, :agent_done, %{reason: :answer, content: last_content})
+    broadcast_stream_done(state.session_id)
     Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
     %{state | status: status, done_reason: :answer, awaiting: []}
   end
 
   defp finish(state, status, reason) do
     EventLog.append(state.session_id, :agent_done, %{reason: reason})
+    broadcast_stream_done(state.session_id)
     Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
     %{state | status: status, done_reason: reason, awaiting: []}
+  end
+
+  defp broadcast_stream_done(session_id) do
+    Registry.dispatch(Shem.StreamRegistry, session_id, fn entries ->
+      Enum.each(entries, fn {pid, _} -> send(pid, {:stream_done, session_id}) end)
+    end)
   end
 end
