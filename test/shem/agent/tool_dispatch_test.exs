@@ -530,6 +530,20 @@ defmodule Shem.Agent.ToolDispatchTest do
           manifest
         )
     end
+
+    test "returns error when task is missing" do
+      manifest = ToolDispatch.build_manifest(@config)
+      assert {:error, "spawn_agent requires task"} =
+        ToolDispatch.execute(%{name: "spawn_agent", args: %{}}, manifest)
+    end
+
+    test "depth counter is restored after sub-agent failure" do
+      Process.put(:spawn_agent_depth, 0)
+      on_exit(fn -> Process.delete(:spawn_agent_depth) end)
+      manifest = ToolDispatch.build_manifest(@config)
+      _ = ToolDispatch.execute(%{name: "spawn_agent", args: %{"task" => "x", "preset" => "no_such_preset"}}, manifest)
+      assert Process.get(:spawn_agent_depth) == 0
+    end
   end
 
   describe "execute/2 — trust gate" do

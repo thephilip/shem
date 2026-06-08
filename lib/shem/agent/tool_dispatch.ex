@@ -362,25 +362,33 @@ defmodule Shem.Agent.ToolDispatch do
     max_depth = Application.get_env(:shem, :spawn_agent_max_depth, 3)
     timeout = Application.get_env(:shem, :spawn_agent_timeout_ms, 300_000)
 
-    if depth >= max_depth do
-      {:error, "spawn_agent depth limit reached (#{max_depth})"}
-    else
-      Process.put(:spawn_agent_depth, depth + 1)
+    cond do
+      not is_binary(task) ->
+        {:error, "spawn_agent requires task"}
 
-      result =
-        case Agent.start_with_preset(preset, task) do
-          {:ok, name} ->
-            case Agent.await_result(name, timeout) do
-              {:ok, answer} -> {:ok, answer}
-              {:error, reason} -> {:error, "sub-agent failed: #{inspect(reason)}"}
+      depth >= max_depth ->
+        {:error, "spawn_agent depth limit reached (#{max_depth})"}
+
+      true ->
+        Process.put(:spawn_agent_depth, depth + 1)
+
+        result =
+          try do
+            case Agent.start_with_preset(preset, task) do
+              {:ok, name} ->
+                case Agent.await_result(name, timeout) do
+                  {:ok, answer} -> {:ok, answer}
+                  {:error, reason} -> {:error, "sub-agent failed: #{inspect(reason)}"}
+                end
+
+              {:error, reason} ->
+                {:error, "sub-agent failed: #{inspect(reason)}"}
             end
+          after
+            Process.put(:spawn_agent_depth, depth)
+          end
 
-          {:error, reason} ->
-            {:error, "sub-agent failed: #{inspect(reason)}"}
-        end
-
-      Process.put(:spawn_agent_depth, depth)
-      result
+        result
     end
   end
 
