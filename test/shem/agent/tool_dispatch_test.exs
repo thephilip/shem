@@ -344,6 +344,14 @@ defmodule Shem.Agent.ToolDispatchTest do
       # confirming the call went through run_shell/3 to Backend.Container, not System.cmd directly
       old = Process.get(:shem_executor_backend)
       old_runtime_bin = Application.get_env(:shem, :container_runtime_bin)
+
+      on_exit(fn ->
+        if old, do: Process.put(:shem_executor_backend, old),
+        else: Process.delete(:shem_executor_backend)
+        if old_runtime_bin, do: Application.put_env(:shem, :container_runtime_bin, old_runtime_bin),
+        else: Application.delete_env(:shem, :container_runtime_bin)
+      end)
+
       Process.put(:shem_executor_backend, Shem.Lab.Executor.Backend.Container)
       Application.put_env(:shem, :container_runtime_bin, nil)
 
@@ -351,11 +359,6 @@ defmodule Shem.Agent.ToolDispatchTest do
       result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "echo hi"}}, manifest)
 
       assert {:error, "no container runtime available" <> _} = result
-
-      if old, do: Process.put(:shem_executor_backend, old),
-      else: Process.delete(:shem_executor_backend)
-      if old_runtime_bin, do: Application.put_env(:shem, :container_runtime_bin, old_runtime_bin),
-      else: Application.delete_env(:shem, :container_runtime_bin)
     end
   end
 
