@@ -300,6 +300,20 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "await_result/2" do
+    test "returns {:ok, answer} when agent completes with a final answer" do
+      stub("The computed answer.")
+      name = start_agent("compute something")
+      assert {:ok, "The computed answer."} = Agent.await_result(name, 2_000)
+    end
+
+    test "returns {:error, :sub_agent_failed} when agent finishes with error status" do
+      StubTransport.Server.push_response({:error, :transport_failure})
+      name = start_agent("anything")
+      assert {:error, :sub_agent_failed} = Agent.await_result(name, 2_000)
+    end
+  end
+
   describe "start_with_preset/2" do
     test "starts an agent using a named preset" do
       stub("done")

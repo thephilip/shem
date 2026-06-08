@@ -75,6 +75,21 @@ defmodule Shem.Agent do
     end
   end
 
+  @spec await_result(String.t(), timeout()) :: {:ok, String.t()} | {:error, term()}
+  def await_result(name, timeout \\ 300_000) do
+    with {:ok, sid} <- session_id(name),
+         {:ok, :done} <- await(name, timeout),
+         {:ok, events} <- Shem.EventLog.events(sid),
+         %{payload: %{content: content}} <-
+           Enum.find(Enum.reverse(events), &(&1.type == :agent_done)) do
+      {:ok, content}
+    else
+      {:ok, :error} -> {:error, :sub_agent_failed}
+      {:error, reason} -> {:error, reason}
+      nil -> {:error, :no_result}
+    end
+  end
+
   @spec resume(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def resume(session_id, task) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve("general") do

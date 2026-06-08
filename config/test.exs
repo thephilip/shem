@@ -38,5 +38,7 @@ config :shem, trust_store_path: "tmp/test_trust.dets"
 config :shem, memory_store_path: "tmp/test_memory.dets"
 
 config :shem, trust_gate_enabled: false
+config :shem, spawn_agent_timeout_ms: 5_000
+config :shem, spawn_agent_max_depth: 2
 
 config :shem, executor_backend: :local
