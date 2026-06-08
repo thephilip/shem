@@ -183,4 +183,98 @@ defmodule Shem.LLM.Middleware.OllamaTransportTest do
       assert {:ok, %Response{}} = OllamaTransport.call(request, opts, fn _ -> :unreachable end)
     end
   end
+
+  describe "stream/4 — text response" do
+    test "calls chunk_fn per non-empty chunk and returns assembled Response" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      http_stream_fn = fn _url, _body, cf ->
+        cf.("Hello")
+        cf.(" there")
+        {:ok, %Shem.LLM.Response{
+          content: "Hello there",
+          tool_calls: nil,
+          tokens_used: 9,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [http_stream_fn: http_stream_fn]
+
+      assert {:ok, %{content: "Hello there", tokens_used: 9}} =
+               OllamaTransport.stream(request, opts, chunk_fn, fn _, _ -> :ok end)
+
+      assert Agent.get(collector, & &1) == ["Hello", " there"]
+    end
+  end
+
+  describe "stream/4 — tool call" do
+    test "returns tool_calls from the done chunk" do
+      http_stream_fn = fn _url, _body, _cf ->
+        {:ok, %Shem.LLM.Response{
+          content: nil,
+          tool_calls: [%{id: "ollama_1", name: "shell", args: %{"cmd" => "pwd"}}],
+          tokens_used: 14,
+          model: :default,
+          latency_ms: 0
+        }}
+      end
+
+      request = %Shem.LLM.Request{prompt: "pwd", model: :default}
+
+      assert {:ok, %{tool_calls: [%{name: "shell"}]}} =
+               OllamaTransport.stream(request, [http_stream_fn: http_stream_fn], fn _ -> :ok end, fn _, _ -> :ok end)
+    end
+  end
+
+  describe "stream/4 — NDJSON parser via req_fn injection" do
+    test "multi-chunk text stream assembles content and calls chunk_fn" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        chunks = [
+          ~s|{"model":"llama3","message":{"role":"assistant","content":"Hello"},"done":false}\n|,
+          ~s|{"model":"llama3","message":{"role":"assistant","content":" world"},"done":false}\n{"model":"llama3","done":true,"eval_count":5,"prompt_eval_count":3}\n|
+        ]
+        Enum.reduce(chunks, "", fn chunk, acc ->
+          {:cont, new_acc} = into_fn.({:data, chunk}, acc)
+          new_acc
+        end)
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default, tools: nil}
+      opts = [req_fn: req_fn]
+
+      assert {:ok, %{content: "Hello world", tokens_used: 8}} =
+               OllamaTransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == ["Hello", " world"]
+    end
+
+    test "tool_calls on done:true chunk; chunk_fn suppressed" do
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        done_chunk = ~s|{"model":"llama3","message":{"role":"assistant","content":"","tool_calls":[{"function":{"name":"shell","arguments":{"cmd":"ls"}}}]},"done":true,"eval_count":10,"prompt_eval_count":5}\n|
+        {:cont, _} = into_fn.({:data, done_chunk}, "")
+        {:ok, %{status: 200}}
+      end
+
+      request = %Shem.LLM.Request{prompt: "ls", model: :default, tools: nil}
+      opts = [req_fn: req_fn]
+
+      assert {:ok, %{tool_calls: [%{name: "shell", args: %{"cmd" => "ls"}}], tokens_used: 15}} =
+               OllamaTransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      assert Agent.get(collector, & &1) == []
+    end
+  end
 end
