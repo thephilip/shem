@@ -314,6 +314,38 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "spawn_agent depth propagation" do
+    test "agent seeded at max depth cannot spawn sub-agent" do
+      # Push a native tool-calls response that attempts spawn_agent
+      tool_resp = {:ok, %Response{
+        content: nil,
+        tool_calls: [%{id: "call_depth_1", name: "spawn_agent", args: %{"task" => "nested sub-task"}}],
+        tokens_used: 5,
+        model: :default,
+        latency_ms: 1
+      }}
+      StubTransport.Server.push_response(tool_resp)
+      # Push final text response after the tool result is returned
+      stub("Cannot delegate further — depth limit reached.")
+
+      # Start agent with spawn_depth at max (2 in test config)
+      config = %Shem.Agent.Config{
+        task: "delegate a sub-task",
+        system_prompt: "You are a coordinator.",
+        spawn_depth: 2
+      }
+      {:ok, name} = Shem.Agent.start(config)
+      assert {:ok, :done} = Shem.Agent.await(name, 3_000)
+
+      # Verify the tool result in EventLog contains the depth limit error
+      {:ok, sid} = Shem.Agent.session_id(name)
+      {:ok, events} = Shem.EventLog.events(sid)
+      tool_result_event = Enum.find(events, &(&1.type == :agent_tool_result))
+      assert tool_result_event != nil
+      assert String.contains?(tool_result_event.payload.result, "depth limit reached")
+    end
+  end
+
   describe "start_with_preset/2" do
     test "starts an agent using a named preset" do
       stub("done")
