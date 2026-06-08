@@ -15,7 +15,9 @@ defmodule Shem.HTTP.Router do
 
   get "/" do
     path = Application.app_dir(:shem, "priv/static/index.html")
-    send_file(conn, 200, path)
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_file(200, path)
   end
 
   match _ do
