@@ -338,6 +338,25 @@ defmodule Shem.Agent.ToolDispatchTest do
       result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "sleep 10", "timeout_ms" => 100}}, manifest)
       assert match?({:error, "timeout after 100ms"}, result)
     end
+
+    test "routes through Executor.run_shell/3 (Container backend reachable via process override)" do
+      # Set Container backend; nil container_runtime_bin returns a known error,
+      # confirming the call went through run_shell/3 to Backend.Container, not System.cmd directly
+      old = Process.get(:shem_executor_backend)
+      old_runtime_bin = Application.get_env(:shem, :container_runtime_bin)
+      Process.put(:shem_executor_backend, Shem.Lab.Executor.Backend.Container)
+      Application.put_env(:shem, :container_runtime_bin, nil)
+
+      manifest = ToolDispatch.build_manifest(@config)
+      result = ToolDispatch.execute(%{name: "shell", args: %{"cmd" => "echo hi"}}, manifest)
+
+      assert {:error, "no container runtime available" <> _} = result
+
+      if old, do: Process.put(:shem_executor_backend, old),
+      else: Process.delete(:shem_executor_backend)
+      if old_runtime_bin, do: Application.put_env(:shem, :container_runtime_bin, old_runtime_bin),
+      else: Application.delete_env(:shem, :container_runtime_bin)
+    end
   end
 
   describe "execute/2 — trust gate" do

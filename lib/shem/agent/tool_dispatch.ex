@@ -235,30 +235,10 @@ defmodule Shem.Agent.ToolDispatch do
     end
   end
 
-  # TODO(phase-9b): route through K8s executor once available — currently runs locally
   defp dispatch_builtin("shell", args) do
     cmd = args["cmd"] || ""
     timeout = args["timeout_ms"] || 10_000
-
-    task =
-      Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
-        System.cmd("sh", ["-c", cmd], stderr_to_stdout: true)
-      end)
-
-    case Task.yield(task, timeout) do
-      {:ok, {output, 0}} ->
-        {:ok, output}
-
-      {:ok, {output, code}} ->
-        {:error, "exit #{code}: #{output}"}
-
-      {:exit, reason} ->
-        {:error, "shell command crashed: #{inspect(reason)}"}
-
-      nil ->
-        Task.shutdown(task, :brutal_kill)
-        {:error, "timeout after #{timeout}ms"}
-    end
+    Lab.Executor.run_shell(cmd, timeout)
   end
 
   defp dispatch_builtin(name, _args), do: {:error, "unknown built-in: #{name}"}
