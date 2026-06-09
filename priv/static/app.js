@@ -1,111 +1,114 @@
 function shem() {
   return {
     preset: 'general',
-    presets: ['general'],
-    task: '',
-    status: 'idle',
-    output: '',
+    presets: ['general', 'coder', 'researcher', 'writer', 'security', 'explorer'],
+    messages: [],          // [{role: 'user'|'assistant', content: '', pending: bool}]
+    inputText: '',
+    status: 'idle',        // idle | running | waiting | error
     errorMsg: '',
     agentId: null,
-    eventSource: null,
+    pendingContent: '',
 
-    async init() {
-      try {
-        const res = await fetch('/api/presets');
-        const data = await res.json();
-        this.presets = data.map(p => p.name);
-        if (this.presets.length > 0 && !this.presets.includes(this.preset)) {
-          this.preset = this.presets[0];
-        }
-      } catch (_) {
-        // keep default ['general']
+    init() {
+      this.preset = 'general';
+    },
+
+    async send() {
+      const text = this.inputText.trim();
+      if (!text || this.status === 'running') return;
+      this.inputText = '';
+      this.errorMsg = '';
+
+      if (this.status === 'idle') {
+        await this._startAgent(text);
+      } else if (this.status === 'waiting') {
+        await this._sendMessage(text);
       }
     },
 
-    async run() {
-      if (this.status === 'running') return;
+    async _startAgent(text) {
+      this.messages.push({ role: 'user', content: text, pending: false });
+      this.messages.push({ role: 'assistant', content: '', pending: true });
       this.status = 'running';
-      this.output = '';
-      this.errorMsg = '';
 
-      let res;
       try {
-        res = await fetch('/api/agents', {
+        const res = await fetch('/api/agents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ preset: this.preset, task: this.task })
+          body: JSON.stringify({ preset: this.preset, task: text, conversational: true })
         });
+        if (!res.ok) throw new Error('Failed to start agent');
+        const data = await res.json();
+        this.agentId = data.agent_id;
+        await this._openStream(this.agentId);
       } catch (e) {
+        this.errorMsg = e.message;
         this.status = 'error';
-        this.errorMsg = 'Network error: ' + e.message;
-        return;
+        this.messages[this.messages.length - 1].pending = false;
       }
+    },
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        this.status = 'error';
-        this.errorMsg = data.error || ('HTTP ' + res.status);
-        return;
-      }
+    async _sendMessage(text) {
+      this.messages.push({ role: 'user', content: text, pending: false });
+      this.messages.push({ role: 'assistant', content: '', pending: true });
+      this.status = 'running';
 
-      let agent_id;
       try {
-        ({ agent_id } = await res.json());
+        const res = await fetch(`/api/agents/${this.agentId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        if (!res.ok) throw new Error('Failed to send message');
+        await this._openStream(this.agentId);
       } catch (e) {
+        this.errorMsg = e.message;
         this.status = 'error';
-        this.errorMsg = 'Invalid server response.';
-        return;
+        this.messages[this.messages.length - 1].pending = false;
       }
-      this.agentId = agent_id;
+    },
 
-      const es = new EventSource('/api/agents/' + agent_id + '/stream');
-      this.eventSource = es;
+    async _openStream(agentId) {
+      this.pendingContent = '';
+      const es = new EventSource(`/api/agents/${agentId}/stream`);
 
       es.onmessage = (e) => {
         const msg = JSON.parse(e.data);
         if (msg.type === 'chunk') {
-          this.output += msg.content;
+          this.pendingContent += msg.content;
+          const last = this.messages[this.messages.length - 1];
+          if (last && last.pending) last.content = this.pendingContent;
           this.$nextTick(() => {
-            const el = this.$refs.outputBody;
+            const el = this.$refs.chatBody;
             if (el) el.scrollTop = el.scrollHeight;
           });
         } else if (msg.type === 'done') {
-          this.status = msg.status === 'error' ? 'error' : 'done';
-          if (msg.status === 'error') this.errorMsg = 'Agent finished with an error.';
           es.close();
-          this.eventSource = null;
+          const last = this.messages[this.messages.length - 1];
+          if (last) last.pending = false;
+          this.status = msg.status === 'error' ? 'error' : 'waiting';
+          this.pendingContent = '';
         }
       };
 
       es.onerror = () => {
+        es.close();
+        const last = this.messages[this.messages.length - 1];
+        if (last) last.pending = false;
         if (this.status === 'running') {
           this.status = 'error';
           this.errorMsg = 'Connection lost.';
         }
-        es.close();
-        this.eventSource = null;
       };
     },
 
-    async stop() {
-      if (this.eventSource) {
-        this.eventSource.close();
-        this.eventSource = null;
-      }
-      if (this.agentId) {
-        await fetch('/api/agents/' + this.agentId, { method: 'DELETE' }).catch(() => {});
-      }
-      this.status = 'idle';
+    newChat() {
+      this.messages = [];
       this.agentId = null;
-    },
-
-    reset() {
-      if (this.eventSource) { this.eventSource.close(); this.eventSource = null; }
-      this.output = '';
+      this.status = 'idle';
+      this.inputText = '';
       this.errorMsg = '';
-      this.task = '';
-      this.status = 'idle';
-      this.agentId = null;
+      this.pendingContent = '';
     }
   };
 }

@@ -7,11 +7,12 @@ defmodule Shem.REST.Handlers.Agents do
   post "/" do
     preset = Map.get(conn.body_params, "preset", "general")
     task = Map.get(conn.body_params, "task")
+    conversational = Map.get(conn.body_params, "conversational", false)
 
     if is_nil(task) or task == "" do
       send_json(conn, 400, %{error: "task is required"})
     else
-      case Shem.Agent.start_with_preset(preset, task) do
+      case Shem.Agent.start_with_preset(preset, task, conversational: conversational) do
         {:ok, agent_id} ->
           {:ok, session_id} = Shem.Agent.session_id(agent_id)
           send_json(conn, 201, %{agent_id: agent_id, session_id: session_id})

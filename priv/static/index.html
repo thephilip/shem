@@ -18,140 +18,88 @@
       --muted:   #666688;
       --green:   #8be9a0;
       --red:     #ff6b6b;
+      --user-bg: #1e1e3a;
+      --ai-bg:   #141428;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 14px;
-    }
+    html, body { height: 100%; background: var(--bg); color: var(--text);
+      font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px; }
 
     .layout { display: flex; height: 100vh; }
 
+    /* Sidebar */
     .sidebar {
-      width: 280px;
-      flex-shrink: 0;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      width: 240px; flex-shrink: 0;
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 20px 16px; display: flex; flex-direction: column; gap: 16px;
     }
-
-    .logo {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    .logo { font-size: 16px; font-weight: 700; color: var(--accent);
+      letter-spacing: 2px; text-transform: uppercase;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border); }
     .field { display: flex; flex-direction: column; gap: 6px; }
-
-    .field label {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    select, textarea {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 13px;
-      padding: 8px 10px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    select:focus, textarea:focus { border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
-
-    .btn {
-      padding: 10px;
-      border-radius: 4px;
-      border: none;
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-      transition: opacity 0.15s;
-      width: 100%;
-    }
+    .field label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    select { background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text); font-family: inherit; font-size: 13px; padding: 8px 10px;
+      outline: none; transition: border-color 0.15s; }
+    select:focus { border-color: var(--accent); }
+    .btn { padding: 9px 12px; border-radius: 4px; border: none; font-family: inherit;
+      font-size: 12px; cursor: pointer; transition: opacity 0.15s; width: 100%; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:not(:disabled):hover { opacity: 0.85; }
-    .btn-stop { background: transparent; border: 1px solid var(--red); color: var(--red); }
-    .btn-stop:hover { background: var(--red); color: #fff; }
-    .btn-reset { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-    .btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-outline:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
 
-    .output { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    /* Chat area */
+    .chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    .output-header {
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--surface);
-      flex-shrink: 0;
-    }
+    .chat-body { flex: 1; overflow-y: auto; padding: 24px 20px; display: flex;
+      flex-direction: column; gap: 16px; }
 
-    .task-label {
-      color: var(--muted);
-      font-size: 12px;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    .msg { display: flex; flex-direction: column; gap: 4px; max-width: 80%; }
+    .msg-user { align-self: flex-end; align-items: flex-end; }
+    .msg-assistant { align-self: flex-start; align-items: flex-start; }
 
-    .badge {
-      font-size: 10px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 3px;
-    }
-    .badge-running { background: var(--accent); color: #fff; }
-    .badge-done    { background: #2a4a3a; color: var(--green); }
-    .badge-error   { background: #4a2a2a; color: var(--red); }
+    .msg-label { font-size: 10px; color: var(--muted); letter-spacing: 1px;
+      text-transform: uppercase; }
 
-    .output-body { flex: 1; overflow-y: auto; padding: 20px; line-height: 1.7; }
-
-    .placeholder { color: var(--muted); font-style: italic; }
-
-    .stream {
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 13px;
-    }
+    .msg-bubble { padding: 10px 14px; border-radius: 8px; line-height: 1.6;
+      font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+    .msg-user .msg-bubble { background: var(--user-bg); border: 1px solid var(--border); }
+    .msg-assistant .msg-bubble { background: var(--ai-bg); border: 1px solid var(--border); }
+    .msg-bubble.error { border-color: var(--red); color: var(--red); }
 
     .cursor { color: var(--accent); animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    .error-bar {
-      padding: 10px 20px;
-      background: #4a2a2a;
-      color: var(--red);
-      font-size: 12px;
-      flex-shrink: 0;
-    }
+    .placeholder { color: var(--muted); font-style: italic; align-self: center;
+      margin-top: 40px; }
 
-    .action-bar {
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
+    /* Input row */
+    .chat-input-row {
+      padding: 14px 16px; border-top: 1px solid var(--border);
+      background: var(--surface); display: flex; gap: 10px; align-items: flex-end;
     }
+    textarea.chat-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: inherit; font-size: 13px;
+      padding: 10px 12px; outline: none; resize: none; line-height: 1.5;
+      min-height: 42px; max-height: 200px; transition: border-color 0.15s;
+    }
+    textarea.chat-input:focus { border-color: var(--accent); }
+    .btn-send { background: var(--accent); color: #fff; border: none;
+      border-radius: 6px; padding: 10px 18px; font-family: inherit; font-size: 13px;
+      cursor: pointer; transition: opacity 0.15s; white-space: nowrap; flex-shrink: 0; }
+    .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-send:not(:disabled):hover { opacity: 0.85; }
+
+    .error-bar { padding: 8px 16px; background: #4a2a2a; color: var(--red);
+      font-size: 12px; flex-shrink: 0; }
+
+    /* Status indicator */
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot-running { background: var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+    .dot-waiting { background: var(--green); }
+    .dot-error   { background: var(--red); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
   </style>
 </head>
 <body x-data="shem()" x-init="init()">
@@ -168,58 +116,54 @@
         </select>
       </div>
 
-      <div class="field">
-        <label>Task</label>
-        <textarea
-          x-model="task"
-          placeholder="What should the agent do?"
-          :disabled="status === 'running'"></textarea>
+      <div style="flex: 1"></div>
+
+      <button class="btn btn-outline" @click="newChat()" :disabled="status === 'running'">
+        New Chat
+      </button>
+
+      <div x-show="status !== 'idle'" style="display:flex;align-items:center;font-size:11px;color:var(--muted)">
+        <span class="status-dot"
+          :class="{'dot-running': status==='running', 'dot-waiting': status==='waiting', 'dot-error': status==='error'}">
+        </span>
+        <span x-text="status"></span>
       </div>
-
-      <button class="btn btn-primary"
-        @click="run()"
-        :disabled="status === 'running' || task.trim() === ''"
-        x-show="status !== 'running'">
-        Run Agent
-      </button>
-
-      <button class="btn btn-stop"
-        @click="stop()"
-        x-show="status === 'running'">
-        Stop
-      </button>
     </aside>
 
-    <main class="output">
-      <div class="output-header" x-show="status !== 'idle'">
-        <span class="task-label" x-text="task"></span>
-        <span class="badge"
-          :class="{
-            'badge-running': status === 'running',
-            'badge-done':    status === 'done',
-            'badge-error':   status === 'error'
-          }"
-          x-text="status">
+    <main class="chat">
+      <div class="chat-body" x-ref="chatBody">
+        <span class="placeholder" x-show="messages.length === 0">
+          Start a conversation — type anything below.
         </span>
-      </div>
 
-      <div class="output-body" x-ref="outputBody">
-        <span class="placeholder" x-show="status === 'idle'">
-          Start an agent to see output here.
-        </span>
-        <template x-if="status !== 'idle'">
-          <span>
-            <pre class="stream" x-text="output"></pre><span
-              class="cursor"
-              x-show="status === 'running'">▌</span>
-          </span>
+        <template x-for="(msg, i) in messages" :key="i">
+          <div class="msg" :class="msg.role === 'user' ? 'msg-user' : 'msg-assistant'">
+            <span class="msg-label" x-text="msg.role === 'user' ? 'you' : 'shem'"></span>
+            <div class="msg-bubble" :class="{error: msg.error}">
+              <span x-text="msg.content"></span><span
+                class="cursor"
+                x-show="msg.pending && status === 'running'">▌</span>
+            </div>
+          </div>
         </template>
       </div>
 
       <div class="error-bar" x-show="errorMsg !== ''" x-text="errorMsg"></div>
 
-      <div class="action-bar" x-show="status === 'done' || status === 'error'">
-        <button class="btn btn-reset" @click="reset()">New Task</button>
+      <div class="chat-input-row">
+        <textarea
+          class="chat-input"
+          x-model="inputText"
+          placeholder="Type a message..."
+          :disabled="status === 'running'"
+          @keydown.enter.prevent="if (!$event.shiftKey) send()"
+          rows="1"></textarea>
+        <button
+          class="btn-send"
+          @click="send()"
+          :disabled="status === 'running' || inputText.trim() === ''">
+          Send
+        </button>
       </div>
     </main>
   </div>
