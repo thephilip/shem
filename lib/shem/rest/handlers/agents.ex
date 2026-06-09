@@ -78,6 +78,28 @@ defmodule Shem.REST.Handlers.Agents do
     end
   end
 
+  post "/:id/message" do
+    message = Map.get(conn.body_params, "message")
+
+    if is_nil(message) or message == "" do
+      send_json(conn, 400, %{error: "message is required"})
+    else
+      case Shem.Agent.send_message(id, message) do
+        :ok ->
+          send_json(conn, 200, %{ok: true})
+
+        {:error, :not_found} ->
+          send_json(conn, 404, %{error: "agent not found"})
+
+        {:error, :not_waiting} ->
+          send_json(conn, 409, %{error: "agent is not waiting for input"})
+
+        {:error, :timeout} ->
+          send_json(conn, 503, %{error: "agent timed out"})
+      end
+    end
+  end
+
   match _ do
     send_json(conn, 404, %{error: "not found"})
   end

@@ -8,7 +8,7 @@ The infrastructure (BEAM supervision, trust gating, multi-agent coordination, ev
 
 ### Target user
 
-A developer or researcher who has used an AI agent tool before (Hermes, OpenClaw, Claude Code, etc.) and wants something self-hosted, safer, and more capable. They arrive with curiosity, not patience. They will ask "what can you do?" before they read any documentation.
+A developer or researcher who has used an AI agent tool before (Hermes, OpenClaw, Claude Code, etc.) and wants something self-hosted (but not tied down to any particular LLM; Claude, ChatGPT, and may other models can easily be used with this tool), safer, and more capable. They arrive with curiosity, not patience. They will ask "what can you do?" before they read any documentation.
 
 ---
 
@@ -62,14 +62,14 @@ The same list is available in the Web UI as a sidebar panel or modal.
 
 The current `general` preset is expanded into a set of built-in presets covering the main use cases. These ship with Shem and require no configuration:
 
-| Preset | Purpose |
-|---|---|
-| `general` | Conversational assistant, no domain bias. The default. |
-| `coder` | Code reading, writing, refactoring, debugging. Aware of common languages and patterns. |
-| `researcher` | Information synthesis, summarisation, structured note-taking. Good at "tell me about X." |
-| `writer` | Drafting, editing, tone adjustment, structure feedback. |
-| `security` | Security posture review, vulnerability identification, threat modelling. Conservative tool access. |
-| `explorer` | Codebase or filesystem exploration. Good at "what does this project do?" |
+| Preset       | Purpose                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| `general`    | Conversational assistant, no domain bias. The default.                                             |
+| `coder`      | Code reading, writing, refactoring, debugging. Aware of common languages and patterns.             |
+| `researcher` | Information synthesis, summarisation, structured note-taking. Good at "tell me about X."           |
+| `writer`     | Drafting, editing, tone adjustment, structure feedback.                                            |
+| `security`   | Security posture review, vulnerability identification, threat modelling. Conservative tool access. |
+| `explorer`   | Codebase or filesystem exploration. Good at "what does this project do?"                           |
 
 Users can create custom presets with `/hire <name> <role description>` (already implemented in Phase 27).
 
@@ -91,6 +91,7 @@ This is implemented as a recognised intent in the agent's system prompt, not a h
 ### Conversational mode changes
 
 **Agent.Server:** Add a `:conversational` mode alongside the existing task-runner mode. In conversational mode:
+
 - `max_turns` is effectively unlimited (or very high — 100)
 - The agent does not terminate on producing a final answer — it returns to a waiting state
 - A new event type `:user_message` is added to the event log for user inputs in conversation
@@ -103,12 +104,14 @@ This is implemented as a recognised intent in the agent's system prompt, not a h
 ### CWD injection
 
 A new module `Shem.Context.Project` runs at startup:
+
 - Detects `File.cwd!()`
 - Runs a shallow directory listing
 - Detects project type from marker files (`mix.exs`, `package.json`, `Cargo.toml`, `pyproject.toml`, `.git`, etc.)
 - Returns a `%ProjectContext{}` struct
 
 The project context is injected into every agent's system prompt as a preamble:
+
 ```
 You are running in: /home/user/my-project
 Project type: Elixir/Mix (git repo, 47 files)
@@ -137,6 +140,7 @@ A new TUI component `Shem.TUI.HelpOverlay` rendered on top of the main view when
 ## Success criteria
 
 A new user can:
+
 1. Launch Shem cold and immediately understand what it is
 2. Ask "what can you do?" and get a useful answer
 3. Ask about the contents of their current directory without any setup
