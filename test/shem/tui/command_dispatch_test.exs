@@ -232,4 +232,28 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert msg =~ "usage: /hire"
     end
   end
+
+  describe "parse/1 — /preset switch" do
+    test "parses /preset coder as switch" do
+      assert {:preset_switch, "coder"} = CommandDispatch.parse("/preset coder")
+    end
+
+    test "parses /preset researcher as switch" do
+      assert {:preset_switch, "researcher"} = CommandDispatch.parse("/preset researcher")
+    end
+
+    test "/preset without name returns error" do
+      assert {:error, _} = CommandDispatch.parse("/preset")
+    end
+
+    test "/preset list still works" do
+      assert {:preset_list} = CommandDispatch.parse("/preset list")
+    end
+  end
+
+  describe "parse/1 — /help" do
+    test "parses /help" do
+      assert {:help} = CommandDispatch.parse("/help")
+    end
+  end
 end

@@ -11,6 +11,8 @@ defmodule Shem.TUI.CommandDispatch do
           | {:preset_list}
           | {:preset_add, String.t()}
           | {:preset_delete, String.t()}
+          | {:preset_switch, String.t()}
+          | {:help}
           | {:hire, String.t(), String.t()}
           | {:llm_routes}
           | {:llm_route, [{atom(), :llama_cpp | :ollama | :openai | :anthropic, String.t()}]}
@@ -85,6 +87,12 @@ defmodule Shem.TUI.CommandDispatch do
       ["preset", "delete" | name_parts] ->
         name = String.trim(Enum.join(name_parts, " "))
         if name == "", do: {:error, "usage: /preset delete <name>"}, else: {:preset_delete, name}
+
+      ["help" | _] ->
+        {:help}
+
+      ["preset", name] when name not in ["list", "add", "delete"] ->
+        {:preset_switch, name}
 
       ["preset" | _] ->
         {:error, "usage: /preset <list|add|delete> ..."}
