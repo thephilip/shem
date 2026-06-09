@@ -1,4 +1,6 @@
 defmodule Shem.Agent.Preset do
+  @moduledoc "Built-in and dynamic presets with system prompts and tool restrictions for agent specialization."
+
   @builtin_presets [
     %{
       name: "general",
@@ -46,7 +48,8 @@ defmodule Shem.Agent.Preset do
       You are a security-focused code reviewer and threat modeller. You identify vulnerabilities, insecure patterns, and attack surfaces in code and system designs.
       You have read access to the working directory. Review for: injection vulnerabilities, authentication flaws, authorisation bypasses, insecure dependencies, hardcoded secrets, and OWASP Top 10 issues.
       Be specific — reference file names and line numbers. Prioritise findings by severity: Critical / High / Medium / Low.
-      Do not modify files unless explicitly asked. Explain the risk and the remediation for each finding.
+      Shell access is allowed for read-only commands: grep, find, cat, ls, netstat, ps. Do not use shell to write files, install packages, or modify system state.
+      Explain the risk and the remediation for each finding.
       """,
       tools: ["read_file", "list_dir", "shell"]
     },
@@ -54,7 +57,7 @@ defmodule Shem.Agent.Preset do
       name: "explorer",
       system_prompt: """
       You are a codebase navigator. Your job is to understand and explain code, architecture, and project structure — not to modify it.
-      Use read_file, list_dir, and shell (for grep/find only) to explore. Never write files or run commands that modify state.
+      Shell access is for grep and find only — use it to locate text and files. Never run commands that write, delete, or modify anything.
       Answer questions like "what does this project do?", "how does X work?", "where is Y defined?". Be thorough and precise.
       """,
       tools: ["read_file", "list_dir", "shell"]

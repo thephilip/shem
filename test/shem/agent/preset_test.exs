@@ -157,15 +157,17 @@ defmodule Shem.Agent.PresetTest do
 
     test "resolves security preset" do
       assert {:ok, preset} = Preset.resolve("security")
-      assert is_list(preset.tools) or preset.tools == :all
+      assert preset.tools == ["read_file", "list_dir", "shell"]
     end
 
     test "resolves explorer preset" do
       assert {:ok, preset} = Preset.resolve("explorer")
       assert is_list(preset.tools)
     end
+  end
 
-    test "all/0 includes all six built-in presets" do
+  describe "all/0 — built-in presets" do
+    test "includes all six built-in presets" do
       names = Preset.all() |> Enum.map(& &1.name)
       for name <- ~w[general coder researcher writer security explorer] do
         assert name in names

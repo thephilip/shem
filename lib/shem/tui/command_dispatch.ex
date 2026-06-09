@@ -1,4 +1,6 @@
 defmodule Shem.TUI.CommandDispatch do
+  @moduledoc "Parse CLI commands and dispatch to agent, preset, tools, and LLM configuration actions."
+
   @known_backends ~w[llama_cpp ollama openai anthropic]
 
   @spec parse(String.t()) ::
@@ -77,6 +79,9 @@ defmodule Shem.TUI.CommandDispatch do
           {:redteam, name}
         end
 
+      ["help" | _] ->
+        {:help}
+
       ["preset", "list" | _] ->
         {:preset_list}
 
@@ -88,10 +93,8 @@ defmodule Shem.TUI.CommandDispatch do
         name = String.trim(Enum.join(name_parts, " "))
         if name == "", do: {:error, "usage: /preset delete <name>"}, else: {:preset_delete, name}
 
-      ["help" | _] ->
-        {:help}
-
       ["preset", name] when name not in ["list", "add", "delete"] ->
+        # guard: ensure new /preset subcommands are added ABOVE this clause
         {:preset_switch, name}
 
       ["preset" | _] ->
