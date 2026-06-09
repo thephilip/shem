@@ -92,7 +92,8 @@ defmodule Shem.Agent do
         tools: if(preset.tools == :all, do: [], else: preset.tools),
         max_turns: 20,
         spawn_depth: Keyword.get(opts, :spawn_depth, 0),
-        conversational: Keyword.get(opts, :conversational, false)
+        conversational: Keyword.get(opts, :conversational, false),
+        project_context: Keyword.get(opts, :project_context, Shem.Context.Project.detect())
       }
       start(config)
     end
