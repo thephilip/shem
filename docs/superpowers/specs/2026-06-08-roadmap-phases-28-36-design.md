@@ -110,7 +110,17 @@ Supports sync and async (`asyncio`) usage. Exposes session timeline access, pres
 
 ---
 
-### Phase 36 — GitHub Bot
+### Phase 36 — Headroom Integration (Token Compression)
+
+An optional `Shem.LLM.Middleware.Headroom` module that routes LLM calls through a locally-running [headroom](https://github.com/chopratejas/headroom) proxy. Headroom compresses tool outputs, file reads, and logs before they reach the context window — 60–95% token reduction with lossless retrieval on demand (originals stored locally, LLM calls `headroom_retrieve` if it needs them).
+
+This is the answer to token drain in Phase 31's hive_mind and Shadow Agent: running 3–5 agents simultaneously is expensive without compression. Headroom is opt-in middleware — Shem works without it, but enabling it cuts multi-agent costs dramatically.
+
+Integration approach: headroom runs as a local proxy (`headroom proxy --port 8787`); Shem detects it via config or env var and routes its LLM transport through it. No hard dependency on Python — headroom is a sidecar, not a library import.
+
+---
+
+### Phase 37 — GitHub Bot
 
 A webhook receiver that makes Shem participate in GitHub workflows:
 
