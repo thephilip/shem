@@ -95,7 +95,7 @@ defmodule Shem.Agent.Server do
     end
 
     cond do
-      state.turn_count >= state.config.max_turns ->
+      not state.config.conversational and state.turn_count >= state.config.max_turns ->
         {:noreply, finish(state, :done, :max_turns_reached)}
 
       LLM.BudgetServer.check() == {:error, :budget_exhausted} ->

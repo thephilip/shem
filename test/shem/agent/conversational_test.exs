@@ -112,5 +112,34 @@ defmodule Shem.Agent.ConversationalTest do
       assert :agent_waiting in types
       assert :user_message in types
     end
+
+    test "conversational agent is not limited by max_turns" do
+      # Start conversational agent with max_turns: 2
+      stub("Hello! How can I help?")
+      stub("Sure, anything else?")
+      stub("One more response.")
+
+      name = start_conversational_agent("hello", max_turns: 2)
+      # Turn 1: initial task
+      assert {:ok, :waiting} = Agent.await(name, 2_000)
+
+      # Turn 2: first message (would normally hit max_turns at this point)
+      assert :ok = Agent.send_message(name, "Tell me more")
+      assert {:ok, :waiting} = Agent.await(name, 2_000)
+
+      # Turn 3: second message (should succeed because conversational agents bypass max_turns)
+      assert :ok = Agent.send_message(name, "Even more please")
+      assert {:ok, :waiting} = Agent.await(name, 2_000)
+      assert {:ok, :waiting} = Agent.status(name)
+    end
+
+    test "non-conversational agent still respects max_turns" do
+      stub("First response.")
+
+      name = start_task_agent("simple task", max_turns: 1)
+      # Turn 1: initial task, and agent finishes with :done
+      assert {:ok, :done} = Agent.await(name, 2_000)
+      assert {:ok, :done} = Agent.status(name)
+    end
   end
 end
