@@ -2,8 +2,9 @@ defmodule Shem.TUI.App do
   @behaviour Ratatouille.App
 
   alias Shem.TUI.Views.{Dashboard, Interactive, History}
-  alias Shem.TUI.{CommandDispatch, AgentView, StreamSink}
+  alias Shem.TUI.{CommandDispatch, AgentView, StreamSink, Welcome}
   alias Ratatouille.Runtime.{Command, Subscription}
+  import Ratatouille.View
 
   @esc 27
   @backspace 127
@@ -15,6 +16,14 @@ defmodule Shem.TUI.App do
 
   @impl true
   def init(_context) do
+    show_welcome =
+      if Welcome.first_launch?() do
+        Welcome.mark_welcomed()
+        true
+      else
+        false
+      end
+
     %{
       mode: :dashboard,
       command_buffer: "",
@@ -39,7 +48,8 @@ defmodule Shem.TUI.App do
       current_preset: "general",
       active_conversational_agent: nil,
       show_help: false,
-      help_filter: ""
+      help_filter: "",
+      show_welcome: show_welcome
     }
   end
 
@@ -51,6 +61,24 @@ defmodule Shem.TUI.App do
   @impl true
   def update(model, msg) do
     case msg do
+      # --- Welcome screen (dismiss on any key) ---
+      {:event, _} when model.show_welcome ->
+        %{model | show_welcome: false}
+
+      # --- Help overlay ---
+      {:event, %{key: @esc}} when model.show_help ->
+        %{model | show_help: false, help_filter: ""}
+
+      {:event, %{key: @backspace}} when model.show_help ->
+        filter = model.help_filter
+        %{model | help_filter: if(filter == "", do: "", else: String.slice(filter, 0..-2//1))}
+
+      {:event, %{ch: ch}} when model.show_help and ch > 0 ->
+        %{model | help_filter: model.help_filter <> <<ch::utf8>>}
+
+      {:event, _} when model.show_help ->
+        model
+
       # --- Multiline input mode (must be first) ---
       {:event, %{key: @esc}} when model.mode == :multiline_input ->
         %{model | mode: :interactive, multiline_buffer: [], multiline_target: nil, command_buffer: "", command_error: nil}
@@ -379,11 +407,61 @@ defmodule Shem.TUI.App do
 
   @impl true
   def render(model) do
-    case model.mode do
-      :dashboard -> Dashboard.render(model)
-      :interactive -> Interactive.render(model)
-      :multiline_input -> Interactive.render(model)
-      :history -> History.render(model)
+    cond do
+      model.show_welcome -> render_welcome()
+      model.show_help -> render_help(model)
+      true ->
+        case model.mode do
+          :dashboard -> Dashboard.render(model)
+          :interactive -> Interactive.render(model)
+          :multiline_input -> Interactive.render(model)
+          :history -> History.render(model)
+        end
+    end
+  end
+
+  defp render_welcome do
+    view do
+      panel title: " ⬡ Welcome to Shem " do
+        label(content: "")
+        label(content: "  Your general-purpose AI agent platform.")
+        label(content: "")
+        label(content: "  Things to try:")
+        label(content: "  • Ask me about your current project")
+        label(content: "  • /preset coder  — switch to coding mode")
+        label(content: "  • /preset security — review your code")
+        label(content: "  • /help  — see all available commands")
+        label(content: "")
+        label(content: "  Press any key to begin...")
+      end
+    end
+  end
+
+  defp render_help(model) do
+    filter = model.help_filter
+    commands = CommandDispatch.commands()
+
+    filtered =
+      if filter == "" do
+        commands
+      else
+        lower = String.downcase(filter)
+        Enum.filter(commands, fn {cmd, desc} ->
+          String.contains?(String.downcase(cmd), lower) or
+            String.contains?(String.downcase(desc), lower)
+        end)
+      end
+
+    view do
+      panel title: " Commands — type to filter " do
+        label(content: "  Filter: #{filter}_")
+        label(content: "")
+        for {cmd, desc} <- filtered do
+          label(content: "  #{String.pad_trailing(cmd, 30)} #{desc}")
+        end
+        label(content: "")
+        label(content: "  Press Escape to close")
+      end
     end
   end
 

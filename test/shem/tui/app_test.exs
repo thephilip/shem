@@ -527,6 +527,75 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
+  describe "welcome screen" do
+    test "model has show_welcome field" do
+      model = App.init(%{})
+      assert Map.has_key?(model, :show_welcome)
+      assert is_boolean(model.show_welcome)
+    end
+
+    test "any keypress dismisses welcome screen" do
+      model = %{App.init(%{}) | show_welcome: true}
+      result = App.update(model, {:event, %{ch: ?a, key: 0}})
+      assert result.show_welcome == false
+    end
+
+    test "non-character key dismisses welcome screen" do
+      model = %{App.init(%{}) | show_welcome: true}
+      result = App.update(model, {:event, %{ch: 0, key: 27}})
+      assert result.show_welcome == false
+    end
+
+    test "welcome screen does not process other commands while active" do
+      model = %{App.init(%{}) | show_welcome: true, mode: :dashboard}
+      result = App.update(model, {:event, %{ch: ?i, key: 0}})
+      # Mode should NOT switch — welcome consumes the event
+      assert result.mode == :dashboard
+      assert result.show_welcome == false
+    end
+  end
+
+  describe "/help overlay" do
+    test "typing when show_help: true appends to help_filter" do
+      model = %{App.init(%{}) | show_help: true, help_filter: ""}
+      result = App.update(model, {:event, %{ch: ?p, key: 0}})
+      assert result.help_filter == "p"
+    end
+
+    test "typing multiple characters appends each" do
+      model = %{App.init(%{}) | show_help: true, help_filter: "pre"}
+      result = App.update(model, {:event, %{ch: ?s, key: 0}})
+      assert result.help_filter == "pres"
+    end
+
+    test "backspace removes last char from help_filter" do
+      model = %{App.init(%{}) | show_help: true, help_filter: "pre"}
+      result = App.update(model, {:event, %{ch: 0, key: 127}})
+      assert result.help_filter == "pr"
+    end
+
+    test "backspace on empty help_filter is a no-op" do
+      model = %{App.init(%{}) | show_help: true, help_filter: ""}
+      result = App.update(model, {:event, %{ch: 0, key: 127}})
+      assert result.help_filter == ""
+      assert result.show_help == true
+    end
+
+    test "escape closes help overlay and clears filter" do
+      model = %{App.init(%{}) | show_help: true, help_filter: "test"}
+      result = App.update(model, {:event, %{ch: 0, key: 27}})
+      assert result.show_help == false
+      assert result.help_filter == ""
+    end
+
+    test "non-printable non-escape key when show_help is a no-op" do
+      model = %{App.init(%{}) | show_help: true, help_filter: "abc"}
+      result = App.update(model, {:event, %{ch: 0, key: 9}})
+      assert result.show_help == true
+      assert result.help_filter == "abc"
+    end
+  end
+
   describe "update/2 — /llm commands" do
     setup do
       Shem.LLM.Router.flush()

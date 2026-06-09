@@ -151,4 +151,25 @@ defmodule Shem.TUI.CommandDispatch do
     trimmed = String.trim(text)
     if trimmed == "", do: {:error, "empty input"}, else: {:start_agent, "general", trimmed}
   end
+
+  @doc "Returns all available slash commands with descriptions, for the /help overlay."
+  @spec commands() :: [{String.t(), String.t()}]
+  def commands do
+    [
+      {"/help", "Show this command list (searchable)"},
+      {"/preset <name>", "Switch preset: general, coder, researcher, writer, security, explorer"},
+      {"/preset list", "List all available presets"},
+      {"/preset add <name>", "Create a new preset (opens multiline editor)"},
+      {"/preset delete <name>", "Delete a preset"},
+      {"/hire <name> <role>", "Generate a new AI preset from a role description"},
+      {"/agent <preset> <task>", "Start an agent with a preset and task"},
+      {"/agents", "List all running agents"},
+      {"/stop", "Stop the currently focused agent"},
+      {"/redteam <tool>", "Start a red team agent to harden a tool"},
+      {"/tools", "List all graduated Lab tools with trust bands"},
+      {"/trust <tool>", "Show trust details for a specific tool"},
+      {"/llm routes", "Show the current LLM routing table"},
+      {"/llm route <role>=<model>", "Set an LLM route (e.g. reasoning=phi4)"},
+    ]
+  end
 end
