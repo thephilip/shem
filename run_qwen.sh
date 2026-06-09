@@ -1,1 +1,0 @@
-podman run -d --name qwen-server --device ://nvidia.com --ipc=host --cap-add IPC_LOCK --userns=keep-id -v /home/philip/Downloads/_app/_models:/models:z -p 8080:8080 ghcr.io/ggml-org/llama.cpp:server-cuda --model /models/Qwen_Qwen3-30B-A3B-Q4_K_M.gguf --host 0.0.0.0 --port 8080 -ngl 12 -c 16384 -t 8 --mlock --no-mmap --spec-draft-n-max 2

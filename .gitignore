@@ -28,3 +28,11 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+
+# Local tooling — never publish
+.claude/
+OPENCODE_PROMPT.txt
+run_qwen.sh
+smoke_test.exs
+scripts/smoke_llm.exs
+shem-feature-ideas-scored.md
