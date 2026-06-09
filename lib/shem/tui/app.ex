@@ -35,7 +35,11 @@ defmodule Shem.TUI.App do
       multiline_target: nil,
       history_sessions: [],
       history_cursor: 0,
-      history_detail: nil
+      history_detail: nil,
+      current_preset: "general",
+      active_conversational_agent: nil,
+      show_help: false,
+      help_filter: ""
     }
   end
 
@@ -156,116 +160,158 @@ defmodule Shem.TUI.App do
         end
 
       {:event, %{key: @enter}} when model.command_buffer != "" ->
-        case CommandDispatch.parse(model.command_buffer) do
-          {:start_agent, preset_name, task} ->
-            case Shem.Agent.start_with_preset(preset_name, task) do
-              {:ok, name} ->
-                model = %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
-                start_stream_sink_for_focused(model)
+        if String.starts_with?(model.command_buffer, "/") do
+          case CommandDispatch.parse(model.command_buffer) do
+            {:start_agent, preset_name, task} ->
+              case Shem.Agent.start_with_preset(preset_name, task) do
+                {:ok, name} ->
+                  model = %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
+                  start_stream_sink_for_focused(model)
 
-              {:error, reason} ->
-                %{model | command_error: "failed to start agent: #{inspect(reason)}", command_output: nil}
-            end
+                {:error, reason} ->
+                  %{model | command_error: "failed to start agent: #{inspect(reason)}", command_output: nil}
+              end
 
-          {:stop_agent} ->
-            if model.focused_agent, do: Shem.Agent.stop(model.focused_agent)
-            %{model | command_buffer: "", command_error: nil, command_output: nil}
+            {:stop_agent} ->
+              if model.focused_agent, do: Shem.Agent.stop(model.focused_agent)
+              %{model | command_buffer: "", command_error: nil, command_output: nil}
 
-          {:list_agents} ->
-            %{model | command_buffer: "", command_error: nil, command_output: nil}
+            {:list_agents} ->
+              %{model | command_buffer: "", command_error: nil, command_output: nil}
 
-          {:tools} ->
-            output = format_tools()
-            %{model | command_buffer: "", command_output: output, command_error: nil}
+            {:tools} ->
+              output = format_tools()
+              %{model | command_buffer: "", command_output: output, command_error: nil}
 
-          {:trust, tool_name} ->
-            case Shem.Lab.Registry.lookup_by_name(tool_name) do
-              {:ok, tool} ->
-                output = format_trust(tool)
-                %{model | command_buffer: "", command_output: output, command_error: nil}
+            {:trust, tool_name} ->
+              case Shem.Lab.Registry.lookup_by_name(tool_name) do
+                {:ok, tool} ->
+                  output = format_trust(tool)
+                  %{model | command_buffer: "", command_output: output, command_error: nil}
 
-              {:error, :not_found} ->
-                %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
-            end
+                {:error, :not_found} ->
+                  %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
+              end
 
-          {:redteam, tool_name} ->
-            case Shem.Lab.Registry.lookup_by_name(tool_name) do
-              {:ok, tool} ->
-                Shem.Adversarial.start_hardening(tool.id)
-                %{model | command_buffer: "", command_error: nil, command_output: nil}
+            {:redteam, tool_name} ->
+              case Shem.Lab.Registry.lookup_by_name(tool_name) do
+                {:ok, tool} ->
+                  Shem.Adversarial.start_hardening(tool.id)
+                  %{model | command_buffer: "", command_error: nil, command_output: nil}
 
-              {:error, :not_found} ->
-                %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
-            end
+                {:error, :not_found} ->
+                  %{model | command_error: "unknown tool: #{tool_name}", command_output: nil}
+              end
 
-          {:preset_list} ->
-            output = format_presets()
-            %{model | command_buffer: "", command_output: output, command_error: nil}
+            {:help} ->
+              %{model | command_buffer: "", show_help: true, command_error: nil}
 
-          {:preset_add, name} ->
-            %{model |
-              mode: :multiline_input,
-              multiline_target: {:preset_add, name},
-              multiline_buffer: [],
-              command_buffer: "",
-              command_error: nil,
-              command_output: nil
-            }
+            {:preset_list} ->
+              output = format_presets()
+              %{model | command_buffer: "", command_output: output, command_error: nil}
 
-          {:preset_delete, name} ->
-            case Enum.find(Shem.Agent.Preset.all(), &(&1.name == name)) do
-              nil ->
-                %{model | command_error: "unknown preset: #{name}", command_output: nil}
+            {:preset_add, name} ->
+              %{model |
+                mode: :multiline_input,
+                multiline_target: {:preset_add, name},
+                multiline_buffer: [],
+                command_buffer: "",
+                command_error: nil,
+                command_output: nil
+              }
 
-              %{source: :builtin} ->
-                %{model | command_error: "cannot delete built-in preset: #{name}", command_output: nil}
+            {:preset_delete, name} ->
+              case Enum.find(Shem.Agent.Preset.all(), &(&1.name == name)) do
+                nil ->
+                  %{model | command_error: "unknown preset: #{name}", command_output: nil}
 
-              %{source: :config} ->
-                %{model | command_error: "cannot delete config preset: #{name}", command_output: nil}
+                %{source: :builtin} ->
+                  %{model | command_error: "cannot delete built-in preset: #{name}", command_output: nil}
 
-              %{source: :dynamic} ->
-                Shem.Agent.PresetStore.delete(name)
-                %{model | command_buffer: "", command_output: "preset '#{name}' deleted", command_error: nil}
-            end
+                %{source: :config} ->
+                  %{model | command_error: "cannot delete config preset: #{name}", command_output: nil}
 
-          {:llm_route, results} ->
-            Enum.each(results, fn {atom, backend_key, model_string} ->
-              Shem.LLM.Router.set_route(atom, backend_key, model_string)
-            end)
+                %{source: :dynamic} ->
+                  Shem.Agent.PresetStore.delete(name)
+                  %{model | command_buffer: "", command_output: "preset '#{name}' deleted", command_error: nil}
+              end
 
-            routes_str =
-              Enum.map_join(results, "\n", fn {atom, backend_key, model_string} ->
-                "  #{atom} → #{backend_key} · #{model_string}"
+            {:preset_switch, name} ->
+              if model.active_conversational_agent do
+                Shem.Agent.stop(model.active_conversational_agent)
+              end
+              %{model |
+                command_buffer: "",
+                current_preset: name,
+                active_conversational_agent: nil,
+                command_output: "switched to preset: #{name}",
+                command_error: nil
+              }
+
+            {:llm_route, results} ->
+              Enum.each(results, fn {atom, backend_key, model_string} ->
+                Shem.LLM.Router.set_route(atom, backend_key, model_string)
               end)
 
-            %{model | command_buffer: "", command_output: "routes updated:\n#{routes_str}", command_error: nil}
+              routes_str =
+                Enum.map_join(results, "\n", fn {atom, backend_key, model_string} ->
+                  "  #{atom} → #{backend_key} · #{model_string}"
+                end)
 
-          {:llm_routes} ->
-            output = format_routes()
-            %{model | command_buffer: "", command_output: output, command_error: nil}
+              %{model | command_buffer: "", command_output: "routes updated:\n#{routes_str}", command_error: nil}
 
-          {:hire, name, role} ->
-            command =
-              Command.new(
-                fn ->
-                  prompt =
-                    "You are writing a system prompt for an AI agent.\n" <>
-                    "Role description: \"#{role}\"\n" <>
-                    "Write a concise system prompt (2-4 sentences) that describes the agent's purpose, approach, and any constraints.\n" <>
-                    "Return ONLY the system prompt text. No explanation, no preamble, no quotes."
+            {:llm_routes} ->
+              output = format_routes()
+              %{model | command_buffer: "", command_output: output, command_error: nil}
 
-                  case Shem.LLM.complete(%Shem.LLM.Request{prompt: prompt, model: :default}) do
-                    {:ok, response} -> {:ok, response.content}
-                    {:error, reason} -> {:error, reason}
-                  end
-                end,
-                {:hire_complete, name}
-              )
+            {:hire, name, role} ->
+              command =
+                Command.new(
+                  fn ->
+                    prompt =
+                      "You are writing a system prompt for an AI agent.\n" <>
+                      "Role description: \"#{role}\"\n" <>
+                      "Write a concise system prompt (2-4 sentences) that describes the agent's purpose, approach, and any constraints.\n" <>
+                      "Return ONLY the system prompt text. No explanation, no preamble, no quotes."
 
-            {%{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}, command}
+                    case Shem.LLM.complete(%Shem.LLM.Request{prompt: prompt, model: :default}) do
+                      {:ok, response} -> {:ok, response.content}
+                      {:error, reason} -> {:error, reason}
+                    end
+                  end,
+                  {:hire_complete, name}
+                )
 
-          {:error, reason} ->
-            %{model | command_error: reason, command_output: nil}
+              {%{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}, command}
+
+            {:error, reason} ->
+              %{model | command_error: reason, command_output: nil}
+          end
+        else
+          # Plain text: conversational mode
+          text = String.trim(model.command_buffer)
+          case model.active_conversational_agent do
+            nil ->
+              # Start a new conversational agent with the current preset
+              case Shem.Agent.start_with_preset(model.current_preset, text, conversational: true) do
+                {:ok, name} ->
+                  model = %{model | command_buffer: "", active_conversational_agent: name, focused_agent: name, command_error: nil, command_output: nil}
+                  start_stream_sink_for_focused(model)
+
+                {:error, reason} ->
+                  %{model | command_error: "failed to start conversational agent: #{inspect(reason)}", command_output: nil}
+              end
+
+            agent_name ->
+              # Send message to the existing conversational agent
+              case Shem.Agent.send_message(agent_name, text) do
+                :ok ->
+                  %{model | command_buffer: "", command_error: nil}
+
+                {:error, reason} ->
+                  %{model | command_buffer: "", command_error: "send_message failed: #{inspect(reason)}", command_output: nil}
+              end
+          end
         end
 
       :tick ->

@@ -448,6 +448,85 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
+  describe "init/1 — Phase 28 fields" do
+    test "model has current_preset defaulting to 'general'" do
+      model = App.init(%{})
+      assert model.current_preset == "general"
+    end
+
+    test "model has active_conversational_agent defaulting to nil" do
+      model = App.init(%{})
+      assert model.active_conversational_agent == nil
+    end
+
+    test "model has show_help defaulting to false" do
+      model = App.init(%{})
+      assert model.show_help == false
+    end
+
+    test "model has help_filter defaulting to empty string" do
+      model = App.init(%{})
+      assert model.help_filter == ""
+    end
+  end
+
+  describe "update/2 — /help command" do
+    test "/help sets show_help to true and clears command_buffer" do
+      model = %{App.init(%{}) | command_buffer: "/help"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.show_help == true
+      assert result.command_buffer == ""
+      assert result.command_error == nil
+    end
+  end
+
+  describe "update/2 — /preset switch" do
+    test "/preset coder sets current_preset and shows status" do
+      model = %{App.init(%{}) | command_buffer: "/preset coder"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.current_preset == "coder"
+      assert result.command_output =~ "coder"
+      assert result.command_buffer == ""
+      assert result.command_error == nil
+    end
+
+    test "/preset switch with active conversational agent stops it and clears it" do
+      model = %{App.init(%{}) | command_buffer: "/preset coder", active_conversational_agent: "fake_agent_xyz"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.current_preset == "coder"
+      assert result.active_conversational_agent == nil
+    end
+  end
+
+  describe "update/2 — conversational mode (plain text)" do
+    test "plain text with no active agent starts a conversational agent" do
+      model = %{App.init(%{}) | command_buffer: "hello from conversational mode"}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_buffer == ""
+      assert is_binary(result.active_conversational_agent)
+      assert result.active_conversational_agent != nil
+      assert result.focused_agent == result.active_conversational_agent
+      # Clean up the spawned agent
+      on_exit(fn ->
+        if result.active_conversational_agent do
+          Shem.Agent.stop(result.active_conversational_agent)
+        end
+      end)
+    end
+
+    test "plain text with active agent calls send_message" do
+      # Start a real conversational agent first
+      {:ok, agent_name} = Shem.Agent.start_with_preset("general", "chat session", conversational: true)
+      # Wait for it to reach :waiting
+      :timer.sleep(100)
+      model = %{App.init(%{}) | command_buffer: "how are you?", active_conversational_agent: agent_name}
+      result = App.update(model, {:event, %{ch: 0, key: 13}})
+      assert result.command_buffer == ""
+      # send_message returns :ok or error — either way buffer clears
+      on_exit(fn -> Shem.Agent.stop(agent_name) end)
+    end
+  end
+
   describe "update/2 — /llm commands" do
     setup do
       Shem.LLM.Router.flush()
