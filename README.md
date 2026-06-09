@@ -13,7 +13,7 @@
     <img src="https://github.com/thephilip/shem/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
+    <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="Apache 2.0 License">
   </a>
 </p>
 
@@ -118,4 +118,4 @@ Upcoming: hive_mind multi-agent consensus, Timeline Viewer, Human-in-the-Loop ap
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).
