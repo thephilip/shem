@@ -31,6 +31,7 @@ defmodule Shem.Agent.Server do
 
   @impl true
   def init({name, config, session_id}) do
+    config = prepend_project_context(config)
     Process.put(:spawn_agent_depth, config.spawn_depth)
     {:ok, ^session_id} = EventLog.start_session(session_id)
 
@@ -169,5 +170,11 @@ defmodule Shem.Agent.Server do
     Registry.dispatch(Shem.StreamRegistry, session_id, fn entries ->
       Enum.each(entries, fn {pid, _} -> send(pid, {:stream_done, session_id}) end)
     end)
+  end
+
+  defp prepend_project_context(%Config{project_context: nil} = config), do: config
+  defp prepend_project_context(%Config{project_context: ctx, system_prompt: sp} = config) do
+    preamble = Shem.Context.Project.to_prompt(ctx)
+    %{config | system_prompt: preamble <> "\n" <> sp}
   end
 end

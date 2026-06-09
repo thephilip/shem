@@ -3,7 +3,8 @@ defmodule Shem.Agent do
 
   defmodule Config do
     @enforce_keys [:task, :system_prompt]
-    defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20, spawn_depth: 0]
+    defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20,
+               spawn_depth: 0, conversational: false, project_context: nil]
 
     @type t :: %__MODULE__{
             task: String.t(),
@@ -11,7 +12,9 @@ defmodule Shem.Agent do
             model: atom(),
             tools: [String.t()],
             max_turns: pos_integer(),
-            spawn_depth: non_neg_integer()
+            spawn_depth: non_neg_integer(),
+            project_context: Shem.Context.Project.t() | nil,
+            conversational: boolean()
           }
   end
 

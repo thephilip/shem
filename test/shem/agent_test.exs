@@ -22,6 +22,18 @@ defmodule Shem.AgentTest do
     )
   end
 
+  describe "Config — project_context and conversational fields" do
+    test "Config has project_context field defaulting to nil" do
+      config = %Shem.Agent.Config{task: "test", system_prompt: "sp"}
+      assert config.project_context == nil
+    end
+
+    test "Config has conversational field defaulting to false" do
+      config = %Shem.Agent.Config{task: "test", system_prompt: "sp"}
+      assert config.conversational == false
+    end
+  end
+
   describe "resume/2" do
     setup do
       StubTransport.Server.reset()

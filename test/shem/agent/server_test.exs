@@ -39,6 +39,26 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "project context injection" do
+    test "project_context is prepended to system_prompt when set" do
+      project = %Shem.Context.Project{
+        path: "/tmp/test_project",
+        name: "test_project",
+        type: :elixir,
+        contents: [{"mix.exs", :file}],
+        git_repo?: false
+      }
+      config = %Agent.Config{
+        task: "hello",
+        system_prompt: "You are a coder.",
+        project_context: project
+      }
+      stub("ok")
+      {:ok, name} = Agent.start(config)
+      assert {:ok, :done} = Agent.await(name, 2_000)
+    end
+  end
+
   describe "single-turn run (no tool calls)" do
     test "agent reaches :done status after plain-text response" do
       stub("The answer is 42.")
