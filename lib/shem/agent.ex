@@ -36,7 +36,7 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec status(String.t()) :: {:ok, :running | :done | :error} | {:error, :not_found}
+  @spec status(String.t()) :: {:ok, :running | :done | :error | :waiting} | {:error, :not_found}
   def status(name) do
     case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
       nil -> {:error, :not_found}
@@ -44,13 +44,30 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec await(String.t(), timeout()) :: {:ok, :done | :error} | {:error, :not_found | :timeout}
+  @spec await(String.t(), timeout()) ::
+          {:ok, :done | :error | :waiting} | {:error, :not_found | :timeout}
   def await(name, timeout \\ 5_000) do
     case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
       nil -> {:error, :not_found}
       pid ->
         try do
           GenServer.call(pid, :await, timeout)
+        catch
+          :exit, {:timeout, _} -> {:error, :timeout}
+        end
+    end
+  end
+
+  @spec send_message(String.t(), String.t()) ::
+          :ok | {:error, :not_found | :not_waiting | :timeout}
+  def send_message(name, message) do
+    case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
+      nil ->
+        {:error, :not_found}
+
+      pid ->
+        try do
+          GenServer.call(pid, {:message, message})
         catch
           :exit, {:timeout, _} -> {:error, :timeout}
         end

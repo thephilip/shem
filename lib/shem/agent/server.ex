@@ -15,7 +15,7 @@ defmodule Shem.Agent.Server do
     {:reply, {:ok, state.status}, state}
   end
 
-  def handle_call(:await, _from, %{status: s} = state) when s in [:done, :error] do
+  def handle_call(:await, _from, %{status: s} = state) when s in [:done, :error, :waiting] do
     {:reply, {:ok, s}, state}
   end
 
@@ -25,6 +25,17 @@ defmodule Shem.Agent.Server do
 
   def handle_call(:session_id, _from, state) do
     {:reply, state.session_id, state}
+  end
+
+  def handle_call({:message, _text}, _from, %{status: s} = state) when s != :waiting do
+    {:reply, {:error, :not_waiting}, state}
+  end
+
+  def handle_call({:message, text}, _from, state) do
+    EventLog.append(state.session_id, :user_message, %{content: text})
+    new_history = state.history ++ [%{role: :user, content: text}]
+    send(self(), :run_turn)
+    {:reply, :ok, %{state | history: new_history, status: :running}}
   end
 
   # ── Init ────────────────────────────────────────────────────────────────────
@@ -144,6 +155,22 @@ defmodule Shem.Agent.Server do
       EventLog.append(session_id, :agent_tool_result, %{tool: call.name, result: result_str})
       acc ++ [%{role: :tool, tool_call_id: call.id, content: "Tool result (#{call.name}): #{result_str}"}]
     end)
+  end
+
+  defp finish(%{config: %Config{conversational: true}} = state, _status, :answer) do
+    last_content =
+      state.history
+      |> Enum.filter(&(&1.role == :assistant))
+      |> List.last()
+      |> case do
+        %{content: c} when is_binary(c) -> c
+        _ -> ""
+      end
+
+    EventLog.append(state.session_id, :agent_waiting, %{content: last_content})
+    broadcast_stream_done(state.session_id)
+    Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, :waiting}) end)
+    %{state | status: :waiting, done_reason: :waiting, awaiting: []}
   end
 
   defp finish(state, status, :answer) do
