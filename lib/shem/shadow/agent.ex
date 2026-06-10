@@ -16,8 +16,15 @@ defmodule Shem.Shadow.Agent do
   def current_score(agent_name) do
     via = ProcessRegistry.via_tuple("shadow_#{agent_name}")
     case GenServer.whereis(via) do
-      nil -> {:error, :not_found}
-      pid -> GenServer.call(pid, :current_score)
+      nil ->
+        {:error, :not_found}
+
+      pid ->
+        try do
+          GenServer.call(pid, :current_score)
+        catch
+          :exit, _ -> {:error, :not_found}
+        end
     end
   end
 
@@ -124,10 +131,10 @@ defmodule Shem.Shadow.Agent do
   end
 
   defp parse_result(content) do
-    with {:ok, %{"score" => raw_score, "reasoning" => reasoning}} <- Jason.decode(content),
-         score when is_number(raw_score) <- raw_score / 1,
+    with {:ok, %{"score" => score, "reasoning" => reasoning}} <- Jason.decode(content),
+         true <- is_number(score),
          true <- score >= 0.0 and score <= 1.0 do
-      {:shadow_result, score, reasoning}
+      {:shadow_result, score * 1.0, reasoning}
     else
       _ -> {:shadow_error, :parse_failed}
     end
