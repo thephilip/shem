@@ -4,6 +4,11 @@ defmodule Shem.TUI.AppHireTest do
   alias Shem.TUI.App
   alias Shem.Agent.PresetStore
 
+  setup_all do
+    Shem.TUI.Welcome.mark_welcomed()
+    :ok
+  end
+
   setup do
     PresetStore.flush()
     :ok
