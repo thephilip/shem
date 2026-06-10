@@ -1,16 +1,91 @@
 function shem() {
   return {
+    // chat state
     preset: 'general',
-    presets: ['general', 'coder', 'researcher', 'writer', 'security', 'explorer'],
-    messages: [],          // [{role: 'user'|'assistant', content: '', pending: bool}]
+    presets: [],              // [{name, description, deletable}]
+    messages: [],
     inputText: '',
-    status: 'idle',        // idle | running | waiting | error
+    status: 'idle',
     errorMsg: '',
     agentId: null,
     pendingContent: '',
 
-    init() {
-      this.preset = 'general';
+    // preset modal state
+    showPresetModal: false,
+    newPresetName: '',
+    newPresetPrompt: '',
+    createError: '',
+    creating: false,
+
+    async init() {
+      await this._loadPresets();
+    },
+
+    async _loadPresets() {
+      try {
+        const res = await fetch('/api/presets');
+        if (!res.ok) throw new Error();
+        this.presets = await res.json();
+        // ensure current preset is still valid
+        if (!this.presets.find(p => p.name === this.preset)) {
+          this.preset = 'general';
+        }
+      } catch (_) {
+        // fallback so the UI is never broken
+        this.presets = [{ name: 'general', description: 'General assistant.', deletable: false }];
+      }
+    },
+
+    openPresetModal() {
+      this.newPresetName = '';
+      this.newPresetPrompt = '';
+      this.createError = '';
+      this.creating = false;
+      this.showPresetModal = true;
+    },
+
+    closePresetModal() {
+      this.showPresetModal = false;
+    },
+
+    async createPreset() {
+      const name   = this.newPresetName.trim();
+      const prompt = this.newPresetPrompt.trim();
+      if (!name || !prompt) {
+        this.createError = 'Name and system prompt are required.';
+        return;
+      }
+      this.creating = true;
+      this.createError = '';
+      try {
+        const res = await fetch('/api/presets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, system_prompt: prompt })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          this.createError = data.error || 'Failed to create preset.';
+          return;
+        }
+        this.presets.push(data);
+        this.preset = data.name;
+        this.newPresetName = '';
+        this.newPresetPrompt = '';
+      } catch (_) {
+        this.createError = 'Network error.';
+      } finally {
+        this.creating = false;
+      }
+    },
+
+    async deletePreset(name) {
+      try {
+        const res = await fetch(`/api/presets/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        if (!res.ok) return;
+        this.presets = this.presets.filter(p => p.name !== name);
+        if (this.preset === name) this.preset = 'general';
+      } catch (_) {}
     },
 
     async send() {
