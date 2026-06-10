@@ -27,7 +27,29 @@ defmodule Shem.AgentSupervisor do
       restart: :temporary
     }
 
-    Horde.DynamicSupervisor.start_child(__MODULE__, child_spec)
+    case Horde.DynamicSupervisor.start_child(__MODULE__, child_spec) do
+      {:ok, pid} = result ->
+        maybe_start_shadow(name, session_id, pid)
+        result
+
+      error ->
+        error
+    end
+  end
+
+  defp maybe_start_shadow(agent_name, session_id, agent_pid) do
+    if Application.get_env(:shem, :shadow_agent_enabled, true) &&
+         Process.whereis(Shem.Shadow.Supervisor) do
+      shadow_spec = %{
+        id: "shadow_#{agent_name}",
+        start: {Shem.Shadow.Agent, :start_link, [{agent_name, session_id, agent_pid}]},
+        restart: :temporary
+      }
+
+      DynamicSupervisor.start_child(Shem.Shadow.Supervisor, shadow_spec)
+    end
+
+    :ok
   end
 
   defp generate_session_id do

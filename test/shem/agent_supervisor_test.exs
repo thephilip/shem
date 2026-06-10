@@ -48,4 +48,17 @@ defmodule Shem.AgentSupervisorTest do
     via = Shem.ProcessRegistry.via_tuple(name)
     assert GenServer.whereis(via) == nil
   end
+
+  test "Shadow.Agent is NOT spawned when shadow_agent_enabled is false" do
+    Shem.LLM.StubTransport.Server.set_default(
+      {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
+    )
+    config = %Shem.Agent.Config{task: "t", system_prompt: "s"}
+    agent_name = "sa_shadow_test_#{System.unique_integer([:positive])}"
+    session_id = "ses_shadow_#{System.unique_integer([:positive])}"
+    {:ok, _pid} = Shem.AgentSupervisor.start_agent(agent_name, config, session_id)
+
+    # shadow_agent_enabled: false in test env — no shadow agent spawns
+    assert Shem.Shadow.Agent.current_score(agent_name) == {:error, :not_found}
+  end
 end
