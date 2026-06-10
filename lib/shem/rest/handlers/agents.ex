@@ -65,6 +65,16 @@ defmodule Shem.REST.Handlers.Agents do
     end
   end
 
+  get "/:id/shadow" do
+    case Shem.Shadow.Agent.current_score(id) do
+      {:ok, %{band: band, score: score, reasoning: reasoning}} ->
+        send_json(conn, 200, %{band: band, score: score, reasoning: reasoning})
+
+      {:error, :not_found} ->
+        send_json(conn, 404, %{error: "shadow agent not found for: #{id}"})
+    end
+  end
+
   get "/:id" do
     case Shem.Agent.status(id) do
       {:ok, status} -> send_json(conn, 200, %{status: status})
