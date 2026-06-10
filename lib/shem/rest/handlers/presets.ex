@@ -35,6 +35,22 @@ defmodule Shem.REST.Handlers.Presets do
     end
   end
 
+  delete "/:name" do
+    all = Shem.Agent.Preset.all()
+
+    case Enum.find(all, &(&1.name == name)) do
+      nil ->
+        send_json(conn, 404, %{error: "preset not found: #{name}"})
+
+      %{source: source} when source in [:builtin, :config] ->
+        send_json(conn, 403, %{error: "cannot delete built-in preset: #{name}"})
+
+      %{source: :dynamic} ->
+        Shem.Agent.PresetStore.delete(name)
+        send_resp(conn, 204, "")
+    end
+  end
+
   match _ do
     send_json(conn, 404, %{error: "not found"})
   end

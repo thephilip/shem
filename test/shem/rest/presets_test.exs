@@ -100,6 +100,56 @@ defmodule Shem.REST.PresetsTest do
     end
   end
 
+  describe "DELETE /presets/:name" do
+    setup do
+      Shem.Agent.PresetStore.put("deletable-preset", %{
+        name: "deletable-preset",
+        system_prompt: "Delete me."
+      })
+      on_exit(fn -> Shem.Agent.PresetStore.delete("deletable-preset") end)
+      :ok
+    end
+
+    test "returns 204 and removes the preset" do
+      conn =
+        conn(:delete, "/presets/deletable-preset")
+        |> Router.call(@opts)
+
+      assert conn.status == 204
+      assert conn.resp_body == ""
+
+      conn2 = conn(:get, "/presets") |> Router.call(@opts)
+      body = Jason.decode!(conn2.resp_body)
+      refute Enum.any?(body, &(&1["name"] == "deletable-preset"))
+    end
+
+    test "returns 404 for unknown preset name" do
+      conn =
+        conn(:delete, "/presets/no-such-preset-#{System.unique_integer([:positive])}")
+        |> Router.call(@opts)
+
+      assert conn.status == 404
+      assert Jason.decode!(conn.resp_body)["error"] =~ "not found"
+    end
+
+    test "returns 403 for built-in preset" do
+      conn =
+        conn(:delete, "/presets/general")
+        |> Router.call(@opts)
+
+      assert conn.status == 403
+      assert Jason.decode!(conn.resp_body)["error"] =~ "cannot delete"
+    end
+
+    test "returns 403 for explorer built-in preset" do
+      conn =
+        conn(:delete, "/presets/explorer")
+        |> Router.call(@opts)
+
+      assert conn.status == 403
+    end
+  end
+
   describe "GET /presets — deletable field" do
     test "built-in presets have deletable: false" do
       conn = conn(:get, "/presets") |> Router.call(@opts)
