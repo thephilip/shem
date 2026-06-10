@@ -3,6 +3,13 @@ defmodule Shem.TUI.AppTest do
 
   alias Shem.TUI.App
 
+  # Ensure the welcome marker exists before any test runs so that App.init/1
+  # always returns show_welcome: false regardless of test execution order.
+  setup_all do
+    Shem.TUI.Welcome.mark_welcomed()
+    :ok
+  end
+
   describe "init/1" do
     test "default model starts in dashboard mode, unpaused, with empty buffer" do
       model = App.init(%{})
