@@ -4,6 +4,8 @@ defmodule Shem.LLM.Middleware.BudgetCheck do
   alias Shem.LLM.BudgetServer
 
   @impl true
+  def call(%{model: :shadow} = request, _opts, next), do: next.(request)
+
   def call(request, opts, next) do
     server = Keyword.get(opts, :budget_server, BudgetServer)
 
@@ -37,6 +39,8 @@ defmodule Shem.LLM.Middleware.BudgetCheck do
   end
 
   @impl true
+  def stream(%{model: :shadow} = request, _opts, chunk_fn, next), do: next.(request, chunk_fn)
+
   def stream(request, opts, chunk_fn, next) do
     server = Keyword.get(opts, :budget_server, BudgetServer)
 

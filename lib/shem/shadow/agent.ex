@@ -43,7 +43,8 @@ defmodule Shem.Shadow.Agent do
        reasoning: "No analysis yet.",
        last_event_count: 0,
        status: :idle,
-       task: nil
+       task: nil,
+       analysis_timer_ref: nil
      }}
   end
 
@@ -60,12 +61,18 @@ defmodule Shem.Shadow.Agent do
   end
 
   def handle_info({:shadow_result, score, reasoning}, state) do
+    if state.analysis_timer_ref, do: Process.cancel_timer(state.analysis_timer_ref)
     band = score_to_band(score)
-    {:noreply, %{state | score: score, band: band, reasoning: reasoning, status: :idle}}
+    {:noreply, %{state | score: score, band: band, reasoning: reasoning, status: :idle, analysis_timer_ref: nil}}
   end
 
   def handle_info({:shadow_error, _reason}, state) do
-    {:noreply, %{state | status: :idle}}
+    if state.analysis_timer_ref, do: Process.cancel_timer(state.analysis_timer_ref)
+    {:noreply, %{state | status: :idle, analysis_timer_ref: nil}}
+  end
+
+  def handle_info(:shadow_analysis_timeout, state) do
+    {:noreply, %{state | status: :idle, analysis_timer_ref: nil}}
   end
 
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
@@ -87,10 +94,20 @@ defmodule Shem.Shadow.Agent do
           parent = self()
 
           Task.start(fn ->
-            send(parent, run_analysis(task, events))
+            result =
+              try do
+                run_analysis(task, events)
+              rescue
+                _ -> {:shadow_error, :analysis_raised}
+              catch
+                :exit, _ -> {:shadow_error, :analysis_exit}
+              end
+
+            send(parent, result)
           end)
 
-          %{state | status: :analyzing, last_event_count: length(events), task: task}
+          ref = Process.send_after(self(), :shadow_analysis_timeout, 60_000)
+          %{state | status: :analyzing, last_event_count: length(events), task: task, analysis_timer_ref: ref}
         else
           %{state | last_event_count: length(events)}
         end
