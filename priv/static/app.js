@@ -10,6 +10,12 @@ function shem() {
     agentId: null,
     pendingContent: '',
 
+    // shadow agent state
+    shadowBand: null,
+    shadowReasoning: '',
+    showShadowPopover: false,
+    _shadowPollTimer: null,
+
     // preset modal state
     showPresetModal: false,
     newPresetName: '',
@@ -46,6 +52,27 @@ function shem() {
 
     closePresetModal() {
       this.showPresetModal = false;
+    },
+
+    _startShadowPolling() {
+      this._stopShadowPolling();
+      this._shadowPollTimer = setInterval(async () => {
+        if (!this.agentId) return;
+        try {
+          const res = await fetch(`/api/agents/${this.agentId}/shadow`);
+          if (!res.ok) return;
+          const data = await res.json();
+          this.shadowBand = data.band ?? null;
+          this.shadowReasoning = data.reasoning ?? '';
+        } catch (_) {}
+      }, 3000);
+    },
+
+    _stopShadowPolling() {
+      if (this._shadowPollTimer) {
+        clearInterval(this._shadowPollTimer);
+        this._shadowPollTimer = null;
+      }
     },
 
     async createPreset() {
@@ -115,6 +142,7 @@ function shem() {
         if (!res.ok) throw new Error('Failed to start agent');
         const data = await res.json();
         this.agentId = data.agent_id;
+        this._startShadowPolling();
         await this._openStream(this.agentId);
       } catch (e) {
         this.errorMsg = e.message;
@@ -178,12 +206,16 @@ function shem() {
     },
 
     newChat() {
+      this._stopShadowPolling();
       this.messages = [];
       this.agentId = null;
       this.status = 'idle';
       this.inputText = '';
       this.errorMsg = '';
       this.pendingContent = '';
+      this.shadowBand = null;
+      this.shadowReasoning = '';
+      this.showShadowPopover = false;
     }
   };
 }
