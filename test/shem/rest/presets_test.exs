@@ -25,6 +25,81 @@ defmodule Shem.REST.PresetsTest do
     assert Jason.decode!(conn.resp_body) == %{"error" => "not found"}
   end
 
+  describe "POST /presets" do
+    setup do
+      on_exit(fn ->
+        Shem.Agent.PresetStore.delete("new-preset")
+        Shem.Agent.PresetStore.delete("dupe-preset")
+      end)
+      :ok
+    end
+
+    test "returns 201 with preset object on valid input" do
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{name: "new-preset", system_prompt: "Be helpful."}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 201
+      body = Jason.decode!(conn.resp_body)
+      assert body["name"] == "new-preset"
+      assert body["description"] == "Be helpful."
+      assert body["deletable"] == true
+    end
+
+    test "returns 422 when name is missing" do
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{system_prompt: "Be helpful."}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 422
+      assert Jason.decode!(conn.resp_body)["error"] =~ "required"
+    end
+
+    test "returns 422 when system_prompt is missing" do
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{name: "new-preset"}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 422
+      assert Jason.decode!(conn.resp_body)["error"] =~ "required"
+    end
+
+    test "returns 422 when name is blank" do
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{name: "  ", system_prompt: "Be helpful."}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 422
+      assert Jason.decode!(conn.resp_body)["error"] =~ "required"
+    end
+
+    test "returns 409 when name already exists as a built-in" do
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{name: "general", system_prompt: "Override."}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 409
+      assert Jason.decode!(conn.resp_body)["error"] =~ "already exists"
+    end
+
+    test "returns 409 when name already exists as a user preset" do
+      Shem.Agent.PresetStore.put("dupe-preset", %{name: "dupe-preset", system_prompt: "First."})
+
+      conn =
+        conn(:post, "/presets", Jason.encode!(%{name: "dupe-preset", system_prompt: "Second."}))
+        |> put_req_header("content-type", "application/json")
+        |> Router.call(@opts)
+
+      assert conn.status == 409
+      assert Jason.decode!(conn.resp_body)["error"] =~ "already exists"
+    end
+  end
+
   describe "GET /presets — deletable field" do
     test "built-in presets have deletable: false" do
       conn = conn(:get, "/presets") |> Router.call(@opts)

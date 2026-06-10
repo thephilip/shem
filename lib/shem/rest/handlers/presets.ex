@@ -18,6 +18,23 @@ defmodule Shem.REST.Handlers.Presets do
     send_json(conn, 200, presets)
   end
 
+  post "/" do
+    name   = String.trim(conn.body_params["name"] || "")
+    prompt = String.trim(conn.body_params["system_prompt"] || "")
+
+    cond do
+      name == "" or prompt == "" ->
+        send_json(conn, 422, %{error: "name and system_prompt are required"})
+
+      Enum.any?(Shem.Agent.Preset.all(), &(&1.name == name)) ->
+        send_json(conn, 409, %{error: "preset already exists: #{name}"})
+
+      true ->
+        Shem.Agent.PresetStore.put(name, %{name: name, system_prompt: prompt})
+        send_json(conn, 201, %{name: name, description: prompt, deletable: true})
+    end
+  end
+
   match _ do
     send_json(conn, 404, %{error: "not found"})
   end
