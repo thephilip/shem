@@ -49,7 +49,9 @@ defmodule Shem.TUI.App do
       active_conversational_agent: nil,
       show_help: false,
       help_filter: "",
-      show_welcome: show_welcome
+      show_welcome: show_welcome,
+      shadow_band: nil,
+      shadow_reasoning: ""
     }
   end
 
@@ -312,6 +314,11 @@ defmodule Shem.TUI.App do
 
               {%{model | command_buffer: "", command_output: "hiring #{name}...", command_error: nil}, command}
 
+            {:shadow_info} ->
+              band_str = if model.shadow_band, do: to_string(model.shadow_band), else: "no data"
+              output = "shadow: #{band_str} — #{model.shadow_reasoning}"
+              %{model | command_output: output, command_error: nil, command_buffer: ""}
+
             {:error, reason} ->
               %{model | command_error: reason, command_output: nil}
           end
@@ -391,6 +398,7 @@ defmodule Shem.TUI.App do
             model
           end
 
+        model = safe_shadow_update(model)
         model
 
       {{:hire_complete, name}, {:ok, system_prompt}} ->
@@ -713,6 +721,26 @@ defmodule Shem.TUI.App do
           {:ok, events} -> Shem.TUI.AgentView.from_events(events)
           _ -> nil
         end
+    end
+  end
+
+  defp safe_shadow_update(%{focused_agent: nil} = model) do
+    %{model | shadow_band: nil, shadow_reasoning: ""}
+  end
+
+  defp safe_shadow_update(%{focused_agent: name} = model) do
+    try do
+      case Shem.Shadow.Agent.current_score(name) do
+        {:ok, %{band: band, reasoning: reasoning}} ->
+          %{model | shadow_band: band, shadow_reasoning: reasoning}
+
+        {:error, :not_found} ->
+          %{model | shadow_band: nil, shadow_reasoning: ""}
+      end
+    rescue
+      _ -> model
+    catch
+      :exit, _ -> model
     end
   end
 

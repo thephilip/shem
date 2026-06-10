@@ -142,6 +142,9 @@ defmodule Shem.TUI.CommandDispatch do
       ["hire" | _] ->
         {:error, "usage: /hire <name> <role description>"}
 
+      ["shadow"] ->
+        {:shadow_info}
+
       _ ->
         {:error, "unknown command: /#{rest}"}
     end
@@ -170,6 +173,7 @@ defmodule Shem.TUI.CommandDispatch do
       {"/trust <tool>", "Show trust details for a specific tool"},
       {"/llm routes", "Show the current LLM routing table"},
       {"/llm route <role>=<model>", "Set an LLM route (e.g. reasoning=phi4)"},
+      {"/shadow", "show shadow agent confidence score and reasoning"},
     ]
   end
 end

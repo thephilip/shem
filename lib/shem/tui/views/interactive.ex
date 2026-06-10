@@ -110,9 +110,10 @@ defmodule Shem.TUI.Views.Interactive do
     end
   end
 
-  defp render_turn_card(%{agent_view: view, focused_agent: name}) do
+  defp render_turn_card(%{agent_view: view, focused_agent: name} = model) do
     status_str = status_label(view.status)
-    title = "#{name} · turn #{view.turn_count}/#{view.max_turns} · #{status_str}"
+    shadow_str = shadow_indicator(Map.get(model, :shadow_band))
+    title = "#{name} · turn #{view.turn_count}/#{view.max_turns} · #{status_str}#{shadow_str}"
 
     history_line =
       view.history
@@ -228,4 +229,9 @@ defmodule Shem.TUI.Views.Interactive do
   defp truncate(nil, _), do: ""
   defp truncate(str, max) when byte_size(str) <= max, do: str
   defp truncate(str, max), do: String.slice(str, 0, max) <> "…"
+
+  defp shadow_indicator(nil), do: ""
+  defp shadow_indicator(:high), do: "  ■ high"
+  defp shadow_indicator(:medium), do: "  ■ med"
+  defp shadow_indicator(:low), do: "  ■ low"
 end
