@@ -38,3 +38,6 @@ config :shem, lab_executor_node: nil
 config :shem,
   adversarial_max_rounds: 5,
   adversarial_agent_timeout_ms: 300_000
+
+config :shem, shadow_agent_enabled: true
+config :shem, shadow_agent_poll_ms: 2_000

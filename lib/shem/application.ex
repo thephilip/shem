@@ -21,6 +21,7 @@ defmodule Shem.Application do
         {Registry, keys: :duplicate, name: Shem.StreamRegistry}
       ] ++
         adversarial_children() ++
+        shadow_children() ++
         llm_stub_children() ++
         mcp_children() ++
         cluster_children() ++
@@ -35,6 +36,14 @@ defmodule Shem.Application do
   defp adversarial_children do
     if Application.get_env(:shem, :start_adversarial, true) do
       [Shem.Adversarial.Supervisor]
+    else
+      []
+    end
+  end
+
+  defp shadow_children do
+    if Application.get_env(:shem, :shadow_agent_enabled, true) do
+      [Shem.Shadow.Supervisor]
     else
       []
     end

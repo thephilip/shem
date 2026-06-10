@@ -42,3 +42,5 @@ config :shem, spawn_agent_timeout_ms: 5_000
 config :shem, spawn_agent_max_depth: 2
 
 config :shem, executor_backend: :local
+
+config :shem, shadow_agent_enabled: false

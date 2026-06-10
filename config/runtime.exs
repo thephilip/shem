@@ -5,6 +5,10 @@ if System.get_env("SHEM_NO_TUI") == "1" or "--headless" in System.argv() do
   config :shem, start_tui: false
 end
 
+if System.get_env("SHEM_NO_SHADOW") == "1" do
+  config :shem, shadow_agent_enabled: false
+end
+
 # SHEM_DATA_DIR overrides DETS file locations — only when explicitly set,
 # so test config's trust_store_path is never clobbered.
 case System.get_env("SHEM_DATA_DIR") do
