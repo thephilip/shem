@@ -46,15 +46,21 @@ Shem.Agent.set_fence(session_id, path_or_nil) :: :ok | {:error, :not_found}
 
 ### Modified: `Shem.Agent.ToolDispatch`
 
-Before executing `read_file`, `list_dir`, or `shell`, call:
+`execute/2` becomes `execute/3` — a third `opts \\ []` argument threads the fence through from `Agent.Server`:
 
 ```elixir
-Guardrails.check_fence(config.fence, tool_name, args, backend: resolved_backend())
+ToolDispatch.execute(call, manifest, fence: config.fence, backend: resolved_backend())
+```
+
+Before executing `read_file`, `list_dir`, or `shell`, the implementation calls:
+
+```elixir
+Guardrails.check_fence(opts[:fence], tool_name, args, backend: opts[:backend])
 ```
 
 On `{:blocked, reason}`, return `{:error, reason}` — the agent receives this as a tool error and can respond to it. No crash, no agent stop.
 
-`resolved_backend/0` reads `Application.get_env(:shem, :resolved_executor_backend, Backend.Local)`. Container backend skips the fence — the container boundary is stronger than any path check.
+`resolved_backend` is `Application.get_env(:shem, :resolved_executor_backend, Backend.Local)`, read in `Agent.Server.execute_tool_calls/4` and passed as `opts[:backend]`. Container backend skips the fence for shell — the container boundary is stronger than any path check.
 
 ---
 
