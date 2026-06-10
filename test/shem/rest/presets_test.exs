@@ -24,4 +24,28 @@ defmodule Shem.REST.PresetsTest do
     assert conn.status == 404
     assert Jason.decode!(conn.resp_body) == %{"error" => "not found"}
   end
+
+  describe "GET /presets — deletable field" do
+    test "built-in presets have deletable: false" do
+      conn = conn(:get, "/presets") |> Router.call(@opts)
+      body = Jason.decode!(conn.resp_body)
+      general = Enum.find(body, &(&1["name"] == "general"))
+      assert general != nil
+      assert general["deletable"] == false
+    end
+
+    test "user-created presets have deletable: true" do
+      Shem.Agent.PresetStore.put("test-preset-get", %{
+        name: "test-preset-get",
+        system_prompt: "Test prompt"
+      })
+      on_exit(fn -> Shem.Agent.PresetStore.delete("test-preset-get") end)
+
+      conn = conn(:get, "/presets") |> Router.call(@opts)
+      body = Jason.decode!(conn.resp_body)
+      preset = Enum.find(body, &(&1["name"] == "test-preset-get"))
+      assert preset != nil
+      assert preset["deletable"] == true
+    end
+  end
 end

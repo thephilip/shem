@@ -8,7 +8,11 @@ defmodule Shem.REST.Handlers.Presets do
     presets =
       Shem.Agent.Preset.all()
       |> Enum.map(fn p ->
-        %{name: p.name, description: p.system_prompt}
+        %{
+          name: p.name,
+          description: p.system_prompt,
+          deletable: p.source == :dynamic
+        }
       end)
 
     send_json(conn, 200, presets)
