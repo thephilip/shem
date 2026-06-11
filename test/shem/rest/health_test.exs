@@ -1,7 +1,6 @@
 defmodule Shem.REST.HealthTest do
   use ExUnit.Case, async: true
   import Plug.Test
-  import Plug.Conn
 
   alias Shem.REST.Router
 
