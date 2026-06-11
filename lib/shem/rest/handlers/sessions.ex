@@ -26,15 +26,19 @@ defmodule Shem.REST.Handlers.Sessions do
     fork_event_id = Map.get(conn.body_params, "fork_event_id")
     alt_response = Map.get(conn.body_params, "alt_response")
 
-    with {:ok, events} <- EventLog.read_session_events(id),
-         {:ok, fork_event} <- find_fork_event(events, fork_event_id),
-         {:ok, new_session_id} <- build_fork(events, fork_event, alt_response) do
-      send_json(conn, 201, %{session_id: new_session_id})
+    if is_nil(fork_event_id) do
+      send_json(conn, 400, %{error: "fork_event_id is required"})
     else
-      {:error, :not_found} -> send_json(conn, 404, %{error: "session not found"})
-      {:error, :fork_event_not_found} -> send_json(conn, 422, %{error: "fork_event_id not found in session"})
-      {:error, :not_llm_call} -> send_json(conn, 422, %{error: "fork_event_id must point to an llm_call_completed event"})
-      {:error, reason} -> send_json(conn, 500, %{error: inspect(reason)})
+      with {:ok, events} <- EventLog.read_session_events(id),
+           {:ok, fork_event} <- find_fork_event(events, fork_event_id),
+           {:ok, new_session_id} <- build_fork(events, fork_event, alt_response) do
+        send_json(conn, 201, %{session_id: new_session_id})
+      else
+        {:error, :not_found} -> send_json(conn, 404, %{error: "session not found"})
+        {:error, :fork_event_not_found} -> send_json(conn, 422, %{error: "fork_event_id not found in session"})
+        {:error, :not_llm_call} -> send_json(conn, 422, %{error: "fork_event_id must point to an llm_call_completed event"})
+        {:error, reason} -> send_json(conn, 500, %{error: inspect(reason)})
+      end
     end
   end
 
@@ -45,7 +49,11 @@ defmodule Shem.REST.Handlers.Sessions do
   # ── Private ──────────────────────────────────────────────────────────────────
 
   defp list_all_sessions do
-    {:ok, in_memory} = EventLog.list_sessions()
+    in_memory =
+      case EventLog.list_sessions() do
+        {:ok, sessions} -> sessions
+        _ -> []
+      end
 
     active_ids =
       in_memory
@@ -134,23 +142,27 @@ defmodule Shem.REST.Handlers.Sessions do
   end
 
   defp build_fork(events, fork_event, alt_response) do
-    {:ok, new_session_id} = EventLog.start_session()
+    case EventLog.start_session() do
+      {:ok, new_session_id} ->
+        events_before = Enum.take_while(events, &(&1.id != fork_event.id))
 
-    events_before = Enum.take_while(events, &(&1.id != fork_event.id))
+        Enum.each(events_before, fn event ->
+          EventLog.append(new_session_id, event.type, event.payload)
+        end)
 
-    Enum.each(events_before, fn event ->
-      EventLog.append(new_session_id, event.type, event.payload)
-    end)
+        fork_payload =
+          if alt_response && alt_response != "" do
+            Map.put(fork_event.payload, :content, alt_response)
+          else
+            fork_event.payload
+          end
 
-    fork_payload =
-      if alt_response && alt_response != "" do
-        Map.put(fork_event.payload, :content, alt_response)
-      else
-        fork_event.payload
-      end
+        EventLog.append(new_session_id, :llm_call_completed, fork_payload)
+        {:ok, new_session_id}
 
-    EventLog.append(new_session_id, :llm_call_completed, fork_payload)
-    {:ok, new_session_id}
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   defp send_json(conn, status, body) do
