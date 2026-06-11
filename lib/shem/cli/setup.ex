@@ -125,6 +125,7 @@ defmodule Shem.CLI.Setup do
 
   @doc false
   def validate_backend!(backend, api_key, url, model) do
+    Application.ensure_all_started(:req)
     case backend do
       "anthropic" ->
         key = if api_key == "", do: System.get_env("ANTHROPIC_API_KEY"), else: api_key

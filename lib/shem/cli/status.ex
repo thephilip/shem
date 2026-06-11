@@ -2,6 +2,7 @@ defmodule Shem.CLI.Status do
   @moduledoc false
 
   def run do
+    Application.ensure_all_started(:req)
     port = detect_port()
     url = "http://127.0.0.1:#{port}/api/health"
 
