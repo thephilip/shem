@@ -1,7 +1,7 @@
 defmodule Shem.Trust.Store do
   use GenServer
 
-  @default_path Path.join([System.user_home!(), ".config", "shem", "trust.dets"])
+  defp default_path, do: Path.join([System.user_home!(), ".config", "shem", "trust.dets"])
   @recency_weight 0.7
 
   def start_link(opts \\ []) do
@@ -39,7 +39,7 @@ defmodule Shem.Trust.Store do
       Keyword.get(
         opts,
         :path,
-        Application.get_env(:shem, :trust_store_path, @default_path)
+        Application.get_env(:shem, :trust_store_path, default_path())
       )
 
     path_charlist = to_charlist(path)

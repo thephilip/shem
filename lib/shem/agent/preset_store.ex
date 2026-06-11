@@ -1,7 +1,7 @@
 defmodule Shem.Agent.PresetStore do
   use GenServer
 
-  @default_path Path.join([System.user_home!(), ".config", "shem", "preset_store.dets"])
+  defp default_path, do: Path.join([System.user_home!(), ".config", "shem", "preset_store.dets"])
 
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -38,7 +38,7 @@ defmodule Shem.Agent.PresetStore do
       Keyword.get(
         opts,
         :path,
-        Application.get_env(:shem, :preset_store_path, @default_path)
+        Application.get_env(:shem, :preset_store_path, default_path())
       )
 
     path_charlist = to_charlist(path)
