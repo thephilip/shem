@@ -218,20 +218,26 @@ defmodule Shem.Agent.ToolDispatch do
     builtins ++ lab_tools ++ mcp_tools
   end
 
-  @spec execute(%{name: String.t(), args: map()}, [map()]) ::
+  @spec execute(%{name: String.t(), args: map()}, [map()], keyword()) ::
           {:ok, String.t()} | {:error, String.t()}
-  def execute(%{name: "list_tools"}, manifest) do
+  def execute(call, manifest, opts \\ [])
+
+  def execute(%{name: "list_tools"}, manifest, _opts) do
     lines = Enum.map(manifest, fn %{name: n, description: d} -> "- #{n}: #{d}" end)
     {:ok, "Available tools:\n" <> Enum.join(lines, "\n")}
   end
 
-  def execute(%{name: name, args: args}, manifest) do
+  def execute(%{name: name, args: args}, manifest, opts) do
     case Enum.find(manifest, &(&1.name == name)) do
       nil ->
         {:error, "unknown tool: #{name}"}
 
       %{source: :builtin} ->
-        dispatch_builtin(name, args)
+        with :ok <- Shem.Guardrails.check_fence(opts[:fence], name, args, backend: opts[:backend]) do
+          dispatch_builtin(name, args)
+        else
+          {:blocked, reason} -> {:error, reason}
+        end
 
       %{source: {:mcp, server}} ->
         dispatch_mcp(server, name, args)

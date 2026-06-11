@@ -546,6 +546,43 @@ defmodule Shem.Agent.ToolDispatchTest do
     end
   end
 
+  describe "execute/3 — fence" do
+    setup do
+      dir = System.tmp_dir!() |> Path.join("shem_fence_test_#{:rand.uniform(99999)}")
+      File.mkdir_p!(dir)
+      on_exit(fn -> File.rm_rf!(dir) end)
+      {:ok, fence: dir}
+    end
+
+    test "read_file inside fence succeeds", %{fence: fence} do
+      path = Path.join(fence, "test.txt")
+      File.write!(path, "hello")
+      call = %{name: "read_file", args: %{"path" => path}, id: "1"}
+      manifest = ToolDispatch.build_manifest(%Config{task: "t", system_prompt: "s"})
+      assert {:ok, "hello"} = ToolDispatch.execute(call, manifest, fence: fence, backend: Shem.Lab.Executor.Backend.Local)
+    end
+
+    test "read_file outside fence returns error tuple", %{fence: fence} do
+      call = %{name: "read_file", args: %{"path" => "/etc/hostname"}, id: "1"}
+      manifest = ToolDispatch.build_manifest(%Config{task: "t", system_prompt: "s"})
+      assert {:error, reason} = ToolDispatch.execute(call, manifest, fence: fence, backend: Shem.Lab.Executor.Backend.Local)
+      assert reason =~ "scope fence"
+    end
+
+    test "list_dir outside fence returns error tuple", %{fence: fence} do
+      call = %{name: "list_dir", args: %{"path" => "/etc"}, id: "1"}
+      manifest = ToolDispatch.build_manifest(%Config{task: "t", system_prompt: "s"})
+      assert {:error, reason} = ToolDispatch.execute(call, manifest, fence: fence, backend: Shem.Lab.Executor.Backend.Local)
+      assert reason =~ "scope fence"
+    end
+
+    test "execute/2 with no opts still works — fence defaults to nil" do
+      call = %{name: "list_tools", args: %{}, id: "1"}
+      manifest = ToolDispatch.build_manifest(%Config{task: "t", system_prompt: "s"})
+      assert {:ok, _} = ToolDispatch.execute(call, manifest)
+    end
+  end
+
   describe "execute/2 — trust gate" do
     setup do
       source = """

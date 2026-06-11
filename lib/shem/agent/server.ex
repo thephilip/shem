@@ -126,7 +126,7 @@ defmodule Shem.Agent.Server do
               tool_calls: calls
             }
             history = state.history ++ [assistant_entry]
-            history = execute_tool_calls(calls, manifest, history, state.session_id)
+            history = execute_tool_calls(calls, manifest, history, state.session_id, state.config)
             EventLog.append(state.session_id, :agent_turn_completed, %{
               turn: state.turn_count + 1,
               outcome: :tool_calls
@@ -146,12 +146,15 @@ defmodule Shem.Agent.Server do
 
   # ── Helpers ─────────────────────────────────────────────────────────────────
 
-  defp execute_tool_calls(calls, manifest, history, session_id) do
+  defp execute_tool_calls(calls, manifest, history, session_id, config) do
+    backend = Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
+    opts = [fence: config.fence, backend: backend]
+
     Enum.reduce(calls, history, fn call, acc ->
       EventLog.append(session_id, :agent_tool_called, %{tool: call.name, args: call.args})
 
       result_str =
-        case ToolDispatch.execute(call, manifest) do
+        case ToolDispatch.execute(call, manifest, opts) do
           {:ok, result} -> result
           {:error, reason} -> "Error: #{reason}"
         end
