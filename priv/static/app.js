@@ -252,6 +252,10 @@ function shem() {
   };
 }
 
+// ── Timeline: Alpine components (registered on alpine:init so Alpine exists) ──
+
+document.addEventListener('alpine:init', () => {
+
 // ── Timeline: Session List ───────────────────────────────────────────────────
 
 Alpine.data('sessionList', () => ({
@@ -458,3 +462,5 @@ Alpine.data('forkModal', () => ({
     return typeof prompt === 'string' ? prompt.slice(0, 200) : JSON.stringify(prompt).slice(0, 200);
   }
 }));
+
+}); // end alpine:init
