@@ -34,6 +34,18 @@ defmodule Shem.AgentTest do
     end
   end
 
+  describe "Config" do
+    test "fence defaults to nil" do
+      config = %Shem.Agent.Config{task: "t", system_prompt: "s"}
+      assert config.fence == nil
+    end
+
+    test "fence can be set to an absolute path" do
+      config = %Shem.Agent.Config{task: "t", system_prompt: "s", fence: "/home/user/proj"}
+      assert config.fence == "/home/user/proj"
+    end
+  end
+
   describe "resume/2" do
     setup do
       StubTransport.Server.reset()

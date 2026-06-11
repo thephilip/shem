@@ -4,7 +4,7 @@ defmodule Shem.Agent do
   defmodule Config do
     @enforce_keys [:task, :system_prompt]
     defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20,
-               spawn_depth: 0, conversational: false, project_context: nil]
+               spawn_depth: 0, conversational: false, project_context: nil, fence: nil]
 
     @type t :: %__MODULE__{
             task: String.t(),
@@ -14,7 +14,8 @@ defmodule Shem.Agent do
             max_turns: pos_integer(),
             spawn_depth: non_neg_integer(),
             project_context: Shem.Context.Project.t() | nil,
-            conversational: boolean()
+            conversational: boolean(),
+            fence: String.t() | nil
           }
   end
 
