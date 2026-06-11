@@ -18,6 +18,12 @@ defmodule Shem.TUI.AppTest do
       assert model.paused == false
       assert model.event_log_stats == %{sessions: 0, total_events: 0}
     end
+
+    test "model has active_fence field defaulting to nil" do
+      model = App.init(%{})
+      assert Map.has_key?(model, :active_fence)
+      assert model.active_fence == nil
+    end
   end
 
   describe "update/2 — mode switching" do
@@ -600,6 +606,56 @@ defmodule Shem.TUI.AppTest do
       result = App.update(model, {:event, %{ch: 0, key: 9}})
       assert result.show_help == true
       assert result.help_filter == "abc"
+    end
+  end
+
+  describe "update/2 — Ctrl+K kill" do
+    @ctrl_k 11
+
+    test "with active agent: stops agent and sets command_output" do
+      model = %{App.init(%{}) | focused_agent: "fake_agent_xyz"}
+      result = App.update(model, {:event, %{key: @ctrl_k}})
+      assert result.focused_agent == nil
+      assert result.command_output =~ "Agent stopped"
+      assert result.active_fence == nil
+    end
+
+    test "with no active agent: no-op" do
+      model = App.init(%{})
+      result = App.update(model, {:event, %{key: @ctrl_k}})
+      assert result == model
+    end
+  end
+
+  describe "update/2 — /fence dispatch" do
+    @enter 13
+
+    test "/fence <path> sets active_fence and clears command_buffer" do
+      model = %{App.init(%{}) | command_buffer: "/fence /tmp/proj"}
+      result = App.update(model, {:event, %{key: @enter}})
+      assert result.active_fence == "/tmp/proj"
+      assert result.command_buffer == ""
+      assert result.command_output =~ "fence"
+    end
+
+    test "/fence clear clears active_fence" do
+      model = %{App.init(%{}) | command_buffer: "/fence clear", active_fence: "/tmp/proj"}
+      result = App.update(model, {:event, %{key: @enter}})
+      assert result.active_fence == nil
+      assert result.command_output =~ "cleared"
+    end
+
+    test "/fence show with active fence displays path" do
+      model = %{App.init(%{}) | command_buffer: "/fence", active_fence: "/tmp/proj"}
+      result = App.update(model, {:event, %{key: @enter}})
+      assert result.command_output =~ "/tmp/proj"
+      assert result.command_buffer == ""
+    end
+
+    test "/fence show with no fence displays 'no fence active'" do
+      model = %{App.init(%{}) | command_buffer: "/fence"}
+      result = App.update(model, {:event, %{key: @enter}})
+      assert result.command_output =~ "no fence active"
     end
   end
 

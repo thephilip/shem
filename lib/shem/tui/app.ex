@@ -13,6 +13,7 @@ defmodule Shem.TUI.App do
   @tab 9
   @arrow_up 65517
   @arrow_down 65516
+  @ctrl_k 11
 
   @impl true
   def init(_context) do
@@ -51,7 +52,8 @@ defmodule Shem.TUI.App do
       help_filter: "",
       show_welcome: show_welcome,
       shadow_band: nil,
-      shadow_reasoning: ""
+      shadow_reasoning: "",
+      active_fence: nil
     }
   end
 
@@ -138,6 +140,20 @@ defmodule Shem.TUI.App do
 
       {:event, _} when model.mode == :history ->
         model
+
+      # --- Kill (Ctrl+K) ---
+      {:event, %{key: @ctrl_k}} ->
+        case model.focused_agent do
+          nil -> model
+          name ->
+            Shem.Guardrails.kill_session(name)
+            %{model |
+              focused_agent: nil,
+              active_fence: nil,
+              command_output: "Agent stopped — use /history to branch from a prior event.",
+              command_error: nil
+            }
+        end
 
       # --- Normal mode ---
       {:event, %{ch: ?d, key: 0}} when model.command_buffer == "" ->
@@ -318,6 +334,20 @@ defmodule Shem.TUI.App do
               band_str = if model.shadow_band, do: to_string(model.shadow_band), else: "no data"
               output = "shadow: #{band_str} — #{model.shadow_reasoning}"
               %{model | command_output: output, command_error: nil, command_buffer: ""}
+
+            {:fence_set, path} ->
+              if model.focused_agent, do: Shem.Agent.set_fence(model.focused_agent, path)
+              %{model | command_buffer: "", active_fence: path,
+                command_output: "fence: #{path}", command_error: nil}
+
+            {:fence_clear} ->
+              if model.focused_agent, do: Shem.Agent.set_fence(model.focused_agent, nil)
+              %{model | command_buffer: "", active_fence: nil,
+                command_output: "fence cleared", command_error: nil}
+
+            {:fence_show} ->
+              output = if model.active_fence, do: "fence: #{model.active_fence}", else: "no fence active"
+              %{model | command_buffer: "", command_output: output, command_error: nil}
 
             {:error, reason} ->
               %{model | command_error: reason, command_output: nil}
