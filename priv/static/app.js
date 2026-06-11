@@ -219,3 +219,210 @@ function shem() {
     }
   };
 }
+
+// ── Timeline: Session List ───────────────────────────────────────────────────
+
+Alpine.data('sessionList', () => ({
+  sessions: [],
+  selectedId: null,
+  _pollTimer: null,
+
+  async init() {
+    await this.load();
+    this._pollTimer = setInterval(() => this.load(), 5000);
+  },
+
+  destroy() {
+    clearInterval(this._pollTimer);
+  },
+
+  async load() {
+    try {
+      const res = await fetch('/api/sessions');
+      if (res.ok) this.sessions = await res.json();
+    } catch (_) {}
+  },
+
+  select(sessionId) {
+    this.selectedId = sessionId;
+    window.dispatchEvent(new CustomEvent('session-selected', { detail: { sessionId } }));
+  },
+
+  borderColor(s) {
+    if (s.session_id === this.selectedId) return '#60a5fa';
+    if (s.active) return '#4ade80';
+    return 'transparent';
+  },
+
+  statusLabel(s) {
+    const map = { running: '● LIVE', done: '✓ DONE', error: '✗ ERROR', unknown: '? UNKNOWN' };
+    return map[s.status] || s.status.toUpperCase();
+  },
+
+  statusColor(status) {
+    const map = { running: '#4ade80', done: '#60a5fa', error: '#f87171', unknown: '#666' };
+    return map[status] || '#666';
+  },
+
+  timeAgo(isoStr) {
+    if (!isoStr) return '—';
+    const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  },
+
+  truncate(str, max) {
+    if (!str) return '(no task)';
+    return str.length <= max ? str : str.slice(0, max) + '…';
+  }
+}));
+
+// ── Timeline: Event Timeline ─────────────────────────────────────────────────
+
+Alpine.data('eventTimeline', () => ({
+  sessionId: null,
+  events: [],
+  expanded: {},
+  loading: false,
+
+  init() {
+    window.addEventListener('session-selected', (e) => {
+      this.sessionId = e.detail.sessionId;
+      this.load();
+    });
+  },
+
+  async load() {
+    if (!this.sessionId) return;
+    this.loading = true;
+    this.expanded = {};
+    try {
+      const res = await fetch(`/api/sessions/${this.sessionId}/events`);
+      if (res.ok) this.events = await res.json();
+    } catch (_) {}
+    this.loading = false;
+  },
+
+  toggle(id) {
+    this.expanded[id] = !this.expanded[id];
+    this.expanded = { ...this.expanded };
+  },
+
+  isExpanded(id) {
+    return !!this.expanded[id];
+  },
+
+  openFork(event) {
+    window.dispatchEvent(new CustomEvent('fork-requested', {
+      detail: { event, sessionId: this.sessionId }
+    }));
+  },
+
+  dotColor(type) {
+    const map = {
+      llm_call_completed: '#818cf8',
+      llm_call_started:   '#4c4f8f',
+      tool_call:          '#f59e0b',
+      agent_tool_called:  '#f59e0b',
+      agent_tool_result:  '#d97706',
+      agent_done:         '#4ade80',
+      agent_error:        '#f87171',
+      branch_created:     '#60a5fa',
+    };
+    return map[type] || '#6b7280';
+  },
+
+  label(event) {
+    const p = event.payload || {};
+    switch (event.type) {
+      case 'agent_started':        return `Agent started · ${p.preset || ''}`;
+      case 'llm_call_started':     return `LLM call → ${p.model || ''}`;
+      case 'llm_call_completed': {
+        const lat = p.latency_ms ? `${(p.latency_ms / 1000).toFixed(1)}s` : '';
+        const tok = p.tokens_used ? `${p.tokens_used} tok` : '';
+        return ['LLM call', lat, tok].filter(Boolean).join(' · ');
+      }
+      case 'tool_call':            return `Tool: ${p.name || p.tool || ''}`;
+      case 'agent_tool_called':    return `Tool: ${p.tool || ''} · ${JSON.stringify(p.args || {}).slice(0, 40)}`;
+      case 'agent_tool_result':    return `Tool result: ${p.tool || ''}`;
+      case 'agent_turn_completed': return `Turn ${p.turn || ''} complete`;
+      case 'agent_done':           return 'Done';
+      case 'agent_error':          return `Error: ${p.message || p.reason || ''}`;
+      case 'branch_created':       return `Branched from ${(p.original_session_id || '').slice(0, 12)}…`;
+      default:                     return event.type;
+    }
+  },
+
+  canFork(type)   { return type === 'llm_call_completed'; },
+
+  canExpand(type) {
+    return ['llm_call_completed','tool_call','agent_tool_called','agent_tool_result','agent_done','agent_error'].includes(type)
+      || !['agent_started','llm_call_started','agent_turn_completed','branch_created'].includes(type);
+  },
+
+  formatTime(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  },
+
+  prettyJson(obj) {
+    try { return JSON.stringify(obj, null, 2); } catch (_) { return String(obj); }
+  }
+}));
+
+// ── Timeline: Fork Modal ─────────────────────────────────────────────────────
+
+Alpine.data('forkModal', () => ({
+  open: false,
+  sessionId: null,
+  event: null,
+  altResponse: '',
+  forking: false,
+  success: false,
+  error: '',
+
+  init() {
+    window.addEventListener('fork-requested', (e) => {
+      this.sessionId = e.detail.sessionId;
+      this.event = e.detail.event;
+      this.altResponse = (e.detail.event.payload || {}).content || '';
+      this.forking = false;
+      this.success = false;
+      this.error = '';
+      this.open = true;
+    });
+  },
+
+  close() { this.open = false; },
+
+  async fork() {
+    this.forking = true;
+    this.error = '';
+    try {
+      const res = await fetch(`/api/sessions/${this.sessionId}/fork`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fork_event_id: this.event.id, alt_response: this.altResponse })
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        this.error = body.error || 'Fork failed';
+        this.forking = false;
+        return;
+      }
+      this.success = true;
+      setTimeout(() => { window.location.href = `/?resume=${body.session_id}`; }, 800);
+    } catch (_) {
+      this.error = 'Network error';
+      this.forking = false;
+    }
+  },
+
+  promptSnippet() {
+    const p = (this.event && this.event.payload) || {};
+    const prompt = p.prompt || p.messages || '';
+    return typeof prompt === 'string' ? prompt.slice(0, 200) : JSON.stringify(prompt).slice(0, 200);
+  }
+}));
