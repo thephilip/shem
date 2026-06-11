@@ -83,6 +83,14 @@ defmodule Shem.Agent do
     end
   end
 
+  @spec set_fence(String.t(), String.t() | nil) :: :ok | {:error, :not_found}
+  def set_fence(name, path) do
+    case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
+      nil -> {:error, :not_found}
+      pid -> GenServer.call(pid, {:set_fence, path})
+    end
+  end
+
   @spec start_with_preset(String.t(), String.t(), keyword()) :: {:ok, String.t()} | {:error, term()}
   def start_with_preset(preset_name, task, opts \\ []) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do

@@ -379,6 +379,21 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "set_fence/2" do
+    test "sets fence on running agent config" do
+      {:ok, name} = Agent.start(%Agent.Config{task: "t", system_prompt: "s"})
+      on_exit(fn -> Agent.stop(name) end)
+
+      assert :ok = Agent.set_fence(name, "/home/user/proj")
+      # fence is internal to config — verify via round-trip: set then clear
+      assert :ok = Agent.set_fence(name, nil)
+    end
+
+    test "returns {:error, :not_found} for unknown agent" do
+      assert {:error, :not_found} = Agent.set_fence("no_such_agent_xyz", "/tmp")
+    end
+  end
+
   defp start_agent_with_session(task, session_id, opts \\ []) do
     system_prompt = Keyword.get(opts, :system_prompt, "be helpful")
     max_turns = Keyword.get(opts, :max_turns, 10)

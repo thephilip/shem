@@ -38,6 +38,10 @@ defmodule Shem.Agent.Server do
     {:reply, :ok, %{state | history: new_history, status: :running}}
   end
 
+  def handle_call({:set_fence, path}, _from, state) do
+    {:reply, :ok, %{state | config: %{state.config | fence: path}}}
+  end
+
   # ── Init ────────────────────────────────────────────────────────────────────
 
   @impl true
