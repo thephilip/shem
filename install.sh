@@ -21,6 +21,46 @@ case "${OS}-${ARCH}" in
     ;;
 esac
 
+# --- OpenSSL 3.x check ---
+# The crypto NIF in the OTP release requires OpenSSL 3.x at runtime.
+_ossl_ok=false
+if command -v openssl >/dev/null 2>&1; then
+  _ossl_major=$(openssl version 2>/dev/null | awk '{print $2}' | cut -d. -f1)
+  if [ "${_ossl_major:-0}" -ge 3 ] 2>/dev/null; then
+    _ossl_ok=true
+  fi
+fi
+
+if [ "${_ossl_ok}" = "false" ]; then
+  echo "Error: shem requires OpenSSL 3.x, which was not found on this system."
+  echo ""
+  echo "Install it with:"
+  case "${OS}" in
+    Linux)
+      if command -v apt-get >/dev/null 2>&1; then
+        echo "  sudo apt-get install -y libssl3"
+      elif command -v dnf >/dev/null 2>&1; then
+        echo "  sudo dnf install -y openssl"
+      elif command -v pacman >/dev/null 2>&1; then
+        echo "  sudo pacman -S openssl"
+      elif command -v zypper >/dev/null 2>&1; then
+        echo "  sudo zypper install libopenssl3"
+      else
+        echo "  Install openssl >= 3.0 via your system package manager"
+      fi
+      ;;
+    Darwin)
+      echo "  brew install openssl@3"
+      ;;
+    *)
+      echo "  Install openssl >= 3.0 via your system package manager"
+      ;;
+  esac
+  echo ""
+  echo "Then re-run this installer."
+  exit 1
+fi
+
 # --- fetch latest release tag ---
 LATEST=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
   | grep '"tag_name"' | head -1 | cut -d'"' -f4)
@@ -47,9 +87,28 @@ exec "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")/../lib/shem/bin/
 EOF
 chmod +x "${WRAPPER}"
 
-# --- smoke test ---
-if ! "${LIB_DIR}/bin/shem" version >/dev/null 2>&1; then
-  echo "Install failed — binary did not run."
+# --- smoke test (boot OTP + crypto) ---
+if ! "${LIB_DIR}/bin/shem" eval "Application.ensure_all_started(:crypto)" >/dev/null 2>&1; then
+  echo ""
+  echo "Install failed — could not load the crypto library."
+  echo "OpenSSL 3.x must be installed and visible to the dynamic linker."
+  echo ""
+  case "${OS}" in
+    Linux)
+      if command -v apt-get >/dev/null 2>&1; then
+        echo "  sudo apt-get install -y libssl3"
+      elif command -v dnf >/dev/null 2>&1; then
+        echo "  sudo dnf install -y openssl"
+      elif command -v pacman >/dev/null 2>&1; then
+        echo "  sudo pacman -S openssl"
+      else
+        echo "  Install openssl >= 3.0 via your system package manager"
+      fi
+      ;;
+    Darwin)
+      echo "  brew install openssl@3"
+      ;;
+  esac
   rm -f "${WRAPPER}"
   exit 1
 fi
