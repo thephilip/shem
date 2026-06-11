@@ -26,7 +26,7 @@ defmodule Shem.EventLog.HistoryScanner do
         |> Enum.map(&String.replace_suffix(&1, ".dets", ""))
         |> Enum.reject(&MapSet.member?(active_ids, &1))
         |> Enum.flat_map(&build_summary(&1))
-        |> Enum.sort_by(& &1.started_at, {:desc, DateTime})
+        |> Enum.sort_by(&(&1.started_at || ~U[1970-01-01 00:00:00Z]), {:desc, DateTime})
 
       {:error, _} ->
         []
