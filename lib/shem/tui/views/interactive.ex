@@ -207,6 +207,8 @@ defmodule Shem.TUI.Views.Interactive do
 
   defp prompt_title(%{paused: true}), do: "[ PAUSED — press SPACE to resume ]"
   defp prompt_title(%{command_buffer: "/" <> _ = buf}), do: "Command: #{buf}"
+  defp prompt_title(%{active_fence: fence}) when not is_nil(fence),
+    do: "[fence: #{fence}]  d=Dashboard  Tab=cycle  /fence clear=remove fence"
   defp prompt_title(_), do: "d=Dashboard  i=Interactive  Tab=cycle  /agent <preset> <task>  /stop  /agents"
 
   defp prompt_color(%{paused: true}), do: color(:red)
