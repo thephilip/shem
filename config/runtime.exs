@@ -93,7 +93,8 @@ case System.get_env("SHEM_DATA_DIR") do
     config :shem,
       trust_store_path: Path.join(data_dir, "trust.dets"),
       preset_store_path: Path.join(data_dir, "preset_store.dets"),
-      memory_store_path: Path.join(data_dir, "memory.dets")
+      memory_store_path: Path.join(data_dir, "memory.dets"),
+      event_log_path: Path.join(data_dir, "lab/events")
 end
 
 # ── First-run detection ────────────────────────────────────────────────────────
