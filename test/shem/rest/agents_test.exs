@@ -207,6 +207,23 @@ defmodule Shem.REST.AgentsTest do
     Shem.Agent.stop(agent_id)
   end
 
+  test "POST /agents with resume_session_id resumes that session" do
+    # Create a session with an agent_started event so resume can find the task
+    {:ok, session_id} = Shem.EventLog.start_session()
+    Shem.EventLog.append(session_id, :agent_started, %{task: "resumed task", preset: "general"})
+    Shem.EventLog.append(session_id, :llm_call_completed, %{content: "prior response", tokens_used: 5, latency_ms: 100, model: "test"})
+    Shem.EventLog.end_session(session_id)
+
+    stub("resumed")
+    conn = post_json("/agents", %{resume_session_id: session_id})
+    assert conn.status == 201
+    body = Jason.decode!(conn.resp_body)
+    assert is_binary(body["agent_id"])
+    assert body["session_id"] == session_id
+
+    Shem.Agent.stop(body["agent_id"])
+  end
+
   test "POST /agents/:id/message returns 200 with ok:true when message sent successfully" do
     # For this test, we need an agent that stays in :waiting state.
     # The message sending relies on GenServer.call with {:message, message}.
