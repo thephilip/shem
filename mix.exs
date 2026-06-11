@@ -4,7 +4,7 @@ defmodule Shem.MixProject do
   def project do
     [
       app: :shem,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -30,6 +30,7 @@ defmodule Shem.MixProject do
       {:plug, "~> 1.16"},
       {:jason, "~> 1.4"},
       {:req, "~> 0.5"},
+      {:yaml_elixir, "~> 2.12"},
       {:horde, "~> 0.9"},
       {:libcluster, "~> 3.3"}
     ]
