@@ -25,6 +25,38 @@ function shem() {
 
     async init() {
       await this._loadPresets();
+      const params = new URLSearchParams(window.location.search);
+      const resumeId = params.get('resume');
+      if (resumeId) {
+        await this._resumeSession(resumeId);
+        window.history.replaceState({}, '', '/');
+      }
+    },
+
+    async _resumeSession(sessionId) {
+      this.messages.push({ role: 'assistant', content: '', pending: true });
+      this.status = 'running';
+      try {
+        const res = await fetch('/api/agents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resume_session_id: sessionId })
+        });
+        if (!res.ok) {
+          this.errorMsg = 'Failed to resume session';
+          this.status = 'error';
+          this.messages[this.messages.length - 1].pending = false;
+          return;
+        }
+        const data = await res.json();
+        this.agentId = data.agent_id;
+        this._startShadowPolling();
+        await this._openStream(this.agentId);
+      } catch (_) {
+        this.errorMsg = 'Failed to resume session';
+        this.status = 'error';
+        this.messages[this.messages.length - 1].pending = false;
+      }
     },
 
     async _loadPresets() {

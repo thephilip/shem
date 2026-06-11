@@ -202,6 +202,10 @@
         New Chat
       </button>
 
+      <a href="/timeline" style="display:block;text-align:center;padding:8px;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
+        Timeline ↗
+      </a>
+
       <div x-show="status !== 'idle'" style="display:flex;align-items:center;font-size:11px;color:var(--muted)">
         <span class="status-dot"
           :class="{'dot-running': status==='running', 'dot-waiting': status==='waiting', 'dot-error': status==='error'}">
