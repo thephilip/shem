@@ -212,7 +212,6 @@ defmodule Shem.REST.AgentsTest do
     {:ok, session_id} = Shem.EventLog.start_session()
     Shem.EventLog.append(session_id, :agent_started, %{task: "resumed task", preset: "general"})
     Shem.EventLog.append(session_id, :llm_call_completed, %{content: "prior response", tokens_used: 5, latency_ms: 100, model: "test"})
-    Shem.EventLog.end_session(session_id)
 
     stub("resumed")
     conn = post_json("/agents", %{resume_session_id: session_id})
