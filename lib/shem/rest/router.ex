@@ -13,6 +13,7 @@ defmodule Shem.REST.Router do
   forward "/presets", to: Shem.REST.Handlers.Presets
   forward "/routes", to: Shem.REST.Handlers.Routes
   forward "/sessions", to: Shem.REST.Handlers.Sessions
+  forward "/health", to: Shem.REST.Handlers.Health
 
   match _ do
     conn
