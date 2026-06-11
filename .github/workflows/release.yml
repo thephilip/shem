@@ -46,44 +46,6 @@ jobs:
           name: shem-linux-x86_64
           path: _build/prod/rel/shem-linux-x86_64.tar.gz
 
-  build-macos-intel:
-    name: Build macOS x86_64
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.19.5"
-          otp-version: "28"
-
-      - name: Restore dependency cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            deps/
-            _build/prod/lib/
-          key: ${{ runner.os }}-mix-prod-${{ hashFiles('mix.lock') }}
-
-      - name: Install dependencies
-        run: mix deps.get --only prod
-
-      - name: Compile dependencies
-        run: mix deps.compile
-
-      - name: Build release
-        run: MIX_ENV=prod mix release
-
-      - name: Package
-        run: |
-          cd _build/prod/rel
-          tar -czf shem-macos-x86_64.tar.gz shem/
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: shem-macos-x86_64
-          path: _build/prod/rel/shem-macos-x86_64.tar.gz
-
   build-macos-arm64:
     name: Build macOS ARM64
     runs-on: macos-14
@@ -124,7 +86,7 @@ jobs:
 
   release:
     name: Create GitHub Release
-    needs: [build-linux, build-macos-intel, build-macos-arm64]
+    needs: [build-linux, build-macos-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -132,10 +94,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: shem-linux-x86_64
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: shem-macos-x86_64
 
       - uses: actions/download-artifact@v4
         with:
@@ -148,7 +106,6 @@ jobs:
         run: |
           gh release create "${{ github.ref_name }}" \
             shem-linux-x86_64.tar.gz \
-            shem-macos-x86_64.tar.gz \
             shem-macos-arm64.tar.gz \
             --title "Shem ${{ github.ref_name }}" \
             --generate-notes
