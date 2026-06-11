@@ -62,4 +62,49 @@ defmodule Shem.REST.SessionsTest do
 
     EventLog.end_session(session_id)
   end
+
+  # GET /sessions/:id/events ───────────────────────────────────────────────────
+
+  test "GET /sessions/:id/events returns 404 for unknown session" do
+    conn = get_path("/sessions/nonexistent_session_id_xyz/events")
+    assert conn.status == 404
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] =~ "not found"
+  end
+
+  test "GET /sessions/:id/events returns event list for a known session" do
+    {:ok, session_id} = EventLog.start_session()
+    EventLog.append(session_id, :agent_started, %{task: "events test", preset: "general"})
+    EventLog.append(session_id, :llm_call_completed, %{content: "hello", tokens_used: 10, latency_ms: 500, model: "test"})
+
+    conn = get_path("/sessions/#{session_id}/events")
+    assert conn.status == 200
+    events = Jason.decode!(conn.resp_body)
+
+    assert is_list(events)
+    assert length(events) == 2
+
+    first = hd(events)
+    assert first["type"] == "agent_started"
+    assert Map.has_key?(first, "id")
+    assert Map.has_key?(first, "timestamp")
+    assert Map.has_key?(first, "payload")
+
+    EventLog.end_session(session_id)
+  end
+
+  test "GET /sessions/:id/events events are in chronological order" do
+    {:ok, session_id} = EventLog.start_session()
+    EventLog.append(session_id, :agent_started, %{task: "order test"})
+    EventLog.append(session_id, :agent_turn_completed, %{turn: 1})
+    EventLog.append(session_id, :agent_done, %{content: "done"})
+
+    conn = get_path("/sessions/#{session_id}/events")
+    events = Jason.decode!(conn.resp_body)
+
+    types = Enum.map(events, & &1["type"])
+    assert types == ["agent_started", "agent_turn_completed", "agent_done"]
+
+    EventLog.end_session(session_id)
+  end
 end
