@@ -64,6 +64,12 @@ defmodule Shem.GuardrailsTest do
       inside_path = Path.join(fence, "link_to_etc")
       assert :ok = Guardrails.check_fence(fence, "read_file", %{"path" => inside_path}, [])
     end
+
+    test "sibling directory with same prefix is blocked" do
+      fence = Path.join(System.tmp_dir!(), "project")
+      sibling = Path.join(System.tmp_dir!(), "project2/file.txt")
+      assert {:blocked, _} = Guardrails.check_fence(fence, "read_file", %{"path" => sibling}, [])
+    end
   end
 
   describe "kill_session/1" do

@@ -17,7 +17,8 @@ defmodule Shem.Guardrails do
     expanded = Path.expand(path)
     fence_abs = Path.expand(fence)
 
-    if String.starts_with?(expanded, fence_abs) do
+    # Symlinks are not resolved — checked as the literal path the caller provided.
+    if expanded == fence_abs or String.starts_with?(expanded, fence_abs <> "/") do
       :ok
     else
       {:blocked, "blocked by scope fence: #{path} is outside #{fence}"}
