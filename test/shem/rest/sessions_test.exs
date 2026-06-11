@@ -114,6 +114,8 @@ defmodule Shem.REST.SessionsTest do
   test "POST /sessions/:id/fork returns 404 for unknown session" do
     conn = post_json("/sessions/nonexistent_xyz/fork", %{fork_event_id: "evt_000"})
     assert conn.status == 404
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] == "session not found"
   end
 
   test "POST /sessions/:id/fork returns 400 when fork_event_id is missing" do
@@ -188,6 +190,7 @@ defmodule Shem.REST.SessionsTest do
     new_session_id = Jason.decode!(conn.resp_body)["session_id"]
 
     {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    assert length(forked_events) == 2
     last = List.last(forked_events)
     assert last.type == :llm_call_completed
     assert last.payload[:content] == "overridden response"
@@ -206,6 +209,7 @@ defmodule Shem.REST.SessionsTest do
     new_session_id = Jason.decode!(conn.resp_body)["session_id"]
 
     {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    assert length(forked_events) == 2
     last = List.last(forked_events)
     assert last.payload[:content] == "keep this"
 
