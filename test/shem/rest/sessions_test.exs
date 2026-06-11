@@ -69,7 +69,7 @@ defmodule Shem.REST.SessionsTest do
     conn = get_path("/sessions/nonexistent_session_id_xyz/events")
     assert conn.status == 404
     body = Jason.decode!(conn.resp_body)
-    assert body["error"] =~ "not found"
+    assert body["error"] == "session not found"
   end
 
   test "GET /sessions/:id/events returns event list for a known session" do
@@ -100,6 +100,7 @@ defmodule Shem.REST.SessionsTest do
     EventLog.append(session_id, :agent_done, %{content: "done"})
 
     conn = get_path("/sessions/#{session_id}/events")
+    assert conn.status == 200
     events = Jason.decode!(conn.resp_body)
 
     types = Enum.map(events, & &1["type"])
