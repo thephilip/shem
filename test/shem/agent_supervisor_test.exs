@@ -20,7 +20,7 @@ defmodule Shem.AgentSupervisorTest do
     )
     config = %Agent.Config{task: "t", system_prompt: "s"}
     name = "test_agent_#{System.unique_integer([:positive])}"
-    {:ok, pid} = AgentSupervisor.start_agent(name, config)
+    {:ok, pid, _sid} = AgentSupervisor.start_agent(name, config)
     assert Process.alive?(pid)
   end
 
@@ -41,7 +41,7 @@ defmodule Shem.AgentSupervisorTest do
     )
     config = %Agent.Config{task: "t", system_prompt: "s"}
     name = "test_agent_#{System.unique_integer([:positive])}"
-    {:ok, pid} = AgentSupervisor.start_agent(name, config)
+    {:ok, pid, _sid} = AgentSupervisor.start_agent(name, config)
     Process.exit(pid, :kill)
     # Horde registry cleanup is async — give it time
     Process.sleep(300)

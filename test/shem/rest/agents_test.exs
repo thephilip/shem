@@ -70,7 +70,7 @@ defmodule Shem.REST.AgentsTest do
   end
 
   test "GET /agents/:id returns status for a running agent" do
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "pause")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "pause")
     conn = get_path("/agents/#{agent_id}")
     assert conn.status == 200
     body = Jason.decode!(conn.resp_body)
@@ -100,7 +100,7 @@ defmodule Shem.REST.AgentsTest do
     }
     StubTransport.Server.set_default({:ok, looping_response})
 
-    {:ok, agent_id} = Shem.Agent.start(%Shem.Agent.Config{
+    {:ok, agent_id, _} = Shem.Agent.start(%Shem.Agent.Config{
       task: "wait",
       system_prompt: "test",
       max_turns: 1_000_000
@@ -114,7 +114,7 @@ defmodule Shem.REST.AgentsTest do
 
   test "GET /agents/:id/result returns done with content when agent completes" do
     stub("final answer")
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "answer me")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "answer me")
     assert {:ok, :done} = Shem.Agent.await(agent_id, 5_000)
     conn = get_path("/agents/#{agent_id}/result")
     assert conn.status == 200
@@ -162,7 +162,7 @@ defmodule Shem.REST.AgentsTest do
   end
 
   test "DELETE /agents/:id stops a running agent" do
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "work")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "work")
     conn = delete_path("/agents/#{agent_id}")
     assert conn.status == 200
     body = Jason.decode!(conn.resp_body)
@@ -179,7 +179,7 @@ defmodule Shem.REST.AgentsTest do
   end
 
   test "POST /agents/:id/message returns 400 when message is missing" do
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "wait")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "wait")
     conn = post_json("/agents/#{agent_id}/message", %{})
     assert conn.status == 400
     body = Jason.decode!(conn.resp_body)
@@ -188,7 +188,7 @@ defmodule Shem.REST.AgentsTest do
   end
 
   test "POST /agents/:id/message returns 400 when message is empty" do
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "wait")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "wait")
     conn = post_json("/agents/#{agent_id}/message", %{message: ""})
     assert conn.status == 400
     body = Jason.decode!(conn.resp_body)
@@ -198,7 +198,7 @@ defmodule Shem.REST.AgentsTest do
 
   test "POST /agents/:id/message returns 409 when agent is not in waiting state" do
     stub("done")
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "quick task")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "quick task")
     assert {:ok, :done} = Shem.Agent.await(agent_id, 5_000)
     conn = post_json("/agents/#{agent_id}/message", %{message: "hello"})
     assert conn.status == 409
@@ -229,7 +229,7 @@ defmodule Shem.REST.AgentsTest do
     # Since we don't have a built-in tool that waits for user input in the stub,
     # we'll just verify the endpoint structure works for a running agent.
     # This test may need refinement based on actual waiting state behavior.
-    {:ok, agent_id} = Shem.Agent.start_with_preset("general", "wait for input")
+    {:ok, agent_id, _} = Shem.Agent.start_with_preset("general", "wait for input")
 
     # Attempt to send a message. The actual success depends on the agent
     # being in the right state to receive it.

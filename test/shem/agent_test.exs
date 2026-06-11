@@ -66,7 +66,7 @@ defmodule Shem.AgentTest do
 
       stub("resumed answer")
 
-      assert {:ok, name} = Shem.Agent.resume(sid, "original task")
+      assert {:ok, name, _} = Shem.Agent.resume(sid, "original task")
       assert is_binary(name)
       assert String.starts_with?(name, "agent_")
 
@@ -87,7 +87,7 @@ defmodule Shem.AgentTest do
 
       stub("done")
 
-      {:ok, name} = Shem.Agent.resume(sid, "status task")
+      {:ok, name, _} = Shem.Agent.resume(sid, "status task")
       assert {:ok, _status} = Shem.Agent.status(name)
 
       Shem.Agent.stop(name)

@@ -529,7 +529,7 @@ defmodule Shem.TUI.AppTest do
 
     test "plain text with active agent calls send_message" do
       # Start a real conversational agent first
-      {:ok, agent_name} = Shem.Agent.start_with_preset("general", "chat session", conversational: true)
+      {:ok, agent_name, _} = Shem.Agent.start_with_preset("general", "chat session", conversational: true)
       # Wait for it to reach :waiting
       :timer.sleep(100)
       model = %{App.init(%{}) | command_buffer: "how are you?", active_conversational_agent: agent_name}

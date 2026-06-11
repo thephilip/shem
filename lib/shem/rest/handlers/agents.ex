@@ -15,8 +15,8 @@ defmodule Shem.REST.Handlers.Agents do
         task_str = task || extract_task_from_session(resume_session_id) || "Resumed session"
 
         case Shem.Agent.resume(resume_session_id, task_str) do
-          {:ok, agent_id} ->
-            send_json(conn, 201, %{agent_id: agent_id, session_id: resume_session_id})
+          {:ok, agent_id, session_id} ->
+            send_json(conn, 201, %{agent_id: agent_id, session_id: session_id})
 
           {:error, reason} ->
             send_json(conn, 500, %{error: inspect(reason)})
@@ -27,8 +27,7 @@ defmodule Shem.REST.Handlers.Agents do
 
       true ->
         case Shem.Agent.start_with_preset(preset, task, conversational: conversational) do
-          {:ok, agent_id} ->
-            {:ok, session_id} = Shem.Agent.session_id(agent_id)
+          {:ok, agent_id, session_id} ->
             send_json(conn, 201, %{agent_id: agent_id, session_id: session_id})
 
           {:error, :not_found} ->

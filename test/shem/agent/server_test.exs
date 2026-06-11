@@ -25,7 +25,7 @@ defmodule Shem.Agent.ServerTest do
     system_prompt = Keyword.get(opts, :system_prompt, "be helpful")
     max_turns = Keyword.get(opts, :max_turns, 10)
     config = %Agent.Config{task: task, system_prompt: system_prompt, max_turns: max_turns}
-    {:ok, name} = Agent.start(config)
+    {:ok, name, _} = Agent.start(config)
     name
   end
 
@@ -54,7 +54,7 @@ defmodule Shem.Agent.ServerTest do
         project_context: project
       }
       stub("ok")
-      {:ok, name} = Agent.start(config)
+      {:ok, name, _} = Agent.start(config)
       assert {:ok, :done} = Agent.await(name, 2_000)
     end
   end
@@ -354,11 +354,10 @@ defmodule Shem.Agent.ServerTest do
         system_prompt: "You are a coordinator.",
         spawn_depth: 2
       }
-      {:ok, name} = Shem.Agent.start(config)
+      {:ok, name, sid} = Shem.Agent.start(config)
       assert {:ok, :done} = Shem.Agent.await(name, 3_000)
 
       # Verify the tool result in EventLog contains the depth limit error
-      {:ok, sid} = Shem.Agent.session_id(name)
       {:ok, events} = Shem.EventLog.events(sid)
       tool_result_event = Enum.find(events, &(&1.type == :agent_tool_result))
       assert tool_result_event != nil
@@ -369,7 +368,7 @@ defmodule Shem.Agent.ServerTest do
   describe "start_with_preset/2" do
     test "starts an agent using a named preset" do
       stub("done")
-      assert {:ok, name} = Agent.start_with_preset("general", "say hello")
+      assert {:ok, name, _sid} = Agent.start_with_preset("general", "say hello")
       assert is_binary(name)
       assert {:ok, _status} = Agent.await(name, 2_000)
     end
@@ -381,7 +380,7 @@ defmodule Shem.Agent.ServerTest do
 
   describe "set_fence/2" do
     test "sets fence on running agent config" do
-      {:ok, name} = Agent.start(%Agent.Config{task: "t", system_prompt: "s"})
+      {:ok, name, _} = Agent.start(%Agent.Config{task: "t", system_prompt: "s"})
       on_exit(fn -> Agent.stop(name) end)
 
       assert :ok = Agent.set_fence(name, "/home/user/proj")

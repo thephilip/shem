@@ -210,7 +210,7 @@ defmodule Shem.TUI.App do
           case CommandDispatch.parse(model.command_buffer) do
             {:start_agent, preset_name, task} ->
               case Shem.Agent.start_with_preset(preset_name, task) do
-                {:ok, name} ->
+                {:ok, name, _sid} ->
                   model = %{model | command_buffer: "", focused_agent: name, command_error: nil, command_output: nil}
                   start_stream_sink_for_focused(model)
 
@@ -363,7 +363,7 @@ defmodule Shem.TUI.App do
             nil ->
               # Start a new conversational agent with the current preset
               case Shem.Agent.start_with_preset(model.current_preset, text, conversational: true) do
-                {:ok, name} ->
+                {:ok, name, _sid} ->
                   model = %{model | command_buffer: "", active_conversational_agent: name, focused_agent: name, command_error: nil, command_output: nil}
                   start_stream_sink_for_focused(model)
 

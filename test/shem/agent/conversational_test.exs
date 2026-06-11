@@ -35,7 +35,7 @@ defmodule Shem.Agent.ConversationalTest do
       conversational: true
     }
 
-    {:ok, name} = Agent.start(config)
+    {:ok, name, _} = Agent.start(config)
     name
   end
 
@@ -50,7 +50,7 @@ defmodule Shem.Agent.ConversationalTest do
       conversational: false
     }
 
-    {:ok, name} = Agent.start(config)
+    {:ok, name, _} = Agent.start(config)
     name
   end
 

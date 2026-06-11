@@ -153,7 +153,7 @@ defmodule Shem.Adversarial.HardeningJob do
     Task.start(fn ->
       result =
         case Agent.start(red_team_config(tool)) do
-          {:ok, agent_name} ->
+          {:ok, agent_name, _sid} ->
             await_result =
               try do
                 Agent.await(agent_name, timeout)
@@ -183,7 +183,7 @@ defmodule Shem.Adversarial.HardeningJob do
     Task.start(fn ->
       result =
         case Agent.start(target_config(tool, summary)) do
-          {:ok, agent_name} ->
+          {:ok, agent_name, _sid} ->
             try do
               Agent.await(agent_name, timeout)
             catch

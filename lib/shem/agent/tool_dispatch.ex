@@ -381,7 +381,7 @@ defmodule Shem.Agent.ToolDispatch do
         result =
           try do
             case Agent.start_with_preset(preset, task, spawn_depth: depth + 1) do
-              {:ok, name} ->
+              {:ok, name, _sid} ->
                 case Agent.await_result(name, timeout) do
                   {:ok, answer} -> {:ok, answer}
                   {:error, reason} -> {:error, "sub-agent failed: #{inspect(reason)}"}

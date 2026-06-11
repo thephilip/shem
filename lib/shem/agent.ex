@@ -19,12 +19,12 @@ defmodule Shem.Agent do
           }
   end
 
-  @spec start(Config.t()) :: {:ok, String.t()} | {:error, term()}
+  @spec start(Config.t()) :: {:ok, String.t(), String.t()} | {:error, term()}
   def start(%Config{} = config) do
     name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
 
     case AgentSupervisor.start_agent(name, config) do
-      {:ok, _pid} -> {:ok, name}
+      {:ok, _pid, session_id} -> {:ok, name, session_id}
       error -> error
     end
   end
@@ -91,7 +91,7 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec start_with_preset(String.t(), String.t(), keyword()) :: {:ok, String.t()} | {:error, term()}
+  @spec start_with_preset(String.t(), String.t(), keyword()) :: {:ok, String.t(), String.t()} | {:error, term()}
   def start_with_preset(preset_name, task, opts \\ []) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do
       config = %Config{
@@ -126,7 +126,7 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec resume(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  @spec resume(String.t(), String.t()) :: {:ok, String.t(), String.t()} | {:error, term()}
   def resume(session_id, task) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve("general") do
       config = %Config{
@@ -139,7 +139,7 @@ defmodule Shem.Agent do
       name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
 
       case AgentSupervisor.start_agent(name, config, session_id) do
-        {:ok, _pid} -> {:ok, name}
+        {:ok, _pid} -> {:ok, name, session_id}
         error -> error
       end
     end

@@ -12,9 +12,14 @@ defmodule Shem.AgentSupervisor do
     Horde.DynamicSupervisor.init(strategy: :one_for_one, members: :auto)
   end
 
-  @spec start_agent(String.t(), Config.t()) :: Horde.DynamicSupervisor.on_start_child()
+  @spec start_agent(String.t(), Config.t()) :: {:ok, pid(), String.t()} | {:error, term()}
   def start_agent(name, %Config{} = config) do
-    start_agent(name, config, generate_session_id())
+    session_id = generate_session_id()
+
+    case start_agent(name, config, session_id) do
+      {:ok, pid} -> {:ok, pid, session_id}
+      error -> error
+    end
   end
 
   @spec start_agent(String.t(), Config.t(), String.t()) :: Horde.DynamicSupervisor.on_start_child()
