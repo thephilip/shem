@@ -129,9 +129,25 @@ defmodule Shem.REST.Handlers.Sessions do
       type: event.type,
       timestamp: event.timestamp,
       parent_id: event.parent_id,
-      payload: event.payload
+      payload: sanitize_payload(event.payload)
     }
   end
+
+  defp sanitize_payload(v) when is_struct(v) do
+    v |> Map.from_struct() |> sanitize_payload()
+  end
+
+  defp sanitize_payload(v) when is_map(v) do
+    Map.new(v, fn {k, val} -> {k, sanitize_payload(val)} end)
+  end
+
+  defp sanitize_payload(v) when is_list(v), do: Enum.map(v, &sanitize_payload/1)
+
+  defp sanitize_payload(v) when is_tuple(v) do
+    v |> Tuple.to_list() |> Enum.map(&sanitize_payload/1)
+  end
+
+  defp sanitize_payload(v), do: v
 
   defp find_fork_event(events, fork_event_id) do
     case Enum.find(events, &(&1.id == fork_event_id)) do
