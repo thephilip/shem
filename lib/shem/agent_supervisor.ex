@@ -24,7 +24,7 @@ defmodule Shem.AgentSupervisor do
 
   @spec start_agent(String.t(), Config.t(), String.t()) :: Horde.DynamicSupervisor.on_start_child()
   def start_agent(name, %Config{} = config, session_id) do
-    via = Shem.ProcessRegistry.via_tuple(name)
+    via = Shem.ProcessRegistry.via_tuple(name, session_id)
 
     child_spec = %{
       id: name,

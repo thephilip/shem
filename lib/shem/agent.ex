@@ -77,9 +77,9 @@ defmodule Shem.Agent do
 
   @spec session_id(String.t()) :: {:ok, String.t()} | {:error, :not_found}
   def session_id(name) do
-    case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
+    case ProcessRegistry.lookup(name) do
+      {_pid, session_id} -> {:ok, session_id}
       nil -> {:error, :not_found}
-      pid -> {:ok, GenServer.call(pid, :session_id)}
     end
   end
 
