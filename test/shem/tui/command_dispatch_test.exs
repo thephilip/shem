@@ -256,4 +256,29 @@ defmodule Shem.TUI.CommandDispatchTest do
       assert {:help} = CommandDispatch.parse("/help")
     end
   end
+
+  describe "parse/1 — /fence command" do
+    test "/fence <relative path> returns {:fence_set, absolute_path}" do
+      {:fence_set, path} = CommandDispatch.parse("/fence src/auth")
+      assert Path.type(path) == :absolute
+      assert String.ends_with?(path, "src/auth")
+    end
+
+    test "/fence /absolute/path returns {:fence_set, path}" do
+      assert {:fence_set, "/home/user/proj"} = CommandDispatch.parse("/fence /home/user/proj")
+    end
+
+    test "/fence clear returns {:fence_clear}" do
+      assert {:fence_clear} = CommandDispatch.parse("/fence clear")
+    end
+
+    test "/fence with no args returns {:fence_show}" do
+      assert {:fence_show} = CommandDispatch.parse("/fence")
+    end
+
+    test "/fence multi-word path is joined" do
+      {:fence_set, path} = CommandDispatch.parse("/fence /home/user/my project")
+      assert String.ends_with?(path, "my project")
+    end
+  end
 end

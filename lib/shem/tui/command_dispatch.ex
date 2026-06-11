@@ -18,6 +18,9 @@ defmodule Shem.TUI.CommandDispatch do
           | {:hire, String.t(), String.t()}
           | {:llm_routes}
           | {:llm_route, [{atom(), :llama_cpp | :ollama | :openai | :anthropic, String.t()}]}
+          | {:fence_set, String.t()}
+          | {:fence_clear}
+          | {:fence_show}
           | {:error, String.t()}
   defp parse_route_pair([key, value]) do
     trimmed_key = String.trim(key)
@@ -145,6 +148,15 @@ defmodule Shem.TUI.CommandDispatch do
       ["shadow"] ->
         {:shadow_info}
 
+      ["fence"] ->
+        {:fence_show}
+
+      ["fence", "clear"] ->
+        {:fence_clear}
+
+      ["fence" | path_parts] ->
+        {:fence_set, Path.expand(Enum.join(path_parts, " "))}
+
       _ ->
         {:error, "unknown command: /#{rest}"}
     end
@@ -174,6 +186,9 @@ defmodule Shem.TUI.CommandDispatch do
       {"/llm routes", "Show the current LLM routing table"},
       {"/llm route <role>=<model>", "Set an LLM route (e.g. reasoning=phi4)"},
       {"/shadow", "show shadow agent confidence score and reasoning"},
+      {"/fence <path>", "Restrict agent file access to a directory"},
+      {"/fence clear", "Remove the active scope fence"},
+      {"/fence", "Show the current scope fence"},
     ]
   end
 end
