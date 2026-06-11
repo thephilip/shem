@@ -336,9 +336,13 @@ defmodule Shem.TUI.App do
               %{model | command_output: output, command_error: nil, command_buffer: ""}
 
             {:fence_set, path} ->
-              if model.focused_agent, do: Shem.Agent.set_fence(model.focused_agent, path)
-              %{model | command_buffer: "", active_fence: path,
-                command_output: "fence: #{path}", command_error: nil}
+              if model.focused_agent do
+                Shem.Agent.set_fence(model.focused_agent, path)
+                %{model | command_buffer: "", active_fence: path,
+                  command_output: "fence: #{path}", command_error: nil}
+              else
+                %{model | command_buffer: "", command_output: "no active agent — fence not set", command_error: nil}
+              end
 
             {:fence_clear} ->
               if model.focused_agent, do: Shem.Agent.set_fence(model.focused_agent, nil)

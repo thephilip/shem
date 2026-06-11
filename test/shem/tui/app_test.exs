@@ -630,12 +630,12 @@ defmodule Shem.TUI.AppTest do
   describe "update/2 — /fence dispatch" do
     @enter 13
 
-    test "/fence <path> sets active_fence and clears command_buffer" do
+    test "/fence <path> with no active agent shows 'no active agent' message" do
       model = %{App.init(%{}) | command_buffer: "/fence /tmp/proj"}
       result = App.update(model, {:event, %{key: @enter}})
-      assert result.active_fence == "/tmp/proj"
+      assert result.active_fence == nil
       assert result.command_buffer == ""
-      assert result.command_output =~ "fence"
+      assert result.command_output =~ "no active agent"
     end
 
     test "/fence clear clears active_fence" do

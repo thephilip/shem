@@ -188,7 +188,7 @@ defmodule Shem.TUI.CommandDispatch do
       {"/shadow", "show shadow agent confidence score and reasoning"},
       {"/fence <path>", "Restrict agent file access to a directory"},
       {"/fence clear", "Remove the active scope fence"},
-      {"/fence", "Show the current scope fence"},
+      {"/fence", "Show the current scope fence"}
     ]
   end
 end

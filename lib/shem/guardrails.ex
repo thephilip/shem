@@ -1,7 +1,7 @@
 defmodule Shem.Guardrails do
   alias Shem.Lab.Executor.Backend
 
-  @fenced_tools ~w[read_file list_dir]
+  @fenced_tools ~w[read_file list_dir write_file]
 
   @spec check_fence(nil | String.t(), String.t(), map(), keyword()) :: :ok | {:blocked, String.t()}
   def check_fence(nil, _tool, _args, _opts), do: :ok
@@ -10,6 +10,12 @@ defmodule Shem.Guardrails do
     if Keyword.get(opts, :backend) == Backend.Container,
       do: :ok,
       else: {:blocked, "shell is restricted inside a scope fence on a local executor"}
+  end
+
+  def check_fence(_fence, "run_code", _args, opts) do
+    if Keyword.get(opts, :backend) == Backend.Container,
+      do: :ok,
+      else: {:blocked, "run_code is restricted inside a scope fence on a local executor"}
   end
 
   def check_fence(fence, tool, args, _opts) when tool in @fenced_tools do

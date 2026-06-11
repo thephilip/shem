@@ -53,10 +53,31 @@ defmodule Shem.GuardrailsTest do
       assert {:blocked, _} = Guardrails.check_fence(fence, "shell", %{"cmd" => "ls"}, [backend: Backend.Local])
     end
 
-    test "other tools (write_file, run_code) are not fenced" do
+    test "spawn_agent and other non-filesystem tools are not fenced" do
       fence = Path.join(System.tmp_dir!(), "project")
-      assert :ok = Guardrails.check_fence(fence, "write_file", %{"path" => "/etc/passwd"}, [])
-      assert :ok = Guardrails.check_fence(fence, "run_code", %{"source" => "IO.puts(:hi)"}, [])
+      assert :ok = Guardrails.check_fence(fence, "spawn_agent", %{}, [])
+      assert :ok = Guardrails.check_fence(fence, "remember", %{"key" => "x", "value" => "y"}, [])
+    end
+
+    test "write_file outside fence returns {:blocked, _}" do
+      fence = Path.join(System.tmp_dir!(), "project")
+      assert {:blocked, _} = Guardrails.check_fence(fence, "write_file", %{"path" => "/etc/passwd"}, [])
+    end
+
+    test "write_file inside fence returns :ok" do
+      fence = System.tmp_dir!()
+      path = Path.join(fence, "output.txt")
+      assert :ok = Guardrails.check_fence(fence, "write_file", %{"path" => path}, [])
+    end
+
+    test "run_code with local backend returns {:blocked, _} when fence active" do
+      fence = System.tmp_dir!()
+      assert {:blocked, _} = Guardrails.check_fence(fence, "run_code", %{"source" => "IO.puts(:hi)"}, [backend: Shem.Lab.Executor.Backend.Local])
+    end
+
+    test "run_code with container backend returns :ok" do
+      fence = System.tmp_dir!()
+      assert :ok = Guardrails.check_fence(fence, "run_code", %{"source" => "IO.puts(:hi)"}, [backend: Shem.Lab.Executor.Backend.Container])
     end
 
     test "symlink path is checked literally, not resolved" do
