@@ -20,6 +20,13 @@ defmodule Shem.HTTP.Router do
     |> send_file(200, path)
   end
 
+  get "/timeline" do
+    path = Application.app_dir(:shem, "priv/static/timeline.html")
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_file(200, path)
+  end
+
   match _ do
     conn
     |> put_resp_content_type("application/json")
