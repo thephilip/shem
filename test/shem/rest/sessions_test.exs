@@ -108,4 +108,108 @@ defmodule Shem.REST.SessionsTest do
 
     EventLog.end_session(session_id)
   end
+
+  # POST /sessions/:id/fork ────────────────────────────────────────────────────
+
+  test "POST /sessions/:id/fork returns 404 for unknown session" do
+    conn = post_json("/sessions/nonexistent_xyz/fork", %{fork_event_id: "evt_000"})
+    assert conn.status == 404
+  end
+
+  test "POST /sessions/:id/fork returns 400 when fork_event_id is missing" do
+    {:ok, session_id} = EventLog.start_session()
+    EventLog.append(session_id, :agent_started, %{task: "fork test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{})
+    assert conn.status == 400
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] == "fork_event_id is required"
+
+    EventLog.end_session(session_id)
+  end
+
+  test "POST /sessions/:id/fork returns 422 when fork_event_id not in session" do
+    {:ok, session_id} = EventLog.start_session()
+    EventLog.append(session_id, :agent_started, %{task: "fork test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{fork_event_id: "evt_DOESNOTEXIST"})
+    assert conn.status == 422
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] == "fork_event_id not found in session"
+
+    EventLog.end_session(session_id)
+  end
+
+  test "POST /sessions/:id/fork returns 422 when event is not llm_call_completed" do
+    {:ok, session_id} = EventLog.start_session()
+    {:ok, event} = EventLog.append(session_id, :agent_started, %{task: "fork test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{fork_event_id: event.id})
+    assert conn.status == 422
+    body = Jason.decode!(conn.resp_body)
+    assert body["error"] =~ "llm_call_completed"
+
+    EventLog.end_session(session_id)
+  end
+
+  test "POST /sessions/:id/fork creates new session with events up to fork point" do
+    {:ok, session_id} = EventLog.start_session()
+    {:ok, _} = EventLog.append(session_id, :agent_started, %{task: "fork test"})
+    {:ok, llm_event} = EventLog.append(session_id, :llm_call_completed, %{content: "original", tokens_used: 5, latency_ms: 100, model: "test"})
+    {:ok, _} = EventLog.append(session_id, :agent_done, %{content: "done"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{fork_event_id: llm_event.id})
+    assert conn.status == 201
+    body = Jason.decode!(conn.resp_body)
+    assert is_binary(body["session_id"])
+    new_session_id = body["session_id"]
+
+    # Forked session has events up to and including the llm_call_completed
+    {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    assert length(forked_events) == 2
+    types = Enum.map(forked_events, & &1.type)
+    assert types == [:agent_started, :llm_call_completed]
+    assert :agent_done not in types
+
+    EventLog.end_session(session_id)
+    EventLog.end_session(new_session_id)
+  end
+
+  test "POST /sessions/:id/fork injects alt_response into the forked llm_call_completed event" do
+    {:ok, session_id} = EventLog.start_session()
+    {:ok, _} = EventLog.append(session_id, :agent_started, %{task: "fork override test"})
+    {:ok, llm_event} = EventLog.append(session_id, :llm_call_completed, %{content: "original response", tokens_used: 5, latency_ms: 100, model: "test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{
+      fork_event_id: llm_event.id,
+      alt_response: "overridden response"
+    })
+    assert conn.status == 201
+    new_session_id = Jason.decode!(conn.resp_body)["session_id"]
+
+    {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    last = List.last(forked_events)
+    assert last.type == :llm_call_completed
+    assert last.payload[:content] == "overridden response"
+
+    EventLog.end_session(session_id)
+    EventLog.end_session(new_session_id)
+  end
+
+  test "POST /sessions/:id/fork without alt_response preserves original content" do
+    {:ok, session_id} = EventLog.start_session()
+    {:ok, _} = EventLog.append(session_id, :agent_started, %{task: "fork identical test"})
+    {:ok, llm_event} = EventLog.append(session_id, :llm_call_completed, %{content: "keep this", tokens_used: 5, latency_ms: 100, model: "test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{fork_event_id: llm_event.id})
+    assert conn.status == 201
+    new_session_id = Jason.decode!(conn.resp_body)["session_id"]
+
+    {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    last = List.last(forked_events)
+    assert last.payload[:content] == "keep this"
+
+    EventLog.end_session(session_id)
+    EventLog.end_session(new_session_id)
+  end
 end
