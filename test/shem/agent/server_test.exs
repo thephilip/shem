@@ -378,6 +378,18 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe ":info call" do
+    test "returns status, turn_count and session_id in one call" do
+      stub("done")
+      name = start_agent("info test")
+      assert {:ok, :done} = Agent.await(name, 2_000)
+
+      pid = GenServer.whereis(Shem.ProcessRegistry.via_tuple(name))
+      info = GenServer.call(pid, :info)
+      assert %{status: :done, turn_count: 1, session_id: "ses_" <> _} = info
+    end
+  end
+
   describe "set_fence/2" do
     test "sets fence on running agent config" do
       {:ok, name, _} = Agent.start(%Agent.Config{task: "t", system_prompt: "s"})

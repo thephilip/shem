@@ -27,6 +27,11 @@ defmodule Shem.Agent.Server do
     {:reply, state.session_id, state}
   end
 
+  def handle_call(:info, _from, state) do
+    {:reply,
+     %{status: state.status, turn_count: state.turn_count, session_id: state.session_id}, state}
+  end
+
   def handle_call({:message, _text}, _from, %{status: s} = state) when s != :waiting do
     {:reply, {:error, :not_waiting}, state}
   end

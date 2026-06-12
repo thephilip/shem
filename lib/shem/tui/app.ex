@@ -187,26 +187,13 @@ defmodule Shem.TUI.App do
         %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
 
       {:event, %{key: @tab}} when model.command_buffer == "" ->
-        case model.agents do
-          [] ->
-            model
+        cycle_focus(model, 1)
 
-          agents ->
-            names = Enum.map(agents, & &1.name)
+      {:event, %{key: @arrow_down}} when model.mode == :interactive and model.command_buffer == "" ->
+        cycle_focus(model, 1)
 
-            next =
-              case model.focused_agent do
-                nil ->
-                  List.first(names)
-
-                current ->
-                  idx = Enum.find_index(names, &(&1 == current)) || 0
-                  Enum.at(names, rem(idx + 1, length(names)))
-              end
-
-            model = %{model | focused_agent: next}
-            start_stream_sink_for_focused(model)
-        end
+      {:event, %{key: @arrow_up}} when model.mode == :interactive and model.command_buffer == "" ->
+        cycle_focus(model, -1)
 
       {:event, %{key: @enter}} when model.command_buffer != "" ->
         if String.starts_with?(model.command_buffer, "/") do
@@ -721,22 +708,24 @@ defmodule Shem.TUI.App do
       Horde.DynamicSupervisor.which_children(Shem.AgentSupervisor)
       |> Enum.filter(fn {_id, pid, _, _} -> is_pid(pid) end)
       |> Enum.map(fn {id, pid, _, _} ->
-        status =
-          case GenServer.call(pid, :status, 100) do
-            {:ok, s} -> s
-            _ -> :unknown
-          end
+        case safe_info(pid) do
+          %{status: status, turn_count: turns, session_id: sid} ->
+            %{name: id, pid: pid, status: status, session_id: sid, turn_count: turns}
 
-        session_id =
-          case GenServer.call(pid, :session_id, 100) do
-            s when is_binary(s) -> s
-            _ -> nil
-          end
-
-        %{name: id, pid: pid, status: status, session_id: session_id, turn_count: 0}
+          nil ->
+            %{name: id, pid: pid, status: :unknown, session_id: nil, turn_count: 0}
+        end
       end)
     catch
       :exit, _ -> []
+    end
+  end
+
+  defp safe_info(pid) do
+    try do
+      GenServer.call(pid, :info, 100)
+    catch
+      :exit, _ -> nil
     end
   end
 
@@ -816,6 +805,29 @@ defmodule Shem.TUI.App do
     StreamSink.stop(model.stream_sink)
     {:ok, pid} = StreamSink.start_link(session_id)
     %{model | stream_sink: pid}
+  end
+
+  defp cycle_focus(model, delta) do
+    case model.agents do
+      [] ->
+        model
+
+      agents ->
+        names = Enum.map(agents, & &1.name)
+
+        idx =
+          case model.focused_agent do
+            nil ->
+              if delta > 0, do: 0, else: length(names) - 1
+
+            current ->
+              current_idx = Enum.find_index(names, &(&1 == current)) || 0
+              rem(current_idx + delta + length(names), length(names))
+          end
+
+        model = %{model | focused_agent: Enum.at(names, idx)}
+        start_stream_sink_for_focused(model)
+    end
   end
 
   defp start_stream_sink_for_focused(model) do

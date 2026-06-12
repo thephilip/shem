@@ -714,6 +714,41 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
+  describe "agent focus cycling" do
+    defp with_agents(model) do
+      agents = [
+        %{name: "agent_A", pid: self(), status: :running, session_id: nil, turn_count: 1},
+        %{name: "agent_B", pid: self(), status: :done, session_id: nil, turn_count: 2}
+      ]
+
+      %{model | mode: :interactive, agents: agents}
+    end
+
+    test "arrow down focuses the first agent when none focused" do
+      model = with_agents(base_model())
+      updated = App.update(model, {:event, %{key: 65516, ch: 0, mod: 0}})
+      assert updated.focused_agent == "agent_A"
+    end
+
+    test "arrow down cycles forward and wraps" do
+      model = %{with_agents(base_model()) | focused_agent: "agent_B"}
+      updated = App.update(model, {:event, %{key: 65516, ch: 0, mod: 0}})
+      assert updated.focused_agent == "agent_A"
+    end
+
+    test "arrow up cycles backward" do
+      model = %{with_agents(base_model()) | focused_agent: "agent_A"}
+      updated = App.update(model, {:event, %{key: 65517, ch: 0, mod: 0}})
+      assert updated.focused_agent == "agent_B"
+    end
+
+    test "arrows do nothing while typing a command" do
+      model = %{with_agents(base_model()) | command_buffer: "/age"}
+      updated = App.update(model, {:event, %{key: 65516, ch: 0, mod: 0}})
+      assert updated.focused_agent == nil
+    end
+  end
+
   describe "update/2 — /llm commands" do
     setup do
       Shem.LLM.Router.flush()

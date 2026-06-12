@@ -33,29 +33,22 @@ defmodule Shem.TUI.Views.Interactive do
         end
       end
 
-      row do
-        column(size: 12) do
-          render_agent_switcher(model)
-        end
-      end
     end
   end
 
   def render(model) do
     view do
       row do
-        column(size: 8) do
+        column(size: 3) do
+          render_agent_list(model)
+        end
+
+        column(size: 6) do
           render_turn_card(model)
         end
 
-        column(size: 4) do
+        column(size: 3) do
           render_event_log(model)
-        end
-      end
-
-      row do
-        column(size: 12) do
-          render_agent_switcher(model)
         end
       end
 
@@ -185,31 +178,49 @@ defmodule Shem.TUI.Views.Interactive do
     end
   end
 
-  defp render_agent_switcher(%{agents: []}) do
+  defp render_agent_list(%{agents: []}) do
     panel(title: "Agents", color: color(:white)) do
-      label(content: "No agents running.  Tab=cycle  /agent <preset> <task>=start", color: color(:white))
+      label(content: "none running", color: color(:white))
+      label(content: "")
+      label(content: "type a task +", color: color(:cyan))
+      label(content: "Enter to start", color: color(:cyan))
     end
   end
 
-  defp render_agent_switcher(%{agents: agents, focused_agent: focused}) do
-    agent_line =
-      agents
-      |> Enum.map(fn a ->
+  defp render_agent_list(%{agents: agents, focused_agent: focused}) do
+    panel(title: "Agents (#{length(agents)})", color: color(:white)) do
+      for a <- agents do
         marker = if a.name == focused, do: "●", else: "○"
-        "#{marker} #{a.name} [#{a.status}]"
-      end)
-      |> Enum.join("   ")
 
-    panel(title: "Agents · Tab=cycle", color: color(:white)) do
-      label(content: agent_line, color: color(:cyan))
+        [
+          label(
+            content: "#{marker} #{a.name}",
+            color: if(a.name == focused, do: color(:cyan), else: color(:white)),
+            attributes: if(a.name == focused, do: [attribute(:bold)], else: [])
+          ),
+          label(content: "  #{agent_status_dot(a.status)} #{a.status} · t#{a.turn_count}", color: agent_status_color(a.status))
+        ]
+      end
     end
   end
+
+  defp agent_status_dot(:running), do: "▶"
+  defp agent_status_dot(:done), do: "✓"
+  defp agent_status_dot(:error), do: "✗"
+  defp agent_status_dot(:waiting), do: "◌"
+  defp agent_status_dot(_), do: "?"
+
+  defp agent_status_color(:running), do: color(:cyan)
+  defp agent_status_color(:done), do: color(:green)
+  defp agent_status_color(:error), do: color(:red)
+  defp agent_status_color(:waiting), do: color(:yellow)
+  defp agent_status_color(_), do: color(:white)
 
   defp prompt_title(%{paused: true}), do: "[ PAUSED — press SPACE to resume ]"
   defp prompt_title(%{command_buffer: "/" <> _ = buf}), do: "Command: #{buf}"
   defp prompt_title(%{active_fence: fence}) when not is_nil(fence),
     do: "[fence: #{fence}]  d=Dashboard  Tab=cycle  /fence clear=remove fence"
-  defp prompt_title(_), do: "d=Dashboard  i=Interactive  Tab=cycle  /agent <preset> <task>  /stop  /agents"
+  defp prompt_title(_), do: "d=Dashboard  ↑↓/Tab=agents  /=command  Alt+Enter=newline"
 
   defp prompt_color(%{paused: true}), do: color(:red)
   defp prompt_color(_), do: color(:cyan)
