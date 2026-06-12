@@ -132,7 +132,7 @@ case "${1:-}" in
   start)
     shift
     if [ "${1:-}" = "--headless" ]; then
-      SHEM_NO_TUI=1 exec "${_SHEM_BIN}" start
+      SHEM_NO_TUI=1 SHEM_SKIP_CONFIG_CHECK=1 exec "${_SHEM_BIN}" start
     else
       exec "${_SHEM_BIN}" start "$@"
     fi
