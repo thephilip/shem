@@ -56,7 +56,8 @@ defmodule Shem.TUI.App do
       active_fence: nil,
       tick_count: 0,
       system_stats: Shem.TUI.SystemStats.empty(),
-      budget: %{tokens_used: 0, global_limit: 0}
+      budget: %{tokens_used: 0, global_limit: 0},
+      ac_index: 0
     }
   end
 
@@ -177,14 +178,14 @@ defmodule Shem.TUI.App do
         %{model | paused: true}
 
       {:event, %{ch: ?/}} when model.command_buffer == "" ->
-        %{model | command_buffer: "/"}
+        %{model | command_buffer: "/", ac_index: 0}
 
       {:event, %{key: @backspace}} ->
         buf = model.command_buffer
-        %{model | command_buffer: if(buf == "", do: "", else: String.slice(buf, 0..-2//1))}
+        %{model | ac_index: 0, command_buffer: if(buf == "", do: "", else: String.slice(buf, 0..-2//1))}
 
       {:event, %{ch: ch}} when model.command_buffer != "" and ch > 0 ->
-        %{model | command_buffer: model.command_buffer <> <<ch::utf8>>}
+        %{model | command_buffer: model.command_buffer <> <<ch::utf8>>, ac_index: 0}
 
       {:event, %{key: @tab}} when model.command_buffer == "" ->
         cycle_focus(model, 1)
@@ -194,6 +195,31 @@ defmodule Shem.TUI.App do
 
       {:event, %{key: @arrow_up}} when model.mode == :interactive and model.command_buffer == "" ->
         cycle_focus(model, -1)
+
+      {:event, %{key: @arrow_down}} when model.command_buffer != "" ->
+        if String.starts_with?(model.command_buffer, "/") do
+          max_index = length(current_suggestions(model)) - 1
+          %{model | ac_index: min(model.ac_index + 1, max(max_index, 0))}
+        else
+          model
+        end
+
+      {:event, %{key: @arrow_up}} when model.command_buffer != "" ->
+        if String.starts_with?(model.command_buffer, "/") do
+          %{model | ac_index: max(model.ac_index - 1, 0)}
+        else
+          model
+        end
+
+      {:event, %{key: @tab}} when model.command_buffer != "" ->
+        if String.starts_with?(model.command_buffer, "/") do
+          case Enum.at(current_suggestions(model), model.ac_index) do
+            nil -> model
+            suggestion -> %{model | command_buffer: Shem.TUI.Autocomplete.complete(suggestion), ac_index: 0}
+          end
+        else
+          model
+        end
 
       {:event, %{key: @enter}} when model.command_buffer != "" ->
         if String.starts_with?(model.command_buffer, "/") do
@@ -805,6 +831,10 @@ defmodule Shem.TUI.App do
     StreamSink.stop(model.stream_sink)
     {:ok, pid} = StreamSink.start_link(session_id)
     %{model | stream_sink: pid}
+  end
+
+  defp current_suggestions(model) do
+    Shem.TUI.Autocomplete.suggest(model.command_buffer, CommandDispatch.commands())
   end
 
   defp cycle_focus(model, delta) do

@@ -37,34 +37,73 @@ defmodule Shem.TUI.Views.Interactive do
   end
 
   def render(model) do
-    view do
-      row do
-        column(size: 3) do
-          render_agent_list(model)
-        end
+    rows =
+      [content_row(model)] ++
+        autocomplete_rows(model) ++
+        [prompt_row(model)]
 
-        column(size: 6) do
-          render_turn_card(model)
-        end
+    view(rows)
+  end
 
-        column(size: 3) do
-          render_event_log(model)
-        end
+  defp content_row(model) do
+    row do
+      column(size: 3) do
+        render_agent_list(model)
       end
 
-      row do
-        column(size: 12) do
-          panel(title: prompt_title(model), color: prompt_color(model)) do
-            label(
-              content: prompt_content(model),
-              color: color(:white)
-            )
+      column(size: 6) do
+        render_turn_card(model)
+      end
 
-            label(
-              content: if(model.command_error, do: "Error: #{model.command_error}", else: ""),
-              color: color(:red)
-            )
+      column(size: 3) do
+        render_event_log(model)
+      end
+    end
+  end
+
+  defp autocomplete_rows(%{command_buffer: "/" <> _} = model) do
+    suggestions =
+      Shem.TUI.Autocomplete.suggest(model.command_buffer, Shem.TUI.CommandDispatch.commands())
+      |> Enum.take(6)
+
+    if suggestions == [] do
+      []
+    else
+      [
+        row do
+          column(size: 12) do
+            panel(title: "Commands · ↑↓ select · Tab complete", color: color(:cyan)) do
+              for {{cmd, desc}, i} <- Enum.with_index(suggestions) do
+                marker = if i == model.ac_index, do: "▸", else: " "
+
+                label(
+                  content: "#{marker} #{String.pad_trailing(cmd, 28)} #{desc}",
+                  color: if(i == model.ac_index, do: color(:cyan), else: color(:white)),
+                  attributes: if(i == model.ac_index, do: [attribute(:bold)], else: [])
+                )
+              end
+            end
           end
+        end
+      ]
+    end
+  end
+
+  defp autocomplete_rows(_model), do: []
+
+  defp prompt_row(model) do
+    row do
+      column(size: 12) do
+        panel(title: prompt_title(model), color: prompt_color(model)) do
+          label(
+            content: prompt_content(model),
+            color: color(:white)
+          )
+
+          label(
+            content: if(model.command_error, do: "Error: #{model.command_error}", else: ""),
+            color: color(:red)
+          )
         end
       end
     end

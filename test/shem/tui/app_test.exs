@@ -693,7 +693,8 @@ defmodule Shem.TUI.AppTest do
       active_fence: nil,
       tick_count: 0,
       system_stats: Shem.TUI.SystemStats.empty(),
-      budget: %{tokens_used: 0, global_limit: 0}
+      budget: %{tokens_used: 0, global_limit: 0},
+      ac_index: 0
     }
   end
 
@@ -777,6 +778,39 @@ defmodule Shem.TUI.AppTest do
       assert result.command_output =~ "default"
       assert result.command_buffer == ""
       assert result.command_error == nil
+    end
+  end
+
+  describe "slash-command autocomplete" do
+    test "typing resets ac_index" do
+      model = %{base_model() | command_buffer: "/pre", ac_index: 2}
+      updated = App.update(model, {:event, %{ch: ?s, key: 0, mod: 0}})
+      assert updated.ac_index == 0
+      assert updated.command_buffer == "/pres"
+    end
+
+    test "arrow down moves the selection" do
+      model = %{base_model() | command_buffer: "/preset", ac_index: 0}
+      updated = App.update(model, {:event, %{key: 65516, ch: 0, mod: 0}})
+      assert updated.ac_index == 1
+    end
+
+    test "arrow up clamps at zero" do
+      model = %{base_model() | command_buffer: "/preset", ac_index: 0}
+      updated = App.update(model, {:event, %{key: 65517, ch: 0, mod: 0}})
+      assert updated.ac_index == 0
+    end
+
+    test "tab completes the selected suggestion" do
+      model = %{base_model() | command_buffer: "/he", ac_index: 0}
+      updated = App.update(model, {:event, %{key: 9, ch: 0, mod: 0}})
+      assert updated.command_buffer == "/help "
+    end
+
+    test "tab with no matches leaves the buffer alone" do
+      model = %{base_model() | command_buffer: "/zzz", ac_index: 0}
+      updated = App.update(model, {:event, %{key: 9, ch: 0, mod: 0}})
+      assert updated.command_buffer == "/zzz"
     end
   end
 end
