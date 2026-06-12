@@ -2,6 +2,8 @@ defmodule Shem.TUI.Views.Interactive do
   import Ratatouille.View
   import Ratatouille.Constants, only: [color: 1, attribute: 1]
 
+  @ac_visible 6
+
   def render(%{mode: :multiline_input} = model) do
     name =
       case model.multiline_target do
@@ -64,7 +66,7 @@ defmodule Shem.TUI.Views.Interactive do
   defp autocomplete_rows(%{command_buffer: "/" <> _} = model) do
     suggestions =
       Shem.TUI.Autocomplete.suggest(model.command_buffer, Shem.TUI.CommandDispatch.commands())
-      |> Enum.take(6)
+      |> Enum.take(@ac_visible)
 
     if suggestions == [] do
       []

@@ -812,5 +812,17 @@ defmodule Shem.TUI.AppTest do
       updated = App.update(model, {:event, %{key: 9, ch: 0, mod: 0}})
       assert updated.command_buffer == "/zzz"
     end
+
+    test "arrow down cannot move the selection past the rendered window" do
+      # bare "/" matches every command (18), but only 6 render
+      model = %{base_model() | command_buffer: "/", ac_index: 0}
+
+      final =
+        Enum.reduce(1..10, model, fn _, m ->
+          App.update(m, {:event, %{key: 65516, ch: 0, mod: 0}})
+        end)
+
+      assert final.ac_index == 5
+    end
   end
 end

@@ -14,6 +14,7 @@ defmodule Shem.TUI.App do
   @arrow_up 65517
   @arrow_down 65516
   @ctrl_k 11
+  @ac_visible 6
 
   @impl true
   def init(_context) do
@@ -198,7 +199,7 @@ defmodule Shem.TUI.App do
 
       {:event, %{key: @arrow_down}} when model.command_buffer != "" ->
         if String.starts_with?(model.command_buffer, "/") do
-          max_index = length(current_suggestions(model)) - 1
+          max_index = min(length(current_suggestions(model)), @ac_visible) - 1
           %{model | ac_index: min(model.ac_index + 1, max(max_index, 0))}
         else
           model
