@@ -659,6 +659,33 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
+  describe "history resume (r key)" do
+    test "r on a session with a task resumes it and switches to interactive" do
+      Shem.LLM.StubTransport.Server.reset()
+
+      Shem.LLM.StubTransport.Server.push_response(
+        {:ok, %Shem.LLM.Response{content: "resumed", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+
+      session_id = "ses_RESUME_#{System.unique_integer([:positive])}"
+      {:ok, ^session_id} = Shem.EventLog.start_session(session_id)
+
+      model = %{
+        base_model()
+        | mode: :history,
+          history_sessions: [%{session_id: session_id, task: "resume me"}],
+          history_cursor: 0
+      }
+
+      updated = App.update(model, {:event, %{ch: ?r, key: 0, mod: 0}})
+
+      assert updated.mode == :interactive
+      assert is_binary(updated.focused_agent)
+
+      Shem.Agent.stop(updated.focused_agent)
+    end
+  end
+
   # Hand-built model that matches App.init/1 but with show_welcome: false,
   # avoiding side effects (welcome-marker file write) during tests.
   defp base_model do

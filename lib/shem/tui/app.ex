@@ -131,7 +131,7 @@ defmodule Shem.TUI.App do
 
           %{session_id: session_id, task: task} when not is_nil(task) ->
             case Shem.Agent.resume(session_id, task) do
-              {:ok, name} ->
+              {:ok, name, _session_id} ->
                 model = %{model | mode: :interactive, focused_agent: name, command_error: nil, command_output: nil}
                 start_stream_sink_for_focused(model)
 
