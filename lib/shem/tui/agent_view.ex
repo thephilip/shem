@@ -41,6 +41,45 @@ defmodule Shem.TUI.AgentView do
     %{view | recent_events: recent}
   end
 
+  @doc """
+  Folds session events into a chat transcript: who said what, with tool
+  calls collapsed to one-line summaries.
+  """
+  @spec transcript([Shem.EventLog.Event.t()]) ::
+          [{:user | :assistant | :tool, String.t()}]
+  def transcript(events) do
+    Enum.flat_map(events, fn event ->
+      case event.type do
+        :agent_started ->
+          [{:user, event.payload[:task] || ""}]
+
+        :user_message ->
+          [{:user, event.payload[:content] || ""}]
+
+        :llm_call_completed ->
+          case event.payload[:content] do
+            content when is_binary(content) and content != "" -> [{:assistant, content}]
+            _ -> []
+          end
+
+        :agent_tool_result ->
+          result =
+            (event.payload[:result] || "")
+            |> to_string()
+            |> String.replace("\n", " ")
+            |> truncate_line(80)
+
+          [{:tool, "⚙ #{event.payload[:tool]} → #{result}"}]
+
+        _ ->
+          []
+      end
+    end)
+  end
+
+  defp truncate_line(str, max) when byte_size(str) <= max, do: str
+  defp truncate_line(str, max), do: String.slice(str, 0, max) <> "…"
+
   defp fold_event(event, acc) do
     case event.type do
       :agent_started ->

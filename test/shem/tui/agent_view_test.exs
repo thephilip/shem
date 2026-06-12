@@ -100,6 +100,65 @@ defmodule Shem.TUI.AgentViewTest do
     end
   end
 
+  describe "transcript/1" do
+    test "folds a session into user/assistant/tool entries" do
+      id = open(session_id())
+      EventLog.append(id, :agent_started, %{task: "review my code", model: :default, max_turns: 20})
+      EventLog.append(id, :agent_turn_started, %{turn: 1})
+      EventLog.append(id, :llm_call_completed, %{content: "Let me look at the files."})
+      EventLog.append(id, :agent_tool_called, %{tool: "read_file", args: %{path: "mix.exs"}})
+      EventLog.append(id, :agent_tool_result, %{tool: "read_file", result: "defmodule Shem.MixProject do ..."})
+      EventLog.append(id, :agent_turn_started, %{turn: 2})
+      EventLog.append(id, :llm_call_completed, %{content: "The project looks healthy."})
+      EventLog.append(id, :agent_done, %{reason: :answer, content: "The project looks healthy."})
+
+      {:ok, events} = EventLog.events(id)
+      transcript = AgentView.transcript(events)
+
+      assert [
+               {:user, "review my code"},
+               {:assistant, "Let me look at the files."},
+               {:tool, tool_line},
+               {:assistant, "The project looks healthy."}
+             ] = transcript
+
+      assert tool_line =~ "read_file"
+      assert tool_line =~ "defmodule"
+    end
+
+    test "includes follow-up user messages from conversational sessions" do
+      id = open(session_id())
+      EventLog.append(id, :agent_started, %{task: "hi", model: :default, max_turns: 20})
+      EventLog.append(id, :llm_call_completed, %{content: "hello!"})
+      EventLog.append(id, :user_message, %{content: "what can you do?"})
+      EventLog.append(id, :llm_call_completed, %{content: "lots of things"})
+
+      {:ok, events} = EventLog.events(id)
+
+      assert AgentView.transcript(events) == [
+               {:user, "hi"},
+               {:assistant, "hello!"},
+               {:user, "what can you do?"},
+               {:assistant, "lots of things"}
+             ]
+    end
+
+    test "skips empty llm content and collapses tool results to one line" do
+      id = open(session_id())
+      EventLog.append(id, :agent_started, %{task: "t", model: :default, max_turns: 20})
+      EventLog.append(id, :llm_call_completed, %{content: nil})
+      EventLog.append(id, :agent_tool_result, %{tool: "shell", result: "line1\nline2\nline3"})
+
+      {:ok, events} = EventLog.events(id)
+      assert [{:user, "t"}, {:tool, line}] = AgentView.transcript(events)
+      refute line =~ "\n"
+    end
+
+    test "empty event list yields empty transcript" do
+      assert AgentView.transcript([]) == []
+    end
+  end
+
   describe "from_events/1" do
     alias Shem.EventLog.Event
 

@@ -38,7 +38,7 @@ defmodule Shem.TUI.Views.HistoryTest do
       base_model()
       | history_sessions: [summary()],
         history_cursor: 0,
-        history_detail: %AgentView{}
+        history_detail: %{view: %AgentView{}, transcript: []}
     }
     assert is_map(History.render(model))
   end

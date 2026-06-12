@@ -68,7 +68,7 @@ defmodule Shem.TUI.Views.History do
     end
   end
 
-  defp render_session_detail(%{history_detail: view, history_sessions: sessions, history_cursor: cursor}) do
+  defp render_session_detail(%{history_detail: %{view: view, transcript: transcript}, history_sessions: sessions, history_cursor: cursor}) do
     summary = Enum.at(sessions, cursor)
     title = if summary, do: "#{summary.session_id} · #{summary.task || "(no task)"}", else: "Session Detail"
 
@@ -80,66 +80,43 @@ defmodule Shem.TUI.Views.History do
         _ -> "unknown"
       end
 
-    history_line =
-      (view.history || [])
-      |> Enum.map(fn %{turn: t, tool: tool} ->
-        if tool, do: "t#{t}:#{tool}", else: "t#{t}:done"
-      end)
-      |> Enum.join("  ·  ")
-
     panel(title: title, color: status_color(view.status)) do
       label(
-        content: "STATUS",
+        content: "#{status_str} · #{view.turn_count} turns",
         attributes: [attribute(:bold)],
-        color: color(:white)
+        color: status_color(view.status)
       )
-      label(content: status_str, color: status_color(view.status))
+
       label(content: "")
 
-      label(
-        content: "TURN HISTORY",
-        attributes: [attribute(:bold)],
-        color: color(:white)
-      )
-      label(
-        content: if(history_line == "", do: "no completed turns", else: history_line),
-        color: color(:white)
-      )
-      label(content: "")
-
-      label(
-        content: "LAST TOOL CALL",
-        attributes: [attribute(:bold)],
-        color: color(:white)
-      )
-
-      case view.last_tool_call do
-        nil ->
-          label(content: "none", color: color(:white))
-
-        tc ->
-          result_label =
-            if tc.result do
-              [label(content: "← #{truncate(tc.result, 100)}", color: color(:white))]
-            else
-              []
-            end
-
-          [label(content: "→ #{tc.name}", color: color(:green))] ++ result_label
+      if transcript == [] do
+        label(content: "No conversation recorded.", color: color(:white))
+      else
+        for entry <- transcript do
+          transcript_labels(entry)
+        end
       end
-
-      label(content: "")
-
-      label(
-        content: "REASONING",
-        attributes: [attribute(:bold)],
-        color: color(:white)
-      )
-      label(
-        content: truncate(view.current_reasoning || "—", 180),
-        color: color(:cyan)
-      )
     end
+  end
+
+  defp transcript_labels({:user, text}) do
+    [first | rest] = String.split(text, "\n")
+
+    [
+      label(content: "you ▸ #{first}", attributes: [attribute(:bold)], color: color(:cyan))
+    ] ++ Enum.map(rest, &label(content: "      #{&1}", color: color(:cyan)))
+  end
+
+  defp transcript_labels({:assistant, text}) do
+    [first | rest] = String.split(text, "\n")
+
+    [
+      label(content: "shem ▸ #{first}", color: color(:white))
+    ] ++ Enum.map(rest, &label(content: "       #{&1}", color: color(:white)))
+  end
+
+  defp transcript_labels({:tool, line}) do
+    [label(content: "  #{line}", color: color(:yellow))]
   end
 
   defp status_abbrev(:done), do: "✓"

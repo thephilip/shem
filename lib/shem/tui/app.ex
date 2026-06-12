@@ -795,8 +795,14 @@ defmodule Shem.TUI.App do
 
       %{session_id: session_id} ->
         case Shem.EventLog.read_session_events(session_id) do
-          {:ok, events} -> Shem.TUI.AgentView.from_events(events)
-          _ -> nil
+          {:ok, events} ->
+            %{
+              view: Shem.TUI.AgentView.from_events(events),
+              transcript: Shem.TUI.AgentView.transcript(events)
+            }
+
+          _ ->
+            nil
         end
     end
   end
