@@ -46,12 +46,16 @@ in registry, check EventLog for a completed session (tombstone pattern).
 
 ### `list_agents`
 
-Returns all active agents with current status.
+Returns all live agents with current status. (Decided at implementation: live agents only —
+no join with historical EventLog sessions, which would list every past session as an
+"agent". Agents whose process has been stopped remain pollable by id via `agent_status`'s
+tombstone path. Note that finished agents stay alive in `:done`/`:waiting` status until
+explicitly stopped, so they do appear here.)
 
 **Output:** `{ agents: [{ agent_id, status, goal, events }] }`
 
-Implementation: `Horde.DynamicSupervisor.which_children(Shem.AgentSupervisor)` for live
-agents; join with recent EventLog sessions for completed ones.
+Implementation: `Horde.Registry.select/2` on `Shem.Registry` filtered to `agent_`-prefixed
+names (see `Shem.MCP.Handlers.AgentCommon.live_agents/0`).
 
 ---
 
