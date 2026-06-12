@@ -15,7 +15,8 @@ defmodule Shem.MCP.Router do
   get "/sse" do
     session_id = generate_session_id()
     port = Application.get_env(:shem, :mcp_port, 4000)
-    endpoint_url = "http://localhost:#{port}/mcp/message?sessionId=#{session_id}"
+    host = Application.get_env(:shem, :mcp_host, "127.0.0.1")
+    endpoint_url = "http://#{host}:#{port}/mcp/message?sessionId=#{session_id}"
 
     conn =
       conn
