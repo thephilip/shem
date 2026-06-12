@@ -7,13 +7,13 @@ defmodule Shem.TUI.Views.Dashboard do
       row do
         column(size: 8) do
           panel(title: "Shem // Dashboard", color: color(:green)) do
-            label(content: "Agents: 0 active", color: color(:white))
+            label(content: agents_line(model.agents), color: color(:white))
             label(content: "")
-            label(content: "CPU: --   MEM: --   GPU: --", color: color(:cyan))
+            label(content: Shem.TUI.SystemStats.format(model.system_stats), color: color(:cyan))
             label(content: "")
 
             label(
-              content: "Token spend: $0.0000 session / $0.0000 lifetime",
+              content: "Tokens: #{model.budget.tokens_used} / #{model.budget.global_limit} session",
               color: color(:yellow)
             )
           end
@@ -25,7 +25,7 @@ defmodule Shem.TUI.Views.Dashboard do
 
             label(
               content:
-                "MCP: localhost:#{Application.get_env(:shem, :mcp_port, 4000)} — #{model.mcp_client_count} connected",
+                "MCP: #{Application.get_env(:shem, :mcp_host, "127.0.0.1")}:#{Application.get_env(:shem, :mcp_port, 4000)} — #{model.mcp_client_count} connected",
               color: color(:cyan)
             )
 
@@ -93,4 +93,9 @@ defmodule Shem.TUI.Views.Dashboard do
   end
 
   defp trust_summary(_), do: "Trust: —"
+
+  defp agents_line(agents) do
+    running = Enum.count(agents, &(&1.status == :running))
+    "Agents: #{length(agents)} active (#{running} running)"
+  end
 end

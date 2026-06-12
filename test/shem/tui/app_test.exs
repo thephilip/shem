@@ -659,6 +659,61 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
+  # Hand-built model that matches App.init/1 but with show_welcome: false,
+  # avoiding side effects (welcome-marker file write) during tests.
+  defp base_model do
+    %{
+      mode: :dashboard,
+      command_buffer: "",
+      paused: false,
+      event_log_stats: %{sessions: 0, total_events: 0},
+      tool_count: 0,
+      mcp_client_count: 0,
+      mcp_outbound_count: 0,
+      cluster_node_count: 1,
+      agents: [],
+      focused_agent: nil,
+      agent_view: nil,
+      stream_sink: nil,
+      command_error: nil,
+      command_output: nil,
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
+      multiline_buffer: [],
+      multiline_target: nil,
+      history_sessions: [],
+      history_cursor: 0,
+      history_detail: nil,
+      current_preset: "general",
+      active_conversational_agent: nil,
+      show_help: false,
+      help_filter: "",
+      show_welcome: false,
+      shadow_band: nil,
+      shadow_reasoning: "",
+      active_fence: nil,
+      tick_count: 0,
+      system_stats: Shem.TUI.SystemStats.empty(),
+      budget: %{tokens_used: 0, global_limit: 0}
+    }
+  end
+
+  describe "dashboard live stats" do
+    test ":tick populates system_stats and budget on the first tick" do
+      model = base_model()
+      updated = App.update(model, :tick)
+      assert %{cpu: _, mem_used_mb: _, mem_total_mb: _} = updated.system_stats
+      assert %{tokens_used: used, global_limit: limit} = updated.budget
+      assert is_integer(used) and is_integer(limit)
+      assert updated.tick_count == 1
+    end
+
+    test ":tick only refreshes system stats every 10th tick" do
+      model = %{base_model() | tick_count: 1, system_stats: %{cpu: 99.9, mem_used_mb: 1, mem_total_mb: 2}}
+      updated = App.update(model, :tick)
+      assert updated.system_stats == %{cpu: 99.9, mem_used_mb: 1, mem_total_mb: 2}
+    end
+  end
+
   describe "update/2 — /llm commands" do
     setup do
       Shem.LLM.Router.flush()

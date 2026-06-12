@@ -18,7 +18,9 @@ defmodule Shem.TUI.Views.DashboardTest do
       agent_view: nil,
       command_error: nil,
       command_output: nil,
-      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0}
+      trust_counts: %{high: 0, medium: 0, low: 0, unrated: 0},
+      system_stats: Shem.TUI.SystemStats.empty(),
+      budget: %{tokens_used: 0, global_limit: 0}
     }
   end
 

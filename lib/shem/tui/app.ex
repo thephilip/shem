@@ -53,7 +53,10 @@ defmodule Shem.TUI.App do
       show_welcome: show_welcome,
       shadow_band: nil,
       shadow_reasoning: "",
-      active_fence: nil
+      active_fence: nil,
+      tick_count: 0,
+      system_stats: Shem.TUI.SystemStats.empty(),
+      budget: %{tokens_used: 0, global_limit: 0}
     }
   end
 
@@ -384,9 +387,21 @@ defmodule Shem.TUI.App do
         end
 
       :tick ->
+        tick_count = model.tick_count + 1
+
+        {system_stats, budget} =
+          if rem(tick_count, 10) == 1 do
+            {Shem.TUI.SystemStats.collect(), safe_budget()}
+          else
+            {model.system_stats, model.budget}
+          end
+
         model = %{
           model
-          | event_log_stats: safe_stats(),
+          | tick_count: tick_count,
+            system_stats: system_stats,
+            budget: budget,
+            event_log_stats: safe_stats(),
             tool_count: safe_tool_count(),
             mcp_client_count: safe_mcp_count(),
             mcp_outbound_count: safe_mcp_outbound_count(),
@@ -654,6 +669,15 @@ defmodule Shem.TUI.App do
   defp score_to_band(score) when score >= 0.8, do: :high
   defp score_to_band(score) when score >= 0.5, do: :medium
   defp score_to_band(_), do: :low
+
+  defp safe_budget do
+    try do
+      status = Shem.LLM.BudgetServer.status()
+      %{tokens_used: status.tokens_used, global_limit: status.global_limit}
+    catch
+      :exit, _ -> %{tokens_used: 0, global_limit: 0}
+    end
+  end
 
   defp safe_stats do
     try do
