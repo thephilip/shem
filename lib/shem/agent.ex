@@ -40,8 +40,15 @@ defmodule Shem.Agent do
   @spec status(String.t()) :: {:ok, :running | :done | :error | :waiting} | {:error, :not_found}
   def status(name) do
     case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
-      nil -> {:error, :not_found}
-      pid -> GenServer.call(pid, :status)
+      nil ->
+        {:error, :not_found}
+
+      pid ->
+        try do
+          GenServer.call(pid, :status)
+        catch
+          :exit, _ -> {:error, :not_found}
+        end
     end
   end
 

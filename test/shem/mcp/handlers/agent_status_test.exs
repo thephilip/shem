@@ -3,7 +3,7 @@ defmodule Shem.MCP.Handlers.AgentStatusTest do
 
   alias Shem.Agent
   alias Shem.LLM.{Response, StubTransport}
-  alias Shem.MCP.Handlers.AgentStatus
+  alias Shem.MCP.Handlers.{AgentCommon, AgentStatus}
 
   setup do
     Shem.LLM.BudgetServer.reset()
@@ -49,6 +49,8 @@ defmodule Shem.MCP.Handlers.AgentStatusTest do
     {:ok, name, session_id} = Agent.start(config)
     {:ok, :done} = Agent.await(name, 2_000)
     :ok = Agent.stop(name)
+    # Horde deregisters asynchronously; wait so we deterministically test the tombstone path
+    wait_for_deregistration(session_id)
 
     assert {:ok, result} = AgentStatus.call(%{"agent_id" => session_id})
     assert result["status"] == "done"
@@ -61,5 +63,15 @@ defmodule Shem.MCP.Handlers.AgentStatusTest do
 
   test "missing agent_id is invalid_args" do
     assert {:error, :invalid_args, _} = AgentStatus.call(%{})
+  end
+
+  defp wait_for_deregistration(session_id, attempts \\ 40) do
+    case AgentCommon.find_by_session(session_id) do
+      :not_found -> :ok
+      {:ok, _} when attempts > 0 ->
+        Process.sleep(25)
+        wait_for_deregistration(session_id, attempts - 1)
+      {:ok, _} -> flunk("agent never deregistered")
+    end
   end
 end
