@@ -104,4 +104,19 @@ defmodule Shem.Trust.StoreTest do
       assert entry.hardening_count == 2
     end
   end
+
+  describe "seed/2" do
+    test "seeds an unrated tool at the given score with zero hardenings" do
+      assert {:ok, :seeded} = Store.seed("tool_seed_1", 0.5)
+      assert {:ok, 0.5} = Store.score("tool_seed_1")
+      assert {:ok, entry} = Store.entry("tool_seed_1")
+      assert entry.hardening_count == 0
+    end
+
+    test "refuses to clobber an already-rated tool" do
+      :ok = Store.record("tool_seed_2", %{outcome: :clean, rounds: 1})
+      assert {:error, :already_rated} = Store.seed("tool_seed_2", 0.5)
+      assert {:ok, 1.0} = Store.score("tool_seed_2")
+    end
+  end
 end

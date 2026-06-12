@@ -2,6 +2,8 @@ defmodule Shem.Lab.GraduationGate do
   alias Shem.Lab.{Workspace, Executor, Registry}
   alias Shem.Tool
 
+  @no_property_seed 0.5
+
   @spec run(String.t(), String.t(), [String.t()]) ::
           {:ok, Tool.t()}
           | {:error, :compile, String.t()}
@@ -19,7 +21,9 @@ defmodule Shem.Lab.GraduationGate do
     case Executor.run(combined, fn test_mod -> test_mod.run() end, executor_opts) do
       {:ok, :ok} ->
         with {:ok, module} <- extract_module(source) do
+          property? = property_tested?(test_source)
           id = unique_id(module)
+
           tool = %Tool{
             id: id,
             name: module |> Atom.to_string() |> String.split(".") |> List.last(),
@@ -28,10 +32,12 @@ defmodule Shem.Lab.GraduationGate do
             test_source: test_source,
             constraints: constraints,
             graduated_at: DateTime.utc_now(),
-            metadata: %{}
+            metadata: %{property_tested: property?}
           }
+
           :ok = Workspace.graduate(tool)
           :ok = Registry.register(tool)
+          unless property?, do: seed_trust(tool.id)
           Shem.Adversarial.start_hardening(tool.id)
           {:ok, tool}
         else
@@ -77,5 +83,16 @@ defmodule Shem.Lab.GraduationGate do
 
       "#{base}_v#{version}"
     end
+  end
+
+  # The heuristic is the cheap half of the gate: presence of a StreamData
+  # invocation. The substantive half is that the property must PASS inside
+  # the executor like any other test.
+  defp property_tested?(test_source), do: test_source =~ ~r/check_all|StreamData\./
+
+  defp seed_trust(tool_id) do
+    Shem.Trust.Store.seed(tool_id, @no_property_seed)
+  catch
+    :exit, _ -> {:error, :store_down}
   end
 end

@@ -82,6 +82,77 @@ defmodule Shem.Lab.GraduationGateTest do
     assert tool.constraints == constraints
   end
 
+  describe "property-gated graduation" do
+    test "a tool without property tests graduates seeded at trust :medium" do
+      source = """
+      defmodule NoPropTool1 do
+        def run(_args), do: :ok
+      end
+      """
+
+      test_src = """
+      defmodule NoPropTool1Test do
+        def run, do: :ok
+      end
+      """
+
+      assert {:ok, tool} = GraduationGate.run(source, test_src)
+      assert tool.metadata.property_tested == false
+      assert {:ok, 0.5} = Shem.Trust.Store.score(tool.id)
+    end
+
+    test "a tool with a passing StreamData property graduates unrated" do
+      source = """
+      defmodule PropTool1 do
+        def run(args), do: {:ok, args}
+      end
+      """
+
+      test_src = """
+      defmodule PropTool1Test do
+        def run do
+          {:ok, _} =
+            StreamData.check_all(StreamData.integer(), [initial_seed: {42, 0, 0}], fn i ->
+              case PropTool1.run(i) do
+                {:ok, ^i} -> {:ok, i}
+                other -> {:error, other}
+              end
+            end)
+
+          :ok
+        end
+      end
+      """
+
+      assert {:ok, tool} = GraduationGate.run(source, test_src)
+      assert tool.metadata.property_tested == true
+      assert {:error, :unrated} = Shem.Trust.Store.score(tool.id)
+    end
+
+    test "a failing property still fails the gate" do
+      source = """
+      defmodule PropTool2 do
+        def run(_args), do: :wrong
+      end
+      """
+
+      test_src = """
+      defmodule PropTool2Test do
+        def run do
+          {:ok, _} =
+            StreamData.check_all(StreamData.integer(), [initial_seed: {42, 0, 0}], fn _i ->
+              {:error, :always_fails}
+            end)
+
+          :ok
+        end
+      end
+      """
+
+      assert {:error, _, _} = GraduationGate.run(source, test_src)
+    end
+  end
+
   test "generates versioned id when a tool with the same base id already exists" do
     source_v1 = """
     defmodule GateAdd5 do

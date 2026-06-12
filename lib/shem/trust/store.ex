@@ -13,6 +13,11 @@ defmodule Shem.Trust.Store do
     GenServer.call(__MODULE__, {:record, tool_id, outcome, rounds})
   end
 
+  @spec seed(String.t(), float()) :: {:ok, :seeded} | {:error, :already_rated}
+  def seed(tool_id, score) do
+    GenServer.call(__MODULE__, {:seed, tool_id, score})
+  end
+
   @spec score(String.t()) :: {:ok, float()} | {:error, :unrated}
   def score(tool_id) do
     GenServer.call(__MODULE__, {:score, tool_id})
@@ -70,6 +75,24 @@ defmodule Shem.Trust.Store do
 
     :ok = :dets.insert(state.table, {tool_id, entry})
     {:reply, :ok, state}
+  end
+
+  def handle_call({:seed, tool_id, score}, _from, state) do
+    case :dets.lookup(state.table, tool_id) do
+      [{^tool_id, _entry}] ->
+        {:reply, {:error, :already_rated}, state}
+
+      [] ->
+        entry = %{
+          tool_id: tool_id,
+          score: score,
+          last_updated: DateTime.utc_now(),
+          hardening_count: 0
+        }
+
+        :ok = :dets.insert(state.table, {tool_id, entry})
+        {:reply, {:ok, :seeded}, state}
+    end
   end
 
   def handle_call({:score, tool_id}, _from, state) do

@@ -195,7 +195,7 @@ defmodule Shem.MCP.Router do
       %{
         "name" => "graduate_tool",
         "description" =>
-          "Atomically compile, test, and register a tool. Fails with details if tests fail.",
+          "Atomically compile, test, and register a tool. Fails with details if tests fail. Include at least one StreamData property (StreamData.check_all) in test_source — tools without property tests graduate at reduced trust (:medium).",
         "inputSchema" => %{
           "type" => "object",
           "properties" => %{
