@@ -121,6 +121,7 @@ falsely attest events the fork did not witness.
 - TUI verified-badge for sessions — Phase 38 can add it on top of the REST endpoint
 - Budget circuit-breaker rework (manifest §3C) — separate concern, later phase
 - Re-hashing on fork — see fork semantics above
+- Pause surviving Horde redistribution — checkpoints don't persist `:paused`; a redistributed paused agent restarts `:running` (documented in `Agent.Server`)
 
 ## Success criteria
 

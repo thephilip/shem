@@ -47,6 +47,11 @@ defmodule Shem.Agent.Server do
     {:reply, :ok, %{state | config: %{state.config | fence: path}}}
   end
 
+  # NOTE: :paused status is not persisted in checkpoints. If Horde
+  # redistributes a paused agent to another node, init/1 restores history
+  # and turn_count but restarts in :running — the pause does not survive
+  # node failure. Documented limitation; persisting it requires a
+  # checkpoint schema change (deferred).
   def handle_call(:pause, _from, %{status: :running} = state) do
     EventLog.append(state.session_id, :agent_paused, %{turn: state.turn_count})
     {:reply, :ok, %{state | status: :paused}}

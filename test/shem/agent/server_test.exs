@@ -452,11 +452,10 @@ defmodule Shem.Agent.ServerTest do
     end
 
     test "full cycle: pause mid-task, steer, unpause, finish with steering applied" do
-      # slow down the executor so turn 1's shell call holds the server in
-      # handle_info long enough for our pause call to queue behind it
-      prev = Application.get_env(:shem, :executor_timeout_ms)
-      Application.put_env(:shem, :executor_timeout_ms, 2_000)
-      on_exit(fn -> Application.put_env(:shem, :executor_timeout_ms, prev) end)
+      # The shell builtin's own timeout defaults to 10s, far above the 0.5s
+      # sleep — no env override needed. The sleep holds the server inside
+      # handle_info(:run_turn) so our pause call queues ahead of the
+      # end-of-turn self-sent :run_turn (FIFO mailbox ordering).
 
       # turn 1: tool call (shell sleep). turn 2: final answer.
       # shell builtin uses args["cmd"]
