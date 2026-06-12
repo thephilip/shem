@@ -252,7 +252,7 @@ defmodule Shem.MCP.Router do
       %{
         "name" => "agent_status",
         "description" =>
-          "Poll a Shem agent by id. Returns status (running|waiting|done|error), accumulated output, and event count. When status is done or error, output holds the final result.",
+          "Poll a Shem agent by id. Returns status (running|waiting|paused|done|error), accumulated output, and event count. When status is done or error, output holds the final result.",
         "inputSchema" => %{
           "type" => "object",
           "properties" => %{

@@ -248,12 +248,14 @@ defmodule Shem.TUI.Views.Interactive do
   defp agent_status_dot(:done), do: "✓"
   defp agent_status_dot(:error), do: "✗"
   defp agent_status_dot(:waiting), do: "◌"
+  defp agent_status_dot(:paused), do: "⏸"
   defp agent_status_dot(_), do: "?"
 
   defp agent_status_color(:running), do: color(:cyan)
   defp agent_status_color(:done), do: color(:green)
   defp agent_status_color(:error), do: color(:red)
   defp agent_status_color(:waiting), do: color(:yellow)
+  defp agent_status_color(:paused), do: color(:yellow)
   defp agent_status_color(_), do: color(:white)
 
   defp prompt_title(%{paused: true}), do: "[ PAUSED — press SPACE to resume ]"
@@ -277,11 +279,13 @@ defmodule Shem.TUI.Views.Interactive do
   defp status_label(:running), do: "running"
   defp status_label(:done), do: "done"
   defp status_label(:error), do: "error"
+  defp status_label(:paused), do: "paused"
   defp status_label(_), do: "unknown"
 
   defp status_color(:running), do: color(:cyan)
   defp status_color(:done), do: color(:green)
   defp status_color(:error), do: color(:red)
+  defp status_color(:paused), do: color(:yellow)
   defp status_color(_), do: color(:white)
 
   defp truncate(nil, _), do: ""

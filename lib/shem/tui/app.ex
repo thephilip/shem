@@ -173,10 +173,7 @@ defmodule Shem.TUI.App do
         %{model | mode: :history, history_sessions: sessions, history_cursor: 0, history_detail: detail}
 
       {:event, %{key: @space}} when model.command_buffer == "" ->
-        %{model | paused: !model.paused}
-
-      {:event, %{key: @esc}} when model.command_buffer == "" ->
-        %{model | paused: true}
+        toggle_pause_focused(model)
 
       {:event, %{ch: ?/}} when model.command_buffer == "" ->
         %{model | command_buffer: "/", ac_index: 0}
@@ -377,29 +374,41 @@ defmodule Shem.TUI.App do
               %{model | command_error: reason, command_output: nil}
           end
         else
-          # Plain text: conversational mode
+          # Plain text: steer a paused agent, otherwise conversational mode
           text = String.trim(model.command_buffer)
-          case model.active_conversational_agent do
-            nil ->
-              # Start a new conversational agent with the current preset
-              case Shem.Agent.start_with_preset(model.current_preset, text, conversational: true) do
-                {:ok, name, _sid} ->
-                  model = %{model | command_buffer: "", active_conversational_agent: name, focused_agent: name, command_error: nil, command_output: nil}
-                  start_stream_sink_for_focused(model)
 
-                {:error, reason} ->
-                  %{model | command_error: "failed to start conversational agent: #{inspect(reason)}", command_output: nil}
-              end
+          if model.paused and model.focused_agent do
+            case Shem.Agent.steer(model.focused_agent, text) do
+              :ok ->
+                %{model | command_buffer: "",
+                  command_output: "steered — SPACE to resume", command_error: nil}
 
-            agent_name ->
-              # Send message to the existing conversational agent
-              case Shem.Agent.send_message(agent_name, text) do
-                :ok ->
-                  %{model | command_buffer: "", command_error: nil}
+              {:error, reason} ->
+                %{model | command_error: "steer failed: #{inspect(reason)}", command_output: nil}
+            end
+          else
+            case model.active_conversational_agent do
+              nil ->
+                # Start a new conversational agent with the current preset
+                case Shem.Agent.start_with_preset(model.current_preset, text, conversational: true) do
+                  {:ok, name, _sid} ->
+                    model = %{model | command_buffer: "", active_conversational_agent: name, focused_agent: name, command_error: nil, command_output: nil}
+                    start_stream_sink_for_focused(model)
 
-                {:error, reason} ->
-                  %{model | command_buffer: "", command_error: "send_message failed: #{inspect(reason)}", command_output: nil}
-              end
+                  {:error, reason} ->
+                    %{model | command_error: "failed to start conversational agent: #{inspect(reason)}", command_output: nil}
+                end
+
+              agent_name ->
+                # Send message to the existing conversational agent
+                case Shem.Agent.send_message(agent_name, text) do
+                  :ok ->
+                    %{model | command_buffer: "", command_error: nil}
+
+                  {:error, reason} ->
+                    %{model | command_buffer: "", command_error: "send_message failed: #{inspect(reason)}", command_output: nil}
+                end
+            end
           end
         end
 
@@ -413,6 +422,8 @@ defmodule Shem.TUI.App do
             {model.system_stats, model.budget}
           end
 
+        agents = safe_agent_list()
+
         model = %{
           model
           | tick_count: tick_count,
@@ -423,7 +434,8 @@ defmodule Shem.TUI.App do
             mcp_client_count: safe_mcp_count(),
             mcp_outbound_count: safe_mcp_outbound_count(),
             cluster_node_count: safe_cluster_count(),
-            agents: safe_agent_list(),
+            agents: agents,
+            paused: focused_paused?(agents, model.focused_agent),
             agent_view: safe_agent_view(model.focused_agent),
             trust_counts: safe_trust_counts()
         }
@@ -846,6 +858,39 @@ defmodule Shem.TUI.App do
   defp current_suggestions(model) do
     Shem.TUI.Autocomplete.suggest(model.command_buffer, CommandDispatch.commands())
   end
+
+  defp toggle_pause_focused(%{focused_agent: nil} = model), do: model
+
+  defp toggle_pause_focused(%{focused_agent: name} = model) do
+    current = Enum.find(model.agents, &(&1.name == name))
+
+    case current && current.status do
+      :running ->
+        case Shem.Agent.pause(name) do
+          :ok ->
+            %{model | paused: true,
+              command_output: "paused #{name} — type to steer, SPACE to resume",
+              command_error: nil}
+
+          {:error, _} ->
+            model
+        end
+
+      :paused ->
+        case Shem.Agent.unpause(name) do
+          :ok -> %{model | paused: false, command_output: nil}
+          {:error, _} -> model
+        end
+
+      _ ->
+        model
+    end
+  end
+
+  defp focused_paused?(_agents, nil), do: false
+
+  defp focused_paused?(agents, name),
+    do: Enum.any?(agents, &(&1.name == name and &1.status == :paused))
 
   defp cycle_focus(model, delta) do
     case model.agents do

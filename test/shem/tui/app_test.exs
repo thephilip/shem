@@ -46,29 +46,63 @@ defmodule Shem.TUI.AppTest do
     end
   end
 
-  describe "update/2 — pause and resume" do
-    test "space key toggles paused on" do
-      model = App.init(%{})
-      result = App.update(model, {:event, %{ch: 0, key: ?\s}})
-      assert result.paused == true
+  describe "real pause (SPACE) and steering" do
+    @space ?\s
+
+    test "SPACE with no focused agent is a no-op" do
+      model = %{base_model() | mode: :interactive}
+      updated = App.update(model, {:event, %{key: @space, ch: 0, mod: 0}})
+      assert updated.paused == false
     end
 
-    test "space key toggles paused off when already paused" do
-      model = %{App.init(%{}) | paused: true}
-      result = App.update(model, {:event, %{ch: 0, key: ?\s}})
-      assert result.paused == false
+    test "SPACE on a vanished agent leaves the model unchanged" do
+      model = %{
+        base_model()
+        | mode: :interactive,
+          focused_agent: "agent_GONE",
+          agents: [%{name: "agent_GONE", pid: self(), status: :running, session_id: nil, turn_count: 1}]
+      }
+
+      updated = App.update(model, {:event, %{key: @space, ch: 0, mod: 0}})
+      assert updated.paused == false
     end
 
-    test "esc key (27) always pauses" do
-      model = App.init(%{})
-      result = App.update(model, {:event, %{ch: 0, key: 27}})
-      assert result.paused == true
+    test "Esc no longer sets paused" do
+      model = %{base_model() | mode: :interactive}
+      updated = App.update(model, {:event, %{key: 27, ch: 0, mod: 0}})
+      assert updated.paused == false
     end
 
-    test "pause keys are ignored while command buffer is open" do
-      model = %{App.init(%{}) | command_buffer: "/"}
-      result = App.update(model, {:event, %{ch: 0, key: ?\s}})
-      assert result.paused == false
+    test ":tick derives paused from the focused agent's real status" do
+      Shem.LLM.StubTransport.Server.reset()
+
+      Shem.LLM.StubTransport.Server.push_response(
+        {:ok, %Shem.LLM.Response{content: "hi", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+
+      config = %Shem.Agent.Config{task: "chat", system_prompt: "s", conversational: true}
+      {:ok, name, _sid} = Shem.Agent.start(config)
+      {:ok, :waiting} = Shem.Agent.await(name, 2_000)
+      on_exit(fn -> Shem.Agent.stop(name) end)
+
+      # waiting agent: paused must derive false
+      model = %{base_model() | focused_agent: name}
+      ticked = App.update(model, :tick)
+      assert ticked.paused == false
+    end
+
+    test "Enter steers instead of conversing when the focused agent is paused" do
+      model = %{
+        base_model()
+        | mode: :interactive,
+          paused: true,
+          focused_agent: "agent_GONE",
+          command_buffer: "change course"
+      }
+
+      updated = App.update(model, {:event, %{key: 13, ch: 0, mod: 0}})
+      # agent_GONE doesn't exist -> steer fails -> error surfaced, buffer kept behavior:
+      assert updated.command_error =~ "steer failed"
     end
   end
 
