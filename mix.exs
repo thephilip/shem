@@ -4,7 +4,7 @@ defmodule Shem.MixProject do
   def project do
     [
       app: :shem,
-      version: "0.1.8",
+      version: "0.1.9",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
