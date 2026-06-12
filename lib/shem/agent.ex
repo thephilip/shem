@@ -98,6 +98,29 @@ defmodule Shem.Agent do
     end
   end
 
+  @spec pause(String.t()) :: :ok | {:error, :not_found | :not_running}
+  def pause(name), do: agent_call(name, :pause)
+
+  @spec steer(String.t(), String.t()) :: :ok | {:error, :not_found | :not_paused}
+  def steer(name, text), do: agent_call(name, {:steer, text})
+
+  @spec unpause(String.t()) :: :ok | {:error, :not_found | :not_paused}
+  def unpause(name), do: agent_call(name, :unpause)
+
+  defp agent_call(name, msg) do
+    case GenServer.whereis(ProcessRegistry.via_tuple(name)) do
+      nil ->
+        {:error, :not_found}
+
+      pid ->
+        try do
+          GenServer.call(pid, msg)
+        catch
+          :exit, _ -> {:error, :not_found}
+        end
+    end
+  end
+
   @spec start_with_preset(String.t(), String.t(), keyword()) :: {:ok, String.t(), String.t()} | {:error, term()}
   def start_with_preset(preset_name, task, opts \\ []) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do

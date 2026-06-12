@@ -431,4 +431,95 @@ defmodule Shem.Agent.ServerTest do
       200 -> Enum.reverse(acc)
     end
   end
+
+  describe "pause / steer / unpause" do
+    test "pause on a waiting conversational agent is rejected" do
+      stub("hello!")
+      config = %Agent.Config{task: "chat", system_prompt: "s", conversational: true}
+      {:ok, name, _sid} = Agent.start(config)
+      assert {:ok, :waiting} = Agent.await(name, 2_000)
+
+      assert {:error, :not_running} = Agent.pause(name)
+      assert {:error, :not_paused} = Agent.steer(name, "nope")
+      assert {:error, :not_paused} = Agent.unpause(name)
+      Agent.stop(name)
+    end
+
+    test "pause/steer/unpause on an unknown agent returns not_found" do
+      assert {:error, :not_found} = Agent.pause("agent_NOPE")
+      assert {:error, :not_found} = Agent.steer("agent_NOPE", "x")
+      assert {:error, :not_found} = Agent.unpause("agent_NOPE")
+    end
+
+    test "full cycle: pause mid-task, steer, unpause, finish with steering applied" do
+      # slow down the executor so turn 1's shell call holds the server in
+      # handle_info long enough for our pause call to queue behind it
+      prev = Application.get_env(:shem, :executor_timeout_ms)
+      Application.put_env(:shem, :executor_timeout_ms, 2_000)
+      on_exit(fn -> Application.put_env(:shem, :executor_timeout_ms, prev) end)
+
+      # turn 1: tool call (shell sleep). turn 2: final answer.
+      # shell builtin uses args["cmd"]
+      stub(~s({"tool": "shell", "args": {"cmd": "sleep 0.5"}}))
+      stub("done after steering")
+
+      config = %Agent.Config{task: "long task", system_prompt: "s", max_turns: 10}
+      {:ok, name, sid} = Agent.start(config)
+
+      # the server is inside turn 1 (shell sleep); this call queues and is
+      # processed at the turn boundary, before the end-of-turn :run_turn
+      Process.sleep(100)
+      assert :ok = Agent.pause(name)
+      assert {:ok, :paused} = Agent.status(name)
+
+      assert :ok = Agent.steer(name, "actually, summarize instead")
+      assert :ok = Agent.unpause(name)
+      assert {:ok, :done} = Agent.await(name, 5_000)
+
+      {:ok, events} = Shem.EventLog.events(sid)
+      types = Enum.map(events, & &1.type)
+      assert :agent_paused in types
+      assert :agent_steered in types
+      assert :agent_unpaused in types
+
+      steered = Enum.find(events, &(&1.type == :agent_steered))
+      assert steered.payload.content == "actually, summarize instead"
+
+      done = Enum.find(events, &(&1.type == :agent_done))
+      assert done.payload.content == "done after steering"
+      Agent.stop(name)
+    end
+
+    test "a queued :run_turn is dropped while paused (no extra turn executes)" do
+      # pure state-machine check against the server callbacks
+      sid = "ses_PAUSE_#{System.unique_integer([:positive])}"
+      {:ok, ^sid} = Shem.EventLog.start_session(sid)
+
+      state = %{
+        name: "agent_pausetest",
+        config: %Agent.Config{task: "t", system_prompt: "s"},
+        history: [],
+        session_id: sid,
+        turn_count: 1,
+        status: :running,
+        done_reason: nil,
+        awaiting: []
+      }
+
+      {:reply, :ok, paused} = Shem.Agent.Server.handle_call(:pause, {self(), make_ref()}, state)
+      assert paused.status == :paused
+
+      # the drop-guard must swallow :run_turn without touching state
+      {:noreply, same} = Shem.Agent.Server.handle_info(:run_turn, paused)
+      assert same.status == :paused
+      assert same.turn_count == 1
+
+      # unpause flips status and re-arms the loop (self() receives :run_turn)
+      {:reply, :ok, running} =
+        Shem.Agent.Server.handle_call(:unpause, {self(), make_ref()}, paused)
+
+      assert running.status == :running
+      assert_received :run_turn
+    end
+  end
 end

@@ -47,6 +47,28 @@ defmodule Shem.Agent.Server do
     {:reply, :ok, %{state | config: %{state.config | fence: path}}}
   end
 
+  def handle_call(:pause, _from, %{status: :running} = state) do
+    EventLog.append(state.session_id, :agent_paused, %{turn: state.turn_count})
+    {:reply, :ok, %{state | status: :paused}}
+  end
+
+  def handle_call(:pause, _from, state), do: {:reply, {:error, :not_running}, state}
+
+  def handle_call({:steer, text}, _from, %{status: :paused} = state) do
+    EventLog.append(state.session_id, :agent_steered, %{content: text})
+    {:reply, :ok, %{state | history: state.history ++ [%{role: :user, content: text}]}}
+  end
+
+  def handle_call({:steer, _text}, _from, state), do: {:reply, {:error, :not_paused}, state}
+
+  def handle_call(:unpause, _from, %{status: :paused} = state) do
+    EventLog.append(state.session_id, :agent_unpaused, %{turn: state.turn_count})
+    send(self(), :run_turn)
+    {:reply, :ok, %{state | status: :running}}
+  end
+
+  def handle_call(:unpause, _from, state), do: {:reply, {:error, :not_paused}, state}
+
   # ── Init ────────────────────────────────────────────────────────────────────
 
   @impl true
