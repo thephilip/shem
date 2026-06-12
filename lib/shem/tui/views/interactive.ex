@@ -97,10 +97,9 @@ defmodule Shem.TUI.Views.Interactive do
     row do
       column(size: 12) do
         panel(title: prompt_title(model), color: prompt_color(model)) do
-          label(
-            content: prompt_content(model),
-            color: color(:white)
-          )
+          for line <- prompt_lines(model) do
+            label(content: line, color: color(:white))
+          end
 
           label(
             content: if(model.command_error, do: "Error: #{model.command_error}", else: ""),
@@ -266,9 +265,14 @@ defmodule Shem.TUI.Views.Interactive do
   defp prompt_color(%{paused: true}), do: color(:red)
   defp prompt_color(_), do: color(:cyan)
 
-  defp prompt_content(%{paused: true}), do: "PAUSED — press SPACE to resume."
-  defp prompt_content(%{command_buffer: ""}), do: "> _"
-  defp prompt_content(%{command_buffer: buf}), do: buf
+  defp prompt_lines(%{paused: true}), do: ["PAUSED — press SPACE to resume."]
+  defp prompt_lines(%{command_buffer: ""}), do: ["> _"]
+
+  defp prompt_lines(%{command_buffer: buf}) do
+    lines = String.split(buf, "\n")
+    {init, [last]} = Enum.split(lines, -1)
+    Enum.map(init, &("> " <> &1)) ++ ["> #{last}_"]
+  end
 
   defp status_label(:running), do: "running"
   defp status_label(:done), do: "done"

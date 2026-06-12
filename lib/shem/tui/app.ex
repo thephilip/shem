@@ -222,6 +222,9 @@ defmodule Shem.TUI.App do
           model
         end
 
+      {:event, %{key: @enter, mod: 1}} when model.command_buffer != "" ->
+        %{model | command_buffer: model.command_buffer <> "\n"}
+
       {:event, %{key: @enter}} when model.command_buffer != "" ->
         if String.starts_with?(model.command_buffer, "/") do
           case CommandDispatch.parse(model.command_buffer) do

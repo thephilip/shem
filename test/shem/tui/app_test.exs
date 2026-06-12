@@ -825,4 +825,24 @@ defmodule Shem.TUI.AppTest do
       assert final.ac_index == 5
     end
   end
+
+  describe "multiline prompt (Alt+Enter)" do
+    test "alt+enter appends a newline to a non-empty buffer" do
+      model = %{base_model() | mode: :interactive, command_buffer: "first line"}
+      updated = App.update(model, {:event, %{key: 13, mod: 1, ch: 0}})
+      assert updated.command_buffer == "first line\n"
+    end
+
+    test "alt+enter on an empty buffer does nothing" do
+      model = %{base_model() | mode: :interactive, command_buffer: ""}
+      updated = App.update(model, {:event, %{key: 13, mod: 1, ch: 0}})
+      assert updated.command_buffer == ""
+    end
+
+    test "plain enter still submits (buffer cleared) for slash commands" do
+      model = %{base_model() | mode: :interactive, command_buffer: "/agents"}
+      updated = App.update(model, {:event, %{key: 13, mod: 0, ch: 0}})
+      assert updated.command_buffer == ""
+    end
+  end
 end
