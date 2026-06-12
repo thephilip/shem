@@ -42,7 +42,7 @@ defmodule Shem.MCP.RouterTest do
     assert resp["id"] == 1
   end
 
-  test "POST /message tools/list returns the four Shem tools" do
+  test "POST /message tools/list includes the core lab tools" do
     conn = post_rpc("tools/list", %{})
     assert conn.status == 200
     resp = decode_response(conn)
@@ -119,16 +119,21 @@ defmodule Shem.MCP.RouterTest do
 
       # poll until done (StubTransport answers immediately; allow a few ticks)
       status =
-        Enum.reduce_while(1..50, nil, fn _, _ ->
+        Enum.reduce_while(1..50, %{"status" => "timeout"}, fn _, last ->
           case call_tool_rpc("agent_status", %{"agent_id" => agent_id}) do
-            %{"status" => "done"} = result -> {:halt, result}
-            _ ->
+            %{"status" => "done"} = result ->
+              {:halt, result}
+
+            polled ->
               Process.sleep(50)
-              {:cont, nil}
+              {:cont, polled || last}
           end
         end)
 
-      assert %{"output" => "rpc answer"} = status
+      assert status["status"] == "done",
+             "agent did not reach done within 2.5s; last: #{inspect(status)}"
+
+      assert status["output"] == "rpc answer"
 
       listed = call_tool_rpc("list_agents", %{})
       assert Enum.any?(listed["agents"], &(&1["agent_id"] == agent_id))
