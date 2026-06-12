@@ -7,6 +7,10 @@ defmodule Shem.MCP.Handlers.AgentCommon do
   (entries are `{name, pid, session_id}`), so live agents are found by a
   reverse value lookup. Names are filtered to the `"agent_"` prefix to skip
   shadow agents and other registry tenants.
+
+  Note: the REST API (`Shem.REST.Handlers.Agents`) addresses agents by process
+  name instead; MCP uses the session_id so agents remain pollable after their
+  process terminates.
   """
 
   alias Shem.EventLog

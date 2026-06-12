@@ -88,6 +88,8 @@ defmodule Shem.MCP.Router do
         call_tool(name, arguments)
       rescue
         e -> {:error, :handler_crashed, Exception.message(e)}
+      catch
+        :exit, reason -> {:error, :handler_crashed, inspect(reason)}
       end
 
     case result do
@@ -101,7 +103,7 @@ defmodule Shem.MCP.Router do
         {:ok, %{"content" => [%{"type" => "text", "text" => text}]}}
 
       {:error, kind, detail} ->
-        {:error, -32602, "#{kind}: #{inspect(detail)}"}
+        {:error, error_code(kind), "#{kind}: #{inspect(detail)}"}
 
       {:error, kind} ->
         {:error, -32602, inspect(kind)}
@@ -126,6 +128,10 @@ defmodule Shem.MCP.Router do
 
   defp build_response(id, {:error, code, message}),
     do: %{"jsonrpc" => "2.0", "error" => %{"code" => code, "message" => message}, "id" => id}
+
+  # JSON-RPC 2.0: -32602 invalid params, -32603 internal error
+  defp error_code(kind) when kind in [:spawn_failed, :handler_crashed], do: -32603
+  defp error_code(_kind), do: -32602
 
   # ── SSE helpers ────────────────────────────────────────────────────────────
 
