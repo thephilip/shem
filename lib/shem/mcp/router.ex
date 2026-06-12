@@ -1,7 +1,16 @@
 defmodule Shem.MCP.Router do
   use Plug.Router
 
-  alias Shem.MCP.Handlers.{ExecuteCode, GraduateTool, ListTools, InvokeTool}
+  alias Shem.MCP.Handlers.{
+    AgentStatus,
+    ExecuteCode,
+    GraduateTool,
+    InvokeTool,
+    ListAgents,
+    ListTools,
+    SpawnAgent,
+    StopAgent
+  }
 
   plug(Plug.Parsers,
     parsers: [:json],
@@ -74,7 +83,14 @@ defmodule Shem.MCP.Router do
   end
 
   defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments}) do
-    case call_tool(name, arguments) do
+    result =
+      try do
+        call_tool(name, arguments)
+      rescue
+        e -> {:error, :handler_crashed, Exception.message(e)}
+      end
+
+    case result do
       {:ok, result} ->
         text =
           case Jason.encode(result) do
@@ -99,6 +115,10 @@ defmodule Shem.MCP.Router do
   defp call_tool("graduate_tool", args), do: GraduateTool.call(args)
   defp call_tool("list_tools", args), do: ListTools.call(args)
   defp call_tool("invoke_tool", args), do: InvokeTool.call(args)
+  defp call_tool("spawn_agent", args), do: SpawnAgent.call(args)
+  defp call_tool("agent_status", args), do: AgentStatus.call(args)
+  defp call_tool("list_agents", args), do: ListAgents.call(args)
+  defp call_tool("stop_agent", args), do: StopAgent.call(args)
   defp call_tool(_, _), do: {:error, :not_found}
 
   defp build_response(id, {:ok, result}),
@@ -204,6 +224,51 @@ defmodule Shem.MCP.Router do
             }
           },
           "required" => ["id"]
+        }
+      },
+      %{
+        "name" => "spawn_agent",
+        "description" =>
+          "Start a Shem agent with a goal. Returns an agent_id immediately (non-blocking). Poll with agent_status.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "goal" => %{"type" => "string", "description" => "The task for the agent"},
+            "preset" => %{
+              "type" => "string",
+              "description" =>
+                "Agent preset (general, coder, researcher, writer, security, explorer). Default: general"
+            }
+          },
+          "required" => ["goal"]
+        }
+      },
+      %{
+        "name" => "agent_status",
+        "description" =>
+          "Poll a Shem agent by id. Returns status (running|waiting|done|error), accumulated output, and event count. When status is done or error, output holds the final result.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"}
+          },
+          "required" => ["agent_id"]
+        }
+      },
+      %{
+        "name" => "list_agents",
+        "description" => "List all live Shem agents with their status, goal, and event count.",
+        "inputSchema" => %{"type" => "object", "properties" => %{}}
+      },
+      %{
+        "name" => "stop_agent",
+        "description" => "Stop a running Shem agent by id.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"}
+          },
+          "required" => ["agent_id"]
         }
       }
     ]

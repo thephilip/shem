@@ -20,6 +20,14 @@ defmodule Shem.MCP.RouterTest do
     Jason.decode!(conn.resp_body)
   end
 
+  defp call_tool_rpc(name, arguments) do
+    conn = post_rpc("tools/call", %{"name" => name, "arguments" => arguments})
+    assert conn.status == 200
+    resp = decode_response(conn)
+    [%{"type" => "text", "text" => text}] = resp["result"]["content"]
+    Jason.decode!(text)
+  end
+
   test "POST /message initialize returns server info" do
     conn =
       post_rpc("initialize", %{
@@ -82,5 +90,59 @@ defmodule Shem.MCP.RouterTest do
       |> Router.call(@opts)
 
     assert conn.status == 204
+  end
+
+  describe "agent tools over MCP" do
+    setup do
+      Shem.LLM.BudgetServer.reset()
+      Shem.LLM.StubTransport.Server.reset()
+      :ok
+    end
+
+    test "tools/list includes the four agent tools" do
+      conn = post_rpc("tools/list", %{})
+      names = Enum.map(decode_response(conn)["result"]["tools"], & &1["name"])
+
+      for tool <- ["spawn_agent", "agent_status", "list_agents", "stop_agent"] do
+        assert tool in names
+      end
+    end
+
+    test "spawn → poll → stop round-trip over JSON-RPC" do
+      Shem.LLM.StubTransport.Server.push_response(
+        {:ok,
+         %Shem.LLM.Response{content: "rpc answer", tokens_used: 5, model: :default, latency_ms: 1}}
+      )
+
+      %{"agent_id" => agent_id, "status" => "running"} =
+        call_tool_rpc("spawn_agent", %{"goal" => "round trip"})
+
+      # poll until done (StubTransport answers immediately; allow a few ticks)
+      status =
+        Enum.reduce_while(1..50, nil, fn _, _ ->
+          case call_tool_rpc("agent_status", %{"agent_id" => agent_id}) do
+            %{"status" => "done"} = result -> {:halt, result}
+            _ ->
+              Process.sleep(50)
+              {:cont, nil}
+          end
+        end)
+
+      assert %{"output" => "rpc answer"} = status
+
+      listed = call_tool_rpc("list_agents", %{})
+      assert Enum.any?(listed["agents"], &(&1["agent_id"] == agent_id))
+
+      assert %{"ok" => true} = call_tool_rpc("stop_agent", %{"agent_id" => agent_id})
+    end
+
+    test "a raising handler returns a JSON-RPC error, not a crash" do
+      # agent_status with a non-string id passes JSON decoding but would crash
+      # without the dispatch-level rescue if a handler ever raises; simulate via
+      # a tools/call to a handler with deliberately type-violating args
+      conn = post_rpc("tools/call", %{"name" => "spawn_agent", "arguments" => %{"goal" => 123}})
+      resp = decode_response(conn)
+      assert resp["error"]["code"] == -32602
+    end
   end
 end

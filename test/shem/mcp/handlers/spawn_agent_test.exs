@@ -39,6 +39,7 @@ defmodule Shem.MCP.Handlers.SpawnAgentTest do
              SpawnAgent.call(%{"goal" => "say hello", "preset" => "coder"})
 
     on_exit(fn -> stop_by_session(agent_id) end)
+    assert {:ok, _name} = AgentCommon.find_by_session(agent_id)
   end
 
   test "rejects an unknown preset" do
