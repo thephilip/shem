@@ -63,14 +63,11 @@ defmodule Shem.MCP.Handlers.AgentCommon do
 
   @spec tombstone_status([EventLog.Event.t()]) :: String.t()
   def tombstone_status(events) do
-    done? = Enum.any?(events, &(&1.type == :agent_done))
-    errored? = Enum.any?(events, &(&1.type == :agent_error))
-    waited? = Enum.any?(events, &(&1.type == :agent_waiting))
-
     cond do
-      done? and errored? -> "error"
-      done? -> "done"
-      waited? -> "done"
+      Enum.any?(events, &(&1.type == :agent_error)) -> "error"
+      Enum.any?(events, &(&1.type == :agent_done)) -> "done"
+      Enum.any?(events, &(&1.type == :agent_waiting)) -> "done"
+      # no terminal event: the agent was killed mid-run and will never finish
       true -> "error"
     end
   end

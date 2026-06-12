@@ -73,6 +73,16 @@ defmodule Shem.MCP.Handlers.AgentCommonTest do
       assert AgentCommon.tombstone_status(events) == "done"
     end
 
+    test "tombstone_status/1 is error for a session that failed" do
+      StubTransport.Server.push_response({:error, :transport_down})
+      config = %Agent.Config{task: "fail me", system_prompt: "be helpful"}
+      {:ok, name, session_id} = Agent.start(config)
+      {:ok, :error} = Agent.await(name, 2_000)
+      Agent.stop(name)
+      {:ok, events} = AgentCommon.session_events(session_id)
+      assert AgentCommon.tombstone_status(events) == "error"
+    end
+
     test "session_events/1 returns :not_found for unknown session" do
       assert {:error, :not_found} = AgentCommon.session_events("ses_NOPE")
     end
