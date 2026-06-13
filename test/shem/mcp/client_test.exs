@@ -62,7 +62,25 @@ defmodule Shem.MCP.ClientTest do
 
   test "connected_servers/0 includes the ready server with status :ready" do
     {_conn, _} = start_ready_conn("test-fs3")
-    servers = Client.connected_servers()
-    assert Enum.any?(servers, &(&1.name == "test-fs3" and &1.status == :ready))
+
+    # connected_servers reads Horde.Registry, which is eventually consistent —
+    # poll briefly instead of asserting a raw snapshot (codebase convention,
+    # see agent_common_test)
+    eventually(fn ->
+      Client.connected_servers()
+      |> Enum.any?(&(&1.name == "test-fs3" and &1.status == :ready))
+    end)
+  end
+
+  defp eventually(fun, attempts \\ 40)
+  defp eventually(fun, 0), do: assert(fun.())
+
+  defp eventually(fun, attempts) do
+    if fun.() do
+      :ok
+    else
+      Process.sleep(25)
+      eventually(fun, attempts - 1)
+    end
   end
 end

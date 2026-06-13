@@ -137,22 +137,30 @@ defmodule Shem.MCP.Client.ServerConnTest do
       drive_handshake(conn)
       fake_pid = self()
 
-      task1 = Task.async(fn -> GenServer.call(conn, {:call, "tool_a", %{}, 1_000}) end)
-      task2 = Task.async(fn -> GenServer.call(conn, {:call, "tool_b", %{}, 1_000}) end)
+      task_a = Task.async(fn -> GenServer.call(conn, {:call, "tool_a", %{}, 1_000}) end)
+      task_b = Task.async(fn -> GenServer.call(conn, {:call, "tool_b", %{}, 1_000}) end)
 
-      # Receive both requests, capture ids
+      # Two concurrent calls reach the conn in scheduler order, NOT spawn
+      # order — correlate ids by the tool name on the wire, never by arrival
+      # position (assuming req1 belonged to task_a cross-wired every
+      # assertion whenever task_b's call landed first).
       assert_receive {:port_write, ^conn, req1}, 500
       assert_receive {:port_write, ^conn, req2}, 500
-      id1 = Jason.decode!(req1)["id"]
-      id2 = Jason.decode!(req2)["id"]
-      assert id1 != id2
 
-      # Respond in reverse order
-      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => id2, "result" => %{"from" => "b"}})}}})
-      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => id1, "result" => %{"from" => "a"}})}}})
+      ids =
+        Map.new([req1, req2], fn req ->
+          decoded = Jason.decode!(req)
+          {decoded["params"]["name"], decoded["id"]}
+        end)
 
-      assert {:ok, %{"from" => "a"}} = Task.await(task1)
-      assert {:ok, %{"from" => "b"}} = Task.await(task2)
+      assert map_size(ids) == 2
+
+      # Respond in reverse order of the calls
+      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => ids["tool_b"], "result" => %{"from" => "b"}})}}})
+      send(conn, {fake_pid, {:data, {:eol, Jason.encode!(%{"jsonrpc" => "2.0", "id" => ids["tool_a"], "result" => %{"from" => "a"}})}}})
+
+      assert {:ok, %{"from" => "a"}} = Task.await(task_a)
+      assert {:ok, %{"from" => "b"}} = Task.await(task_b)
     end
 
     test "call returns {:error, ...} when server returns a JSON-RPC error" do

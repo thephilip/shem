@@ -18,8 +18,35 @@ defmodule Shem.LLM.StubTransport.Server do
   def pop(server \\ __MODULE__),
     do: GenServer.call(server, :pop)
 
-  def reset(server \\ __MODULE__),
-    do: GenServer.call(server, :reset)
+  def reset(server \\ __MODULE__) do
+    drain_agents()
+    GenServer.call(server, :reset)
+  end
+
+  # Test isolation: an agent that outlives its test keeps consuming from this
+  # global FIFO and can steal a response pushed by the NEXT test. Terminating
+  # all live agents before clearing the queue guarantees a fresh queue is only
+  # consumed by agents the current test starts itself. Runs client-side BEFORE
+  # the :reset call — doing it inside the handler would deadlock with an agent
+  # blocked in :pop.
+  defp drain_agents do
+    if Process.whereis(Shem.AgentSupervisor) do
+      Shem.AgentSupervisor
+      |> Horde.DynamicSupervisor.which_children()
+      |> Enum.each(fn
+        {_, pid, _, _} when is_pid(pid) ->
+          Horde.DynamicSupervisor.terminate_child(Shem.AgentSupervisor, pid)
+
+        _ ->
+          :ok
+      end)
+    end
+
+    :ok
+  catch
+    # supervisor races during app restarts must never fail a test setup
+    :exit, _ -> :ok
+  end
 
   @impl true
   def init(:ok), do: {:ok, %{queue: [], default: nil, calls: []}}
