@@ -126,6 +126,10 @@ Usage:
 HELP
 }
 
+# Everything below runs inside main() so the shell parses the whole script
+# before executing any of it — `shem upgrade` overwrites this very file
+# mid-run, and resuming reads from a replaced file is a syntax-error lottery.
+main() {
 case "${1:-}" in
   ""|-h|--help|help)
     _shem_help
@@ -185,6 +189,7 @@ case "${1:-}" in
     fi
     echo "Upgrading v${CURRENT} → v${LATEST}..."
     curl -fsSL "https://raw.githubusercontent.com/${_SHEM_REPO}/master/install.sh" | bash
+    exit $?
     ;;
 
   *)
@@ -193,6 +198,9 @@ case "${1:-}" in
     exit 1
     ;;
 esac
+}
+
+main "$@"
 WRAPPER_EOF
 
 chmod +x "${WRAPPER}"
