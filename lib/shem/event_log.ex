@@ -65,8 +65,19 @@ defmodule Shem.EventLog do
 
   @impl true
   def init(_opts) do
-    store = Application.get_env(:shem, :event_log_store, Shem.EventLog.DETSStore)
+    store = select_store()
     {:ok, %{sessions: %{}, store: store}}
+  end
+
+  defp select_store do
+    explicit = Application.get_env(:shem, :event_log_store)
+    force_mnesia = Application.get_env(:shem, :force_mnesia, false)
+
+    cond do
+      explicit != nil -> explicit
+      force_mnesia || Node.list() != [] -> Shem.EventLog.MnesiaStore
+      true -> Shem.EventLog.DETSStore
+    end
   end
 
   @impl true
