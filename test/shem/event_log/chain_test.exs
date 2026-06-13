@@ -67,4 +67,11 @@ defmodule Shem.EventLog.ChainTest do
     assert {:error, {:broken_at, broken_id}} = Chain.verify([e1, e2, gap], @sid)
     assert broken_id == gap.id
   end
+
+  test "a rewritten parent_id (causal link) is detected" do
+    [e1, e2] = chained([event(:a, %{x: 1}), event(:b, %{x: 2})])
+    relinked = %{e2 | parent_id: "evt_FORGED"}
+    assert {:error, {:broken_at, broken_id}} = Chain.verify([e1, relinked], @sid)
+    assert broken_id == e2.id
+  end
 end

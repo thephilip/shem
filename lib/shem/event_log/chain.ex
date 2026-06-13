@@ -7,6 +7,9 @@ defmodule Shem.EventLog.Chain do
   subsequent link. Legacy events (hash: nil) from before the chain existed
   are tolerated as an unverifiable prefix; a nil hash appearing AFTER a
   hashed event is a break.
+
+  Canonical form uses `:erlang.term_to_binary/1`; chains are local-only and
+  not guaranteed stable across major OTP version upgrades.
   """
 
   alias Shem.EventLog.Event
@@ -47,6 +50,8 @@ defmodule Shem.EventLog.Chain do
   end
 
   defp canonical(%Event{} = e) do
-    :erlang.term_to_binary({e.id, e.session_id, e.type, e.payload, DateTime.to_iso8601(e.timestamp)})
+    :erlang.term_to_binary(
+      {e.id, e.session_id, e.type, e.payload, DateTime.to_iso8601(e.timestamp), e.parent_id}
+    )
   end
 end
