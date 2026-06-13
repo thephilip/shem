@@ -72,6 +72,7 @@ The goal is not just to build another agent framework — it is to shock the ind
 ### B. Interaction Model: Command & Monologue
 * **Slash Commands (`/`):** Explicit user control mechanism (e.g., `/style artisan`, `/rewind [steps]`, `/fork [step]`, `/mcp status`, `/skills list`, `/trust scores`).
 * **Pause-and-Steer:** Pressing `Spacebar` pauses the focused agent at its next turn boundary; typed input is injected into its context as steering, and `Spacebar` resumes it with the steering applied. The full interaction is recorded in the event log (`:agent_paused → :agent_steered → :agent_unpaused`). *(Live since Phase 37.)*
+* **Travelling-agent / task-drift detection:** Extend Shadow Agent scoring to detect when an agent has drifted from its original task — do not build a separate detector; fold into `Shem.Shadow.Agent` as an additional scoring dimension. *(Deferred — Shadow Agent substrate is ready.)*
 
 ### C. Hard Token Budget Enforcement
 * Circuit breakers enforced at the VM supervisor level — not soft warnings.
