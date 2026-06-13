@@ -1,8 +1,6 @@
 defmodule Shem.EventLog.MnesiaStore do
   @behaviour Shem.EventLog.Store
 
-  require Logger
-
   @table :shem_events
 
   @doc """
@@ -10,14 +8,14 @@ defmodule Shem.EventLog.MnesiaStore do
   Safe to call repeatedly — all operations are idempotent.
   """
   def setup! do
-    case Application.load(:mnesia) do
-      :ok -> :ok
-      {:error, {:already_loaded, :mnesia}} -> :ok
-    end
-
-    :mnesia.stop()
-    :mnesia.create_schema([node()])
     Application.ensure_all_started(:mnesia)
+
+    unless node() in :mnesia.table_info(:schema, :disc_copies) do
+      # No disc schema on this node yet — create_schema requires Mnesia stopped.
+      :mnesia.stop()
+      :mnesia.create_schema([node()])
+      Application.ensure_all_started(:mnesia)
+    end
 
     case :mnesia.create_table(@table,
            attributes: [:key, :data],
@@ -31,7 +29,7 @@ defmodule Shem.EventLog.MnesiaStore do
         :ok
 
       {:aborted, reason} ->
-        Logger.warning("MnesiaStore: table creation aborted: #{inspect(reason)}")
+        raise "MnesiaStore: table creation failed: #{inspect(reason)}"
     end
 
     :mnesia.wait_for_tables([@table], 5_000)
@@ -54,7 +52,7 @@ defmodule Shem.EventLog.MnesiaStore do
         :ok
 
       {:aborted, reason} ->
-        Logger.warning("MnesiaStore: add_table_copy failed: #{inspect(reason)}")
+        raise "MnesiaStore: add_table_copy failed: #{inspect(reason)}"
     end
 
     :mnesia.wait_for_tables([@table], 10_000)

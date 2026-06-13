@@ -8,6 +8,9 @@ defmodule Shem.EventLog.MnesiaStoreTest do
     tmp = Path.join(System.tmp_dir!(), "shem_mnesia_test_#{:erlang.unique_integer([:positive])}")
     File.mkdir_p!(tmp)
     Application.put_env(:mnesia, :dir, String.to_charlist(tmp))
+    # Stop and restart Mnesia so it picks up the new :dir before setup! runs
+    :mnesia.stop()
+    Application.ensure_all_started(:mnesia)
     MnesiaStore.setup!()
     on_exit(fn -> File.rm_rf!(tmp) end)
     :ok
