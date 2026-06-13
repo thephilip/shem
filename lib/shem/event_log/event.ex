@@ -1,6 +1,6 @@
 defmodule Shem.EventLog.Event do
   @enforce_keys [:id, :session_id, :type, :payload, :timestamp]
-  defstruct [:id, :session_id, :parent_id, :type, :payload, :timestamp]
+  defstruct [:id, :session_id, :parent_id, :type, :payload, :timestamp, :hash]
 
   @type t :: %__MODULE__{
           id: String.t(),
@@ -8,7 +8,8 @@ defmodule Shem.EventLog.Event do
           parent_id: String.t() | nil,
           type: atom(),
           payload: map(),
-          timestamp: DateTime.t()
+          timestamp: DateTime.t(),
+          hash: String.t() | nil
         }
 
   @spec new(String.t(), atom(), map(), String.t() | nil) :: t()
