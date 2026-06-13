@@ -49,35 +49,38 @@ manifest's pillars — but in three quieter failure modes:
 
 ## Adjusted phase plan
 
-### Phase 36 — MCP Agent Tools *(do first — reordered ahead of 35)*
+### Phase 36 — MCP Agent Tools ✅ *(shipped 2026-06-12)*
 
-As specced in `2026-06-11-phase36-mcp-agent-tools-design.md`. Four handlers + router
-entries; days, not weeks. Reasons to go first: it compounds the differentiator instead of
-chasing parity; it makes Shem useful to its own author every day (dogfooding pressure
-beats speculation for finding what matters); and it is small enough to bank before the
-larger TUI effort.
+Four handlers (`spawn_agent`, `agent_status`, `list_agents`, `stop_agent`) + router
+entries. `agent_id = session_id` survives process death. 903 tests passing.
+Plan: `docs/superpowers/plans/2026-06-12-phase36-mcp-agent-tools.md`
 
-### Phase 35 — TUI: Make It Real
+### Phase 35 — TUI: Make It Real ✅ *(shipped 2026-06-12)*
 
-As specced in `2026-06-11-phase35-tui-real-design.md`. Unchanged in content.
+3-column layout, autocomplete overlay, Alt+Enter newline, `SystemStats` CPU/MEM,
+`AgentView.transcript/1`, real SPACE-toggle pause, history `r`=resume fixed.
+936 tests passing. Plan: `docs/superpowers/plans/2026-06-12-phase35-tui-real.md`
 
-### Phase 37 — Honest Claims *(new)*
+### Phase 37 — Honest Claims ✅ *(shipped 2026-06-12)*
 
-Stop adding surface area; make three manifest claims true. Each is small because the
-infrastructure underneath already exists:
+1. **Real pause-and-steer:** `Agent.pause/steer/unpause` — pauses at next turn boundary;
+   TUI SPACE toggles focused agent; Enter steers while paused.
+2. **Property-gated graduation:** `stream_data` promoted to runtime dep; gate scans for
+   `check_all|StreamData\.`; property-less tools seed at `:medium` via `Trust.Store.seed/2`.
+3. **Hash-chained EventLog:** `EventLog.Chain` (pure sha256); `verify_chain/1`;
+   `GET /api/sessions/:id/verify`; parent_id in canonical tuple (causal links immutable).
+Manifest §2A/§3B/§4 updated to "Live since Phase 37". 959 tests passing.
+Plan: `docs/superpowers/plans/2026-06-12-phase37-honest-claims.md`
 
-1. **Real pause-and-steer.** `Agent.Server` gains a paused state that suspends the ReAct
-   loop between turns; Spacebar in the TUI pauses the *focused agent*, not just the status
-   bar; a steering message can be injected before resume. Conversational mode's
-   `send_message/2` and the `:waiting` status are most of the machinery already.
-2. **Property-gated graduation.** GraduationGate requires at least one StreamData property
-   alongside example tests, or the tool graduates into a lower trust band. Requires
-   promoting `stream_data` from test-only to a runtime dep.
-3. **Hash-chained EventLog.** Each event carries `hash = H(prev_hash || payload)`;
-   `EventLog.verify_chain/1` validates a session. This converts the enterprise audit-trail
-   claim from marketing to fact, cheaply.
+### Deflaking ✅ *(2026-06-12, before Phase 38)*
 
-### Phase 38 — The Launch Demo *(new)*
+Three flake families root-caused and fixed (commit `6395e9c`):
+1. `StubTransport.reset/1` drains all live Horde-supervised agents before clearing queue.
+2. MCP multi-in-flight test correlates response IDs by tool name from wire format.
+3. `connected_servers` test uses `eventually/2` poll helper for Horde eventual consistency.
+10-run full-suite burn-in passed.
+
+### Phase 38 — The Launch Demo *(next)*
 
 The manifest's §7 demo is the keystone of the whole vision and no phase ever pointed at
 it. Build it as a reproducible artifact, not a one-off: a docker-compose multi-node
