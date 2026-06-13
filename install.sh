@@ -93,7 +93,13 @@ _SHEM_BIN="${_SHEM_DIR}/bin/shem"
 _SHEM_REPO="thephilip/shem"
 
 _shem_version() {
-  ls "${_SHEM_DIR}/releases/" 2>/dev/null | sort -V | tail -1
+  # releases/start_erl.data is the canonical "<erts_vsn> <release_vsn>" record;
+  # a bare ls would pick up that very file (s > 0 in sort -V)
+  if [ -f "${_SHEM_DIR}/releases/start_erl.data" ]; then
+    cut -d' ' -f2 < "${_SHEM_DIR}/releases/start_erl.data"
+  else
+    ls "${_SHEM_DIR}/releases/" 2>/dev/null | grep -E '^[0-9]' | sort -V | tail -1
+  fi
 }
 
 _shem_help() {
@@ -125,7 +131,7 @@ case "${1:-}" in
     _shem_help
     ;;
 
-  version)
+  version|-v|--version)
     echo "shem $(_shem_version)"
     ;;
 

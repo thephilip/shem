@@ -72,7 +72,10 @@ defmodule Shem.MCP.Router do
      %{
        "protocolVersion" => "2024-11-05",
        "capabilities" => %{"tools" => %{}},
-       "serverInfo" => %{"name" => "shem", "version" => "0.1.0"}
+       "serverInfo" => %{
+         "name" => "shem",
+         "version" => to_string(Application.spec(:shem, :vsn) || "dev")
+       }
      }}
   end
 
