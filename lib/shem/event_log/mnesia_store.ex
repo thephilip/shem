@@ -1,0 +1,94 @@
+defmodule Shem.EventLog.MnesiaStore do
+  @behaviour Shem.EventLog.Store
+
+  require Logger
+
+  @table :shem_events
+
+  @doc """
+  Creates the Mnesia schema (if absent) and the :shem_events table (if absent).
+  Safe to call repeatedly — all operations are idempotent.
+  """
+  def setup! do
+    case Application.load(:mnesia) do
+      :ok -> :ok
+      {:error, {:already_loaded, :mnesia}} -> :ok
+    end
+
+    :mnesia.stop()
+    :mnesia.create_schema([node()])
+    Application.ensure_all_started(:mnesia)
+
+    case :mnesia.create_table(@table,
+           attributes: [:key, :data],
+           type: :ordered_set,
+           disc_copies: [Node.self()]
+         ) do
+      {:atomic, :ok} ->
+        :ok
+
+      {:aborted, {:already_exists, @table}} ->
+        :ok
+
+      {:aborted, reason} ->
+        Logger.warning("MnesiaStore: table creation aborted: #{inspect(reason)}")
+    end
+
+    :mnesia.wait_for_tables([@table], 5_000)
+    :ok
+  end
+
+  @doc """
+  Adds a disc_copies replica of :shem_events on this node, pulling data from
+  an existing cluster node. Called by Shem.Cluster on :nodeup.
+  """
+  def onboard_from(existing_node) do
+    Application.ensure_all_started(:mnesia)
+    :mnesia.change_config(:extra_db_nodes, [existing_node])
+
+    case :mnesia.add_table_copy(@table, Node.self(), :disc_copies) do
+      {:atomic, :ok} ->
+        :ok
+
+      {:aborted, {:already_exists, @table, _node}} ->
+        :ok
+
+      {:aborted, reason} ->
+        Logger.warning("MnesiaStore: add_table_copy failed: #{inspect(reason)}")
+    end
+
+    :mnesia.wait_for_tables([@table], 10_000)
+    :ok
+  end
+
+  # ── Store behaviour ──────────────────────────────────────────────────────────
+
+  @impl true
+  def open(session_id, _path), do: {:ok, session_id}
+
+  @impl true
+  def append(session_id, event) do
+    :mnesia.dirty_write({@table, {session_id, event.id}, event})
+  end
+
+  @impl true
+  def read_all(session_id) do
+    match_head = {@table, {session_id, :_}, :"$1"}
+    events =
+      :mnesia.dirty_select(@table, [{match_head, [], [:"$1"]}])
+      |> Enum.sort_by(& &1.timestamp, DateTime)
+
+    {:ok, events}
+  end
+
+  @impl true
+  def get(session_id, event_id) do
+    case :mnesia.dirty_read(@table, {session_id, event_id}) do
+      [{@table, _key, event}] -> {:ok, event}
+      [] -> {:error, :not_found}
+    end
+  end
+
+  @impl true
+  def close(_session_id), do: :ok
+end
