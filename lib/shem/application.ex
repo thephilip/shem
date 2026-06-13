@@ -5,6 +5,7 @@ defmodule Shem.Application do
   @impl true
   def start(_type, _args) do
     resolve_executor_backend()
+    Shem.EventLog.MnesiaStore.setup!()
 
     children =
       [
