@@ -189,4 +189,21 @@ defmodule Shem.EventLogTest do
       assert hd(events).type == :test_event
     end
   end
+
+  describe "hash chain" do
+    test "appended events carry chained hashes and the session verifies" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, e1} = EventLog.append(sid, :one, %{n: 1})
+      {:ok, e2} = EventLog.append(sid, :two, %{n: 2})
+
+      assert is_binary(e1.hash)
+      assert is_binary(e2.hash)
+      assert e2.hash == Shem.EventLog.Chain.next(e1.hash, e2)
+      assert {:ok, :verified, 2} = EventLog.verify_chain(sid)
+    end
+
+    test "verify_chain on an unknown session is not_found" do
+      assert {:error, :not_found} = EventLog.verify_chain("ses_NO_SUCH")
+    end
+  end
 end

@@ -1,11 +1,12 @@
 defmodule Shem.EventLog.Session do
   @enforce_keys [:id, :started_at]
-  defstruct [:id, :started_at, :ended_at, event_count: 0]
+  defstruct [:id, :started_at, :ended_at, :last_hash, event_count: 0]
 
   @type t :: %__MODULE__{
           id: String.t(),
           started_at: DateTime.t(),
           ended_at: DateTime.t() | nil,
+          last_hash: String.t() | nil,
           event_count: non_neg_integer()
         }
 

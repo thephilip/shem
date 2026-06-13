@@ -42,6 +42,22 @@ defmodule Shem.REST.Handlers.Sessions do
     end
   end
 
+  get "/:id/verify" do
+    case Shem.EventLog.verify_chain(id) do
+      {:ok, :verified, n} ->
+        send_json(conn, 200, %{verified: true, events: n})
+
+      {:ok, :legacy, n} ->
+        send_json(conn, 200, %{verified: "legacy", events: n})
+
+      {:error, {:broken_at, event_id}} ->
+        send_json(conn, 200, %{verified: false, broken_at: event_id})
+
+      {:error, :not_found} ->
+        send_json(conn, 404, %{error: "session not found"})
+    end
+  end
+
   match _ do
     send_json(conn, 404, %{error: "not found"})
   end

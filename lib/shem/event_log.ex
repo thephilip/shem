@@ -1,8 +1,7 @@
 defmodule Shem.EventLog do
   use GenServer
 
-  alias Shem.EventLog.Session
-  alias Shem.EventLog.Event
+  alias Shem.EventLog.{Chain, Event, Session}
 
   # ── Client API ──────────────────────────────────────────────────────────────
 
@@ -42,6 +41,16 @@ defmodule Shem.EventLog do
   def read_session_events(session_id),
     do: GenServer.call(__MODULE__, {:read_session_events, session_id})
 
+  @spec verify_chain(String.t()) ::
+          {:ok, :verified | :legacy, non_neg_integer()}
+          | {:error, {:broken_at, String.t()} | :not_found}
+  def verify_chain(session_id) do
+    case read_session_events(session_id) do
+      {:ok, events} -> Chain.verify(events, session_id)
+      {:error, _} -> {:error, :not_found}
+    end
+  end
+
   @spec reconstruct(String.t(), (term(), Event.t() -> term()), term()) ::
           {:ok, term()} | {:error, :session_not_found | :session_ended}
   def reconstruct(session_id, reducer, initial),
@@ -75,8 +84,20 @@ defmodule Shem.EventLog do
         {:reply, {:ok, session_id}, state}
 
       :error ->
-        session = %Session{id: session_id, started_at: DateTime.utc_now()}
         {:ok, handle} = state.store.open(session_id, event_log_path())
+
+        last_hash =
+          case state.store.read_all(handle) do
+            {:ok, [_ | _] = events} -> List.last(events).hash
+            _ -> nil
+          end
+
+        session = %Session{
+          id: session_id,
+          started_at: DateTime.utc_now(),
+          last_hash: last_hash
+        }
+
         sessions = Map.put(state.sessions, session_id, {handle, session})
         {:reply, {:ok, session_id}, %{state | sessions: sessions}}
     end
@@ -104,23 +125,27 @@ defmodule Shem.EventLog do
 
   @impl true
   def handle_call({:append, session_id, type, payload, parent_id}, _from, state) do
-    case get_active_handle(state, session_id) do
-      {:ok, handle} ->
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, session}} when handle != nil ->
         event = Event.new(session_id, type, payload, parent_id)
+        prev = session.last_hash || Chain.genesis(session_id)
+        event = %{event | hash: Chain.next(prev, event)}
 
         case state.store.append(handle, event) do
           :ok ->
-            sessions =
-              Map.update!(state.sessions, session_id, fn {h, s} -> {h, Session.increment(s)} end)
-
+            updated = %{Session.increment(session) | last_hash: event.hash}
+            sessions = Map.put(state.sessions, session_id, {handle, updated})
             {:reply, {:ok, event}, %{state | sessions: sessions}}
 
           {:error, reason} ->
             {:reply, {:error, reason}, state}
         end
 
-      error ->
-        {:reply, error, state}
+      {:ok, {nil, _session}} ->
+        {:reply, {:error, :session_ended}, state}
+
+      :error ->
+        {:reply, {:error, :session_not_found}, state}
     end
   end
 

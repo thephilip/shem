@@ -216,4 +216,24 @@ defmodule Shem.REST.SessionsTest do
     EventLog.end_session(session_id)
     EventLog.end_session(new_session_id)
   end
+
+  # GET /sessions/:id/verify ───────────────────────────────────────────────────
+
+  describe "GET /:id/verify" do
+    test "verified session" do
+      {:ok, sid} = Shem.EventLog.start_session()
+      {:ok, _} = Shem.EventLog.append(sid, :x, %{n: 1})
+
+      conn = get_path("/sessions/#{sid}/verify")
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["verified"] == true
+      assert body["events"] == 1
+    end
+
+    test "unknown session is 404" do
+      conn = get_path("/sessions/ses_NO_SUCH/verify")
+      assert conn.status == 404
+    end
+  end
 end
