@@ -1,6 +1,8 @@
 defmodule Shem.EventLog.MnesiaStore do
   @behaviour Shem.EventLog.Store
 
+  require Logger
+
   @table :shem_events
 
   @doc """
@@ -42,7 +44,27 @@ defmodule Shem.EventLog.MnesiaStore do
   """
   def onboard_from(existing_node) do
     Application.ensure_all_started(:mnesia)
-    :mnesia.change_config(:extra_db_nodes, [existing_node])
+
+    case :mnesia.change_config(:extra_db_nodes, [existing_node]) do
+      {:ok, _} ->
+        :ok
+
+      {:error, {:merge_schema_failed, reason}} ->
+        # Our local disc schema conflicts with the cluster's schema (cookie mismatch).
+        # Wipe our local schema and re-join — the cluster's data takes precedence.
+        Logger.info("MnesiaStore: schema conflict with #{existing_node} (#{inspect(reason)}), re-joining cluster schema")
+        :mnesia.stop()
+        :mnesia.delete_schema([Node.self()])
+        Application.ensure_all_started(:mnesia)
+
+        case :mnesia.change_config(:extra_db_nodes, [existing_node]) do
+          {:ok, _} -> :ok
+          error -> raise "MnesiaStore: failed to join cluster schema after reset: #{inspect(error)}"
+        end
+
+      error ->
+        raise "MnesiaStore: change_config failed: #{inspect(error)}"
+    end
 
     case :mnesia.add_table_copy(@table, Node.self(), :disc_copies) do
       {:atomic, :ok} ->

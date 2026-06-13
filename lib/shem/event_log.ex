@@ -175,27 +175,14 @@ defmodule Shem.EventLog do
         {:reply, state.store.read_all(handle), state}
 
       _ ->
-        path = event_log_path()
-        dets_path = Path.join(path, "#{session_id}.dets")
+        # Session not in active state — try current store first (handles Mnesia cross-node reads),
+        # then fall back to DETS file for historical sessions from before cluster join.
+        case try_store_read(state.store, session_id) do
+          {:ok, [_ | _]} = result ->
+            {:reply, result, state}
 
-        if File.exists?(dets_path) do
-          table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
-          file_charlist = String.to_charlist(dets_path)
-
-          case :dets.open_file(table, file: file_charlist, type: :set) do
-            {:ok, tab} ->
-              events =
-                :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], tab)
-                |> Enum.sort_by(& &1.timestamp, DateTime)
-
-              :dets.close(tab)
-              {:reply, {:ok, events}, state}
-
-            {:error, _} ->
-              {:reply, {:error, :not_found}, state}
-          end
-        else
-          {:reply, {:error, :not_found}, state}
+          _ ->
+            {:reply, read_dets_file(session_id), state}
         end
     end
   end
@@ -261,5 +248,40 @@ defmodule Shem.EventLog do
       :event_log_path,
       Path.join([System.user_home!(), ".config", "shem", "lab", "events"])
     )
+  end
+
+  # Try reading from the current store using session_id as handle.
+  # MnesiaStore accepts session_id directly; DETSStore needs a table handle (will return error).
+  defp try_store_read(store, session_id) do
+    try do
+      store.read_all(session_id)
+    catch
+      _, _ -> {:error, :not_found}
+    end
+  end
+
+  defp read_dets_file(session_id) do
+    path = event_log_path()
+    dets_path = Path.join(path, "#{session_id}.dets")
+
+    if File.exists?(dets_path) do
+      table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
+      file_charlist = String.to_charlist(dets_path)
+
+      case :dets.open_file(table, file: file_charlist, type: :set) do
+        {:ok, tab} ->
+          events =
+            :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], tab)
+            |> Enum.sort_by(& &1.timestamp, DateTime)
+
+          :dets.close(tab)
+          {:ok, events}
+
+        {:error, _} ->
+          {:error, :not_found}
+      end
+    else
+      {:error, :not_found}
+    end
   end
 end
