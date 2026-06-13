@@ -19,7 +19,7 @@ The goal is not just to build another agent framework — it is to shock the ind
 * **The Messy Stage:** All autonomous code generation, dependency installation (`mix`, `pip`, `npm`), and testing loops happen inside a hidden local configuration directory (e.g., `~/.config/shem/lab/`).
 * **Hidden Git Versioning:** The Lab maintains an isolated local `.git` repository managed entirely by the framework. Every self-correction attempt and structural test run is committed here as an atomic, local change.
 * **The Production Registry:** Once a self-learned tool passes all test suites, it is "graduated" into a clean local tool library. Tools are only exported to the user's active workspace repo via explicit user command (squash-committed as a single, flawless rewrite).
-* **Formal Graduation Gate:** Self-written code must pass not just unit tests but property-based tests (StreamData). Agents are required to prove invariants about their own output — not just show examples pass.
+* **Formal Graduation Gate:** Self-written code is property-gated: tools that prove invariants with StreamData properties graduate clean; tools with only example tests graduate at reduced trust (`:medium`) and stay visibly penalized until adversarial hardening earns it back. *(Live since Phase 37.)*
 
 ### B. Polyglot Processing (BEAM Ports)
 * Non-Elixir tasks (Python data analytics, Node web-scraping, etc.) are managed via native Erlang Ports or wrapper utilities.
@@ -68,7 +68,7 @@ The goal is not just to build another agent framework — it is to shock the ind
 
 ### B. Interaction Model: Command & Monologue
 * **Slash Commands (`/`):** Explicit user control mechanism (e.g., `/style artisan`, `/rewind [steps]`, `/fork [step]`, `/mcp status`, `/skills list`, `/trust scores`).
-* **Pause-and-Steer:** While an agent executes an autonomous, self-learning loop, pressing `Spacebar` or `Esc` immediately pauses the background thread scheduler, allowing the user to provide manual steering adjustments via prompt before resuming execution.
+* **Pause-and-Steer:** Pressing `Spacebar` pauses the focused agent at its next turn boundary; typed input is injected into its context as steering, and `Spacebar` resumes it with the steering applied. The full interaction is recorded in the event log (`:agent_paused → :agent_steered → :agent_unpaused`). *(Live since Phase 37.)*
 
 ### C. Hard Token Budget Enforcement
 * Circuit breakers enforced at the VM supervisor level — not soft warnings.
@@ -80,7 +80,7 @@ The goal is not just to build another agent framework — it is to shock the ind
 ## 4. State & Memory Persistence ("Wake Up Smart")
 * **Code as Data:** Graduated tools are written to disk as standard source files. Upon booting up, the application scans the library directory and hot-loads them natively into the VM.
 * **Native Storage:** Episodic memories, user preferences, style vectors, and execution token logs are persisted using zero-overhead Erlang disk storage (DETS/Mnesia). No external Dockerized database configurations are required to run the tool.
-* **Cryptographic Audit Trail:** Every LLM call is logged as a hash-chained record. The full reasoning trace of any agent run is cryptographically provable — who called what, when, with what inputs, and what was decided. Enterprise/compliance-ready from day one.
+* **Cryptographic Audit Trail:** Every event is a hash-chained record (per-session sha256; each hash commits to the event's identity, payload, timestamp, and causal link). Any retroactive edit breaks every subsequent link. Verifiable via `EventLog.verify_chain/1` or `GET /api/sessions/:id/verify`. *(Live since Phase 37.)*
 * **Style Vectors as Shareable Artifacts:** Personality profiles ("FP Artisan", etc.) are serializable, versioned configs publishable to a community registry. A culture of shared agent personalities, like dotfiles but for cognition.
 
 ---

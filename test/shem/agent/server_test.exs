@@ -104,6 +104,9 @@ defmodule Shem.Agent.ServerTest do
       name = start_agent("task")
       assert {:ok, sid} = Agent.session_id(name)
       assert is_binary(sid)
+      # drain: the agent must consume its own stub before this test ends,
+      # or it can eat the NEXT test's stubbed response after the queue reset
+      assert {:ok, :done} = Agent.await(name, 2_000)
     end
 
     test "Agent.session_id/1 returns {:error, :not_found} for unknown agent" do

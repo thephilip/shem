@@ -67,11 +67,13 @@ MCP `agent_status`, REST) render it as a string like the others.
   because the property must also **pass** inside the gate — that is the substantive check.
 - `GraduationGate.run/3` behavior after tests pass:
   - **Property present** → unchanged (tool starts `:unrated`).
-  - **Property absent** → tool still graduates, but
-    `Trust.Store.record(tool.id, %{outcome: :no_property_tests, rounds: 0})` seeds the
-    score at **0.5** (`:medium` band) — usable immediately, visibly penalized, and
-    adversarial hardening moves it from there. New outcome atom in the Trust.Store score
-    formula: `:no_property_tests → 0.5`.
+  - **Property absent** → tool still graduates, but `Trust.Store.seed(tool.id, 0.5)`
+    starts it at **0.5** (`:medium` band) — usable immediately, visibly penalized, and
+    adversarial hardening moves it from there. *(Implementation note: `seed/2` — which
+    writes `hardening_count: 0` and refuses already-rated tools — replaced the originally
+    planned `record/2` + `:no_property_tests` outcome, because `record/2` increments
+    `hardening_count` and would have displayed a false "1 hardening" for a never-hardened
+    tool.)*
 - `Tool.metadata` gains `property_tested: boolean`.
 - MCP `graduate_tool` descriptor text updated: properties encouraged, consequence stated.
 
@@ -98,11 +100,14 @@ MCP `agent_status`, REST) render it as a string like the others.
 - `{:error, {:broken_at, event_id}}` — first event whose hash does not match recomputation
 - `{:error, :not_found}` — unknown session
 
-### Fork semantics (deliberate simplification)
+### Fork semantics
 
-Timeline-forked sessions (Branch) copy events with hashes **stripped**: the fork reads as
-`:legacy` until its own appends start a fresh chain. Re-hashing copied history would
-falsely attest events the fork did not witness.
+*(Corrected from the original draft, which assumed events were struct-copied.)*
+`Shem.LLM.Branch` replays events through normal `EventLog.append` into a brand-new
+session — it never copies Event structs. Forked sessions therefore carry fresh, valid
+chains automatically and verify as `:verified` by construction. No hash-stripping is
+needed. The chain also commits to `parent_id` (causal links cannot be rewritten silently)
+— added during review.
 
 ### Surface
 
