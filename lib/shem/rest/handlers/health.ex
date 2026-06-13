@@ -21,7 +21,8 @@ defmodule Shem.REST.Handlers.Health do
       port: port,
       tui: tui,
       active_agents: active_agents,
-      host: Application.get_env(:shem, :mcp_host, "127.0.0.1")
+      host: Application.get_env(:shem, :mcp_host, "127.0.0.1"),
+      cluster_size: length(Shem.Cluster.members())
     })
   end
 
