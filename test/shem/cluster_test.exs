@@ -22,6 +22,16 @@ defmodule Shem.ClusterTest do
     end
   end
 
+  describe "Mnesia onboarding" do
+    test "nodeup handler does not crash when onboard_mnesia is called for a non-existent node" do
+      {:ok, pid} = Shem.Cluster.start_link([])
+      send(pid, {:nodeup, :"fake@127.0.0.1"})
+      Process.sleep(100)
+      assert Process.alive?(pid)
+      GenServer.stop(pid)
+    end
+  end
+
   describe "GenServer lifecycle" do
     test "starts and stops cleanly" do
       {:ok, pid} = Shem.Cluster.start_link([])

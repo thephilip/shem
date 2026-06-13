@@ -49,6 +49,7 @@ defmodule Shem.Cluster do
     Logger.info("Shem.Cluster: node joined — #{node}")
     emit(:cluster_node_joined, %{node: node})
     sync_horde(node)
+    onboard_mnesia(node)
     {:noreply, state}
   end
 
@@ -69,6 +70,17 @@ defmodule Shem.Cluster do
       Shem.EventLog.append(@system_session, type, payload)
     catch
       _, _ -> :ok
+    end
+  end
+
+  defp onboard_mnesia(existing_node) do
+    try do
+      Shem.EventLog.MnesiaStore.onboard_from(existing_node)
+    catch
+      _, reason ->
+        Logger.warning(
+          "Shem.Cluster: Mnesia onboarding failed for #{existing_node}: #{inspect(reason)}"
+        )
     end
   end
 
