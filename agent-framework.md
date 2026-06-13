@@ -30,11 +30,14 @@ The goal is not just to build another agent framework — it is to shock the ind
 * Implements an open MCP client layer native to the BEAM.
 * Allows agents to dynamically spin up, monitor, and consume local or remote JSON-RPC MCP servers (e.g., database bridges, repository tools, local system access) as isolated sub-processes.
 
-### D. Distributed Agent Mesh (BEAM Distribution) ← primary industry differentiator
+### D. Distributed Agent Mesh (BEAM Distribution) ← primary industry differentiator *(Phases 38–41, in progress)*
 * BEAM nodes connect across machines natively — no Kubernetes, no Redis, no message broker required.
-* Agents can migrate between nodes based on load, hardware availability (GPU vs CPU), or data locality.
-* Node failure triggers automatic supervisor-tree redistribution of workload with zero data loss.
-* The target demo: 50 agents across 5 machines, one node dies mid-task, the work completes without interruption.
+* Agents can migrate between nodes based on load, hardware availability (GPU vs CPU), or data locality. *(Phase 40: `placement: {:model, m}` hints)*
+* Node failure triggers automatic supervisor-tree redistribution of workload with zero data loss. *(Phase 40: crash recovery via Mnesia checkpoints)*
+* Graceful evacuation on SIGTERM: agents checkpoint-flush before exit, resume on survivors with no turn regression. *(Phase 40)*
+* Full TUI parity for remote agents: tokens stream cross-node via `:pg` groups; node badge shows agent location. *(Phase 41)*
+* The target demo: 50 agents across 5 machines, one node dies mid-task, the work completes without interruption. *(enabled by Phase 41)*
+* Spec: `docs/superpowers/specs/2026-06-13-distributed-mesh-design.md`
 
 ### E. Event-Sourced Timeline Engine ("Agent Git")
 * Every LLM call, tool invocation, and state mutation is appended to an immutable event log.
