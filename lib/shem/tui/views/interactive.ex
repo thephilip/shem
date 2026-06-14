@@ -231,22 +231,26 @@ defmodule Shem.TUI.Views.Interactive do
     panel(title: "Agents (#{length(agents)})", color: color(:white)) do
       for a <- agents do
         marker = if a.name == focused, do: "●", else: "○"
+        remote_node = if Map.get(a, :node, Node.self()) != Node.self(), do: a.node, else: nil
 
-        node_badge =
-          if Map.get(a, :node, Node.self()) != Node.self() do
-            " [#{a.node}]"
-          else
-            ""
-          end
-
-        [
+        name_label =
           label(
-            content: "#{marker} #{a.name}#{node_badge}",
+            content: "#{marker} #{a.name}",
             color: if(a.name == focused, do: color(:cyan), else: color(:white)),
             attributes: if(a.name == focused, do: [attribute(:bold)], else: [])
-          ),
+          )
+
+        badge_labels =
+          if remote_node do
+            [label(content: "  [#{remote_node}]", color: color(:white))]
+          else
+            []
+          end
+
+        status_label =
           label(content: "  #{agent_status_dot(a.status)} #{a.status} · t#{a.turn_count}", color: agent_status_color(a.status))
-        ]
+
+        [name_label] ++ badge_labels ++ [status_label]
       end
     end
   end
