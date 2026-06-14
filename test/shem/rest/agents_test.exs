@@ -207,6 +207,50 @@ defmodule Shem.REST.AgentsTest do
     Shem.Agent.stop(agent_id)
   end
 
+  # GET /agents ────────────────────────────────────────────────────────────────
+
+  describe "GET /api/agents" do
+    test "returns empty list when no agents running" do
+      conn = get_path("/agents")
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert is_list(body["agents"])
+    end
+
+    test "returns agents with node field" do
+      {:ok, agent_name, _session_id} = Shem.Agent.start_with_preset("general", "test task")
+
+      conn = get_path("/agents")
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      agents = body["agents"]
+      assert length(agents) >= 1
+
+      first = hd(agents)
+      assert Map.has_key?(first, "node")
+      assert Map.has_key?(first, "name")
+      assert Map.has_key?(first, "agent_id")
+      assert Map.has_key?(first, "status")
+
+      Shem.Agent.stop(agent_name)
+    end
+  end
+
+  # GET /agents/:id — node field ────────────────────────────────────────────────
+
+  describe "GET /api/agents/:id node field" do
+    test "returns node field in response" do
+      {:ok, agent_name, _session_id} = Shem.Agent.start_with_preset("general", "test node field")
+
+      conn = get_path("/agents/#{agent_name}")
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert Map.has_key?(body, "node")
+
+      Shem.Agent.stop(agent_name)
+    end
+  end
+
   test "POST /agents with resume_session_id resumes that session" do
     # Create a session with an agent_started event so resume can find the task
     {:ok, session_id} = Shem.EventLog.start_session()

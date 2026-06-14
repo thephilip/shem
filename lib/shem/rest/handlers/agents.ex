@@ -39,6 +39,38 @@ defmodule Shem.REST.Handlers.Agents do
     end
   end
 
+  get "/" do
+    agents =
+      Horde.DynamicSupervisor.which_children(Shem.AgentSupervisor)
+      |> Enum.filter(fn {_id, pid, _, _} -> is_pid(pid) end)
+      |> Enum.map(fn {name, pid, _, _} ->
+        session_id =
+          case Shem.ProcessRegistry.lookup(name) do
+            {_p, sid} -> sid
+            _ -> nil
+          end
+
+        status =
+          try do
+            case GenServer.call(pid, :status, 200) do
+              {:ok, s} -> Atom.to_string(s)
+              _ -> "unknown"
+            end
+          catch
+            :exit, _ -> "unknown"
+          end
+
+        %{
+          name: to_string(name),
+          agent_id: session_id,
+          status: status,
+          node: Atom.to_string(node(pid))
+        }
+      end)
+
+    send_json(conn, 200, %{agents: agents})
+  end
+
   get "/:id/stream" do
     case Shem.Agent.session_id(id) do
       {:error, :not_found} ->
@@ -90,8 +122,17 @@ defmodule Shem.REST.Handlers.Agents do
 
   get "/:id" do
     case Shem.Agent.status(id) do
-      {:ok, status} -> send_json(conn, 200, %{status: status})
-      {:error, :not_found} -> send_json(conn, 404, %{error: "agent not found"})
+      {:ok, status} ->
+        node_str =
+          case Shem.ProcessRegistry.lookup(id) do
+            {pid, _} -> Atom.to_string(node(pid))
+            nil -> nil
+          end
+
+        send_json(conn, 200, %{status: status, node: node_str})
+
+      {:error, :not_found} ->
+        send_json(conn, 404, %{error: "agent not found"})
     end
   end
 
