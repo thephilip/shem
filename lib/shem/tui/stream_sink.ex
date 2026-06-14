@@ -23,7 +23,7 @@ defmodule Shem.TUI.StreamSink do
 
   @impl true
   def handle_info({:stream_chunk, _session_id, token}, state) do
-    {:noreply, %{state | buffer: state.buffer ++ [token]}}
+    {:noreply, %{state | buffer: [token | state.buffer]}}
   end
 
   def handle_info({:stream_done, _session_id}, state) do
@@ -34,6 +34,6 @@ defmodule Shem.TUI.StreamSink do
 
   @impl true
   def handle_call(:take_tokens, _from, state) do
-    {:reply, state.buffer, %{state | buffer: []}}
+    {:reply, Enum.reverse(state.buffer), %{state | buffer: []}}
   end
 end
