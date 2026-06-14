@@ -114,4 +114,23 @@ defmodule Shem.AgentSupervisorTest do
       assert {:error, :no_matching_node} = AgentSupervisor.start_agent(name, config)
     end
   end
+
+  describe "evacuate_all/0" do
+    test "flushes checkpoint for each local agent" do
+      Shem.LLM.StubTransport.Server.set_default(
+        {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
+      )
+      config = %Agent.Config{task: "say done", system_prompt: "s", conversational: true}
+      name = "evac_test_#{System.unique_integer([:positive])}"
+      {:ok, _pid, session_id} = AgentSupervisor.start_agent(name, config)
+      # Wait for agent to reach :waiting state after first turn
+      Process.sleep(300)
+
+      AgentSupervisor.evacuate_all()
+
+      # flush_checkpoint writes an additional checkpoint beyond the run_turn one
+      {:ok, events} = Shem.EventLog.events(session_id)
+      assert Enum.count(events, &(&1.type == :agent_checkpoint)) >= 2
+    end
+  end
 end
