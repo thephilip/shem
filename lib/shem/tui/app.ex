@@ -752,10 +752,10 @@ defmodule Shem.TUI.App do
       |> Enum.map(fn {id, pid, _, _} ->
         case safe_info(pid) do
           %{status: status, turn_count: turns, session_id: sid} ->
-            %{name: id, pid: pid, status: status, session_id: sid, turn_count: turns}
+            %{name: id, pid: pid, status: status, session_id: sid, turn_count: turns, node: node(pid)}
 
           nil ->
-            %{name: id, pid: pid, status: :unknown, session_id: nil, turn_count: 0}
+            %{name: id, pid: pid, status: :unknown, session_id: nil, turn_count: 0, node: node(pid)}
         end
       end)
     catch

@@ -232,9 +232,16 @@ defmodule Shem.TUI.Views.Interactive do
       for a <- agents do
         marker = if a.name == focused, do: "●", else: "○"
 
+        node_badge =
+          if Map.get(a, :node, Node.self()) != Node.self() do
+            " [#{a.node}]"
+          else
+            ""
+          end
+
         [
           label(
-            content: "#{marker} #{a.name}",
+            content: "#{marker} #{a.name}#{node_badge}",
             color: if(a.name == focused, do: color(:cyan), else: color(:white)),
             attributes: if(a.name == focused, do: [attribute(:bold)], else: [])
           ),

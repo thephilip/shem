@@ -61,6 +61,35 @@ defmodule Shem.TUI.Views.InteractiveTest do
     refute rendered =~ "some output"
   end
 
+  describe "render_agent_list — node badge" do
+    test "shows node badge for remote agent" do
+      remote_node = :"shem_b@somehost"
+      model = %{
+        base_model()
+        | agents: [
+            %{name: "agent_foo", pid: self(), status: :running, turn_count: 2, session_id: "ses_x", node: remote_node}
+          ],
+          focused_agent: nil
+      }
+
+      rendered = Interactive.render(model) |> inspect(limit: :infinity)
+      assert rendered =~ "shem_b"
+    end
+
+    test "no node badge for local agent" do
+      model = %{
+        base_model()
+        | agents: [
+            %{name: "agent_bar", pid: self(), status: :running, turn_count: 1, session_id: "ses_y", node: Node.self()}
+          ],
+          focused_agent: nil
+      }
+
+      rendered = Interactive.render(model) |> inspect(limit: :infinity)
+      refute rendered =~ "nonode@nohost"
+    end
+  end
+
   describe "render/1 — :multiline_input mode" do
     test "render/1 shows multiline editor panel when mode is :multiline_input" do
       model = %{base_model() |
