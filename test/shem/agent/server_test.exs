@@ -435,6 +435,36 @@ defmodule Shem.Agent.ServerTest do
     end
   end
 
+  describe "flush_checkpoint" do
+    setup do
+      Shem.LLM.StubTransport.Server.set_default(
+        {:ok, %Shem.LLM.Response{content: "hello", tokens_used: 1, model: :default, latency_ms: 1}}
+      )
+      config = %Shem.Agent.Config{task: "say hello", system_prompt: "s", conversational: true}
+      name = "flush_test_#{System.unique_integer([:positive])}"
+      {:ok, pid, session_id} = Shem.AgentSupervisor.start_agent(name, config)
+      # Wait for agent to complete first turn and reach :waiting
+      Process.sleep(300)
+      %{pid: pid, session_id: session_id, name: name}
+    end
+
+    test "flush_checkpoint writes a checkpoint and sets status to :evacuating", %{pid: pid, session_id: session_id} do
+      assert :ok = GenServer.call(pid, :flush_checkpoint, 2_000)
+      state = :sys.get_state(pid)
+      assert state.status == :evacuating
+      {:ok, events} = Shem.EventLog.events(session_id)
+      # At least 2 checkpoints: one from run_turn, one from flush
+      assert Enum.count(events, &(&1.type == :agent_checkpoint)) >= 2
+    end
+
+    test "evac_spec returns name, config, and session_id", %{pid: pid, session_id: session_id, name: name} do
+      {returned_name, config, sid} = GenServer.call(pid, :evac_spec)
+      assert returned_name == name
+      assert %Shem.Agent.Config{} = config
+      assert sid == session_id
+    end
+  end
+
   describe "pause / steer / unpause" do
     test "pause on a waiting conversational agent is rejected" do
       stub("hello!")

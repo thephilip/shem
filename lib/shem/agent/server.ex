@@ -74,6 +74,15 @@ defmodule Shem.Agent.Server do
 
   def handle_call(:unpause, _from, state), do: {:reply, {:error, :not_paused}, state}
 
+  def handle_call(:flush_checkpoint, _from, state) do
+    Checkpoint.save(state.session_id, state)
+    {:reply, :ok, %{state | status: :evacuating}}
+  end
+
+  def handle_call(:evac_spec, _from, state) do
+    {:reply, {state.name, state.config, state.session_id}, state}
+  end
+
   # ── Init ────────────────────────────────────────────────────────────────────
 
   @impl true
