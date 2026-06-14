@@ -49,6 +49,8 @@ defmodule Shem.TUI.Views.Dashboard do
               )
             end
 
+            label(content: "")
+
             label(
               content:
                 "Sessions: #{model.event_log_stats.sessions}   Events: #{model.event_log_stats.total_events}",

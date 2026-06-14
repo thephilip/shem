@@ -34,7 +34,6 @@ defmodule Shem.TUI.App do
       tool_count: 0,
       mcp_client_count: 0,
       mcp_outbound_count: 0,
-      cluster_node_count: 1,
       cluster_nodes: [],
       agents: [],
       focused_agent: nil,
@@ -434,7 +433,6 @@ defmodule Shem.TUI.App do
             tool_count: safe_tool_count(),
             mcp_client_count: safe_mcp_count(),
             mcp_outbound_count: safe_mcp_outbound_count(),
-            cluster_node_count: safe_cluster_count(),
             cluster_nodes: safe_cluster_nodes(),
             agents: agents,
             paused: focused_paused?(agents, model.focused_agent),
@@ -741,10 +739,6 @@ defmodule Shem.TUI.App do
     catch
       :exit, _ -> 0
     end
-  end
-
-  defp safe_cluster_count do
-    Shem.Cluster.nodes() |> length()
   end
 
   defp safe_cluster_nodes do
