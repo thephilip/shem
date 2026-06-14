@@ -35,9 +35,19 @@ defmodule Shem.TUI.Views.Dashboard do
             )
 
             label(
-              content: "Cluster: #{model.cluster_node_count} #{if model.cluster_node_count == 1, do: "node", else: "nodes"}",
+              content: "Cluster (#{length(Map.get(model, :cluster_nodes, []))} nodes)",
+              attributes: [attribute(:bold)],
               color: color(:cyan)
             )
+
+            for %{node: n, agents: count, status: _status} <- Map.get(model, :cluster_nodes, []) do
+              marker = if n == Node.self(), do: "◈", else: "◇"
+
+              label(
+                content: "  #{marker} #{n}  #{count} agents",
+                color: if(n == Node.self(), do: color(:cyan), else: color(:white))
+              )
+            end
 
             label(
               content:

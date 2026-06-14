@@ -13,6 +13,7 @@ defmodule Shem.TUI.Views.DashboardTest do
       mcp_client_count: 0,
       mcp_outbound_count: 0,
       cluster_node_count: 1,
+      cluster_nodes: [],
       agents: [],
       focused_agent: nil,
       agent_view: nil,
@@ -70,5 +71,23 @@ defmodule Shem.TUI.Views.DashboardTest do
   test "render/1 no longer shows 'Lab: idle' static string" do
     rendered = Dashboard.render(base_model()) |> inspect(limit: :infinity)
     refute rendered =~ "Lab: idle"
+  end
+
+  describe "cluster panel" do
+    test "shows self node when cluster_nodes contains only local" do
+      model = base_model() |> Map.put(:cluster_nodes, [%{node: Node.self(), agents: 0, status: :up}])
+      rendered = Dashboard.render(model) |> inspect(limit: :infinity)
+      assert rendered =~ "Cluster"
+    end
+
+    test "shows multiple nodes when clustered" do
+      model = base_model() |> Map.put(:cluster_nodes, [
+        %{node: :"shem_a@host", agents: 2, status: :up},
+        %{node: :"shem_b@host", agents: 1, status: :up}
+      ])
+      rendered = Dashboard.render(model) |> inspect(limit: :infinity)
+      assert rendered =~ "shem_a"
+      assert rendered =~ "shem_b"
+    end
   end
 end

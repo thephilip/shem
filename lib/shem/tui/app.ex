@@ -35,6 +35,7 @@ defmodule Shem.TUI.App do
       mcp_client_count: 0,
       mcp_outbound_count: 0,
       cluster_node_count: 1,
+      cluster_nodes: [],
       agents: [],
       focused_agent: nil,
       agent_view: nil,
@@ -434,6 +435,7 @@ defmodule Shem.TUI.App do
             mcp_client_count: safe_mcp_count(),
             mcp_outbound_count: safe_mcp_outbound_count(),
             cluster_node_count: safe_cluster_count(),
+            cluster_nodes: safe_cluster_nodes(),
             agents: agents,
             paused: focused_paused?(agents, model.focused_agent),
             agent_view: safe_agent_view(model.focused_agent),
@@ -743,6 +745,17 @@ defmodule Shem.TUI.App do
 
   defp safe_cluster_count do
     Shem.Cluster.nodes() |> length()
+  end
+
+  defp safe_cluster_nodes do
+    try do
+      Shem.Cluster.members()
+      |> Enum.map(fn n ->
+        %{node: n, agents: Shem.Cluster.agent_count(n), status: :up}
+      end)
+    catch
+      :exit, _ -> [%{node: Node.self(), agents: 0, status: :up}]
+    end
   end
 
   defp safe_agent_list do

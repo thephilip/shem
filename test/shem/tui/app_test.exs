@@ -732,6 +732,7 @@ defmodule Shem.TUI.AppTest do
       mcp_client_count: 0,
       mcp_outbound_count: 0,
       cluster_node_count: 1,
+      cluster_nodes: [],
       agents: [],
       focused_agent: nil,
       agent_view: nil,
