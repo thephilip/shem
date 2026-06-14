@@ -4,7 +4,14 @@ defmodule Shem.Agent do
   defmodule Config do
     @enforce_keys [:task, :system_prompt]
     defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20,
-               spawn_depth: 0, conversational: false, project_context: nil, fence: nil]
+               spawn_depth: 0, conversational: false, project_context: nil, fence: nil,
+               placement: :any]
+
+    @type placement ::
+            :any
+            | {:node, node()}
+            | {:labels, %{String.t() => String.t()}}
+            | {:labels, %{String.t() => String.t()}, :required}
 
     @type t :: %__MODULE__{
             task: String.t(),
@@ -15,7 +22,8 @@ defmodule Shem.Agent do
             spawn_depth: non_neg_integer(),
             project_context: Shem.Context.Project.t() | nil,
             conversational: boolean(),
-            fence: String.t() | nil
+            fence: String.t() | nil,
+            placement: placement()
           }
   end
 

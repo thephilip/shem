@@ -17,14 +17,18 @@ defmodule Shem.MCP.Handlers.AgentCommon do
 
   @spec find_by_session(String.t()) :: {:ok, String.t()} | :not_found
   def find_by_session(session_id) do
-    match = [{{:"$1", :"$2", :"$3"}, [{:==, :"$3", session_id}], [:"$1"]}]
+    match = [{{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$3"}}]}]
 
     Shem.Registry
     |> Horde.Registry.select(match)
-    |> Enum.filter(&agent_name?/1)
+    |> Enum.filter(fn {name, _} -> agent_name?(name) end)
+    |> Enum.find_value(:not_found, fn {name, value} ->
+      sid = extract_session_id(value)
+      if sid == session_id, do: {:ok, name}
+    end)
     |> case do
-      [name | _] -> {:ok, name}
-      [] -> :not_found
+      {:ok, name} -> {:ok, name}
+      :not_found -> :not_found
     end
   end
 
@@ -34,8 +38,14 @@ defmodule Shem.MCP.Handlers.AgentCommon do
 
     Shem.Registry
     |> Horde.Registry.select(match)
-    |> Enum.filter(fn {name, _session_id} -> agent_name?(name) end)
+    |> Enum.filter(fn {name, _} -> agent_name?(name) end)
+    |> Enum.map(fn {name, value} -> {name, extract_session_id(value)} end)
+    |> Enum.reject(fn {_name, sid} -> is_nil(sid) end)
   end
+
+  defp extract_session_id(%{session_id: sid}), do: sid
+  defp extract_session_id(value) when is_binary(value), do: value
+  defp extract_session_id(_), do: nil
 
   @spec session_events(String.t()) :: {:ok, [EventLog.Event.t()]} | {:error, :not_found}
   def session_events(session_id) do

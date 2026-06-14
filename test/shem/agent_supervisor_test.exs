@@ -61,4 +61,57 @@ defmodule Shem.AgentSupervisorTest do
     # shadow_agent_enabled: false in test env — no shadow agent spawns
     assert Shem.Shadow.Agent.current_score(agent_name) == {:error, :not_found}
   end
+
+  describe "placement" do
+    setup do
+      Shem.LLM.StubTransport.Server.set_default(
+        {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
+      )
+      :ok
+    end
+
+    test "placement :any starts agent without placement_miss event" do
+      config = %Agent.Config{task: "t", system_prompt: "s", placement: :any}
+      name = "test_place_any_#{System.unique_integer([:positive])}"
+      {:ok, _pid, session_id} = AgentSupervisor.start_agent(name, config)
+      Process.sleep(200)
+      {:ok, events} = Shem.EventLog.events(session_id)
+      refute Enum.any?(events, &(&1.type == :placement_miss))
+    end
+
+    test "placement {:node, self()} starts agent successfully" do
+      config = %Agent.Config{task: "t", system_prompt: "s", placement: {:node, Node.self()}}
+      name = "test_place_node_#{System.unique_integer([:positive])}"
+      assert {:ok, _pid, _sid} = AgentSupervisor.start_agent(name, config)
+    end
+
+    test "placement {:node, unknown} returns error" do
+      config = %Agent.Config{task: "t", system_prompt: "s", placement: {:node, :"ghost@nowhere"}}
+      name = "test_place_bad_#{System.unique_integer([:positive])}"
+      assert {:error, :no_matching_node} = AgentSupervisor.start_agent(name, config)
+    end
+
+    test "placement {:labels, selector} with no match falls back to :any and logs placement_miss" do
+      config = %Agent.Config{
+        task: "t",
+        system_prompt: "s",
+        placement: {:labels, %{"model" => "nonexistent-model"}}
+      }
+      name = "test_place_label_miss_#{System.unique_integer([:positive])}"
+      assert {:ok, _pid, session_id} = AgentSupervisor.start_agent(name, config)
+      Process.sleep(200)
+      {:ok, events} = Shem.EventLog.events(session_id)
+      assert Enum.any?(events, &(&1.type == :placement_miss))
+    end
+
+    test "placement {:labels, selector, :required} with no match returns error" do
+      config = %Agent.Config{
+        task: "t",
+        system_prompt: "s",
+        placement: {:labels, %{"model" => "nonexistent-model"}, :required}
+      }
+      name = "test_place_label_req_#{System.unique_integer([:positive])}"
+      assert {:error, :no_matching_node} = AgentSupervisor.start_agent(name, config)
+    end
+  end
 end
