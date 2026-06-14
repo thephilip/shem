@@ -300,7 +300,7 @@ defmodule Shem.Agent.ServerTest do
     test "broadcasts {:stream_chunk, session_id, token} during a turn" do
       stub("Streaming answer here.")
       session_id = "ses_stream_chunk_" <> Base.encode16(:crypto.strong_rand_bytes(4))
-      Registry.register(Shem.StreamRegistry, session_id, nil)
+      :ok = :pg.join(:shem_streams, session_id, self())
       name = start_agent_with_session("streaming test", session_id)
 
       assert {:ok, :done} = Agent.await(name, 2_000)
@@ -314,7 +314,7 @@ defmodule Shem.Agent.ServerTest do
     test "broadcasts {:stream_done, session_id} when agent finishes" do
       stub("done")
       session_id = "ses_stream_done_" <> Base.encode16(:crypto.strong_rand_bytes(4))
-      Registry.register(Shem.StreamRegistry, session_id, nil)
+      :ok = :pg.join(:shem_streams, session_id, self())
       name = start_agent_with_session("stream done test", session_id)
 
       assert {:ok, :done} = Agent.await(name, 2_000)

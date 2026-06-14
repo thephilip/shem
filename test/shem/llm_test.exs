@@ -113,25 +113,26 @@ defmodule Shem.LLMTest do
     end
   end
 
-  describe "Shem.StreamRegistry" do
-    test "allows multiple subscribers on the same session_id (duplicate key semantics)" do
+  describe ":pg :shem_streams" do
+    test "allows multiple subscribers on the same session_id" do
       session_id = "test_stream_#{System.unique_integer()}"
 
-      # Register from the test process
-      {:ok, _} = Registry.register(Shem.StreamRegistry, session_id, nil)
+      # Join from the test process
+      :ok = :pg.join(:shem_streams, session_id, self())
 
-      # Register from a second process
+      # Join from a second process
       test_pid = self()
       task = Task.async(fn ->
-        result = Registry.register(Shem.StreamRegistry, session_id, nil)
-        send(test_pid, {:registered, result})
+        :ok = :pg.join(:shem_streams, session_id, self())
+        send(test_pid, {:joined, self()})
         Process.sleep(200)
       end)
 
-      assert_receive {:registered, {:ok, _}}, 500
+      assert_receive {:joined, task_pid}, 500
 
-      entries = Registry.lookup(Shem.StreamRegistry, session_id)
-      assert length(entries) == 2
+      members = :pg.get_members(:shem_streams, session_id)
+      assert self() in members
+      assert task_pid in members
 
       Task.shutdown(task, :brutal_kill)
     end

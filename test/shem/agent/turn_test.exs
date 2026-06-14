@@ -285,11 +285,11 @@ defmodule Shem.Agent.TurnTest do
       )
     end
 
-    test "broadcasts {:stream_chunk, session_id, token} to StreamRegistry subscribers" do
+    test "broadcasts {:stream_chunk, session_id, token} to :pg subscribers" do
       stream_stub("The answer is 42.")
       session_id = "stream_test_#{System.unique_integer()}"
 
-      {:ok, _} = Registry.register(Shem.StreamRegistry, session_id, nil)
+      :ok = :pg.join(:shem_streams, session_id, self())
 
       config = %Config{task: "test", system_prompt: "be helpful"}
       history = [%{role: :user, content: "what is 6*7?"}]

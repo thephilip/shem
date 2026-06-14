@@ -98,17 +98,17 @@ defmodule Shem.Distributed.FailoverTest do
         {:ok, _} = Shem.NodeRegistry.start_link([])
         {:ok, _} = Shem.EventLog.start_link([])
         {:ok, _} = Shem.Lab.Registry.start_link([])
-        {:ok, _} = Registry.start_link(keys: :duplicate, name: Shem.StreamRegistry)
+        {:ok, _} = :pg.start_link(:shem_streams)
         Process.sleep(:infinity)
       end)
       :ok
       """
     ])
 
-    # Poll until all key services are up on peer (StreamRegistry is last in the spawn).
+    # Poll until all key services are up on peer (:pg :shem_streams is last in the spawn).
     assert_eventually(
       fn ->
-        case :rpc.call(peer_node, Process, :whereis, [Shem.StreamRegistry]) do
+        case :rpc.call(peer_node, Process, :whereis, [:shem_streams]) do
           pid when is_pid(pid) -> true
           _ -> false
         end

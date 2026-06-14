@@ -140,7 +140,7 @@ defmodule Shem.REST.AgentsTest do
     session_id = "ses_" <> Base.encode16(:crypto.strong_rand_bytes(8))
     agent_name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
 
-    Registry.register(Shem.StreamRegistry, session_id, nil)
+    :ok = :pg.join(:shem_streams, session_id, self())
 
     config = %Shem.Agent.Config{
       task: "sse test",

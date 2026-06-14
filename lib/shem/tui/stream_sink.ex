@@ -17,7 +17,7 @@ defmodule Shem.TUI.StreamSink do
 
   @impl true
   def init(session_id) do
-    Registry.register(Shem.StreamRegistry, session_id, nil)
+    :pg.join(:shem_streams, session_id, self())
     {:ok, %{session_id: session_id, buffer: []}}
   end
 

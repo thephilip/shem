@@ -52,7 +52,7 @@ defmodule Shem.REST.Handlers.Agents do
           |> put_resp_header("x-accel-buffering", "no")
           |> send_chunked(200)
 
-        Registry.register(Shem.StreamRegistry, session_id, nil)
+        :pg.join(:shem_streams, session_id, self())
         stream_loop(conn, session_id)
     end
   end
@@ -167,21 +167,21 @@ defmodule Shem.REST.Handlers.Agents do
         case Plug.Conn.chunk(conn, "data: #{event}\n\n") do
           {:ok, conn} -> stream_loop(conn, session_id)
           {:error, _} ->
-            Registry.unregister(Shem.StreamRegistry, session_id)
+            :pg.leave(:shem_streams, session_id, self())
             conn
         end
 
       {:stream_done, ^session_id} ->
         event = Jason.encode!(%{type: "done", status: "done"})
         Plug.Conn.chunk(conn, "data: #{event}\n\n")
-        Registry.unregister(Shem.StreamRegistry, session_id)
+        :pg.leave(:shem_streams, session_id, self())
         conn
 
       _other ->
         stream_loop(conn, session_id)
     after
       30_000 ->
-        Registry.unregister(Shem.StreamRegistry, session_id)
+        :pg.leave(:shem_streams, session_id, self())
         conn
     end
   end

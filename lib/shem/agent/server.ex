@@ -244,8 +244,8 @@ defmodule Shem.Agent.Server do
   end
 
   defp broadcast_stream_done(session_id) do
-    Registry.dispatch(Shem.StreamRegistry, session_id, fn entries ->
-      Enum.each(entries, fn {pid, _} -> send(pid, {:stream_done, session_id}) end)
+    Enum.each(:pg.get_members(:shem_streams, session_id), fn pid ->
+      send(pid, {:stream_done, session_id})
     end)
   end
 

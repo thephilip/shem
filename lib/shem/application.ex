@@ -19,7 +19,7 @@ defmodule Shem.Application do
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer,
-        {Registry, keys: :duplicate, name: Shem.StreamRegistry},
+        %{id: :pg_shem_streams, start: {:pg, :start_link, [:shem_streams]}},
         Shem.NodeRegistry
       ] ++
         adversarial_children() ++

@@ -125,8 +125,8 @@ defmodule Shem.Agent.Turn do
           | {:error, term()}
   def stream_step(%Config{} = config, session_id, history, tools_manifest) do
     chunk_fn = fn token ->
-      Registry.dispatch(Shem.StreamRegistry, session_id, fn entries ->
-        Enum.each(entries, fn {pid, _} -> send(pid, {:stream_chunk, session_id, token}) end)
+      Enum.each(:pg.get_members(:shem_streams, session_id), fn pid ->
+        send(pid, {:stream_chunk, session_id, token})
       end)
     end
 
