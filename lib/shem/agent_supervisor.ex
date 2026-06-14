@@ -9,7 +9,11 @@ defmodule Shem.AgentSupervisor do
 
   @impl true
   def init(_init_arg) do
-    Horde.DynamicSupervisor.init(strategy: :one_for_one, members: :auto)
+    Horde.DynamicSupervisor.init(
+      strategy: :one_for_one,
+      members: :auto,
+      distribution_strategy: Shem.PlacementStrategy
+    )
   end
 
   @spec start_agent(String.t(), Config.t()) :: {:ok, pid(), String.t()} | {:error, term()}
@@ -29,7 +33,7 @@ defmodule Shem.AgentSupervisor do
     child_spec = %{
       id: name,
       start: {Shem.Agent.Server, :start_link, [{name, config, session_id, [name: via]}]},
-      restart: :temporary
+      restart: :transient
     }
 
     case Horde.DynamicSupervisor.start_child(__MODULE__, child_spec) do

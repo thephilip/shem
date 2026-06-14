@@ -35,14 +35,14 @@ defmodule Shem.AgentSupervisorTest do
     assert is_pid(GenServer.whereis(via))
   end
 
-  test "a crashed agent is NOT restarted (:temporary restart strategy)" do
+  test "a cleanly stopped agent is NOT restarted (:transient restart strategy)" do
     Shem.LLM.StubTransport.Server.set_default(
       {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
     )
     config = %Agent.Config{task: "t", system_prompt: "s"}
     name = "test_agent_#{System.unique_integer([:positive])}"
     {:ok, pid, _sid} = AgentSupervisor.start_agent(name, config)
-    Process.exit(pid, :kill)
+    GenServer.stop(pid, :normal)
     # Horde registry cleanup is async — give it time
     Process.sleep(300)
     via = Shem.ProcessRegistry.via_tuple(name)
