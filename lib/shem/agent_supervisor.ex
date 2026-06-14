@@ -11,7 +11,7 @@ defmodule Shem.AgentSupervisor do
   def init(_init_arg) do
     Horde.DynamicSupervisor.init(
       strategy: :one_for_one,
-      members: :auto,
+      members: [{__MODULE__, Node.self()}],
       distribution_strategy: Shem.PlacementStrategy
     )
   end
@@ -188,7 +188,12 @@ defmodule Shem.AgentSupervisor do
           end
         end
 
-      # Step 4: push to target (if available)
+      # Step 4: terminate the local copy first so the child id is removed from
+      # Horde's CRDT before we start_child on the target.  If we start first,
+      # Horde sees the id already in the CRDT and returns {:already_started}.
+      Horde.DynamicSupervisor.terminate_child(__MODULE__, pid)
+
+      # Step 5: push to target (if available)
       if target_node do
         via = via_with_meta(name, session_id, config.placement, target_node)
 
@@ -216,9 +221,6 @@ defmodule Shem.AgentSupervisor do
             "checkpoint preserved in Mnesia"
         )
       end
-
-      # Step 5: clean-stop the local copy
-      Horde.DynamicSupervisor.terminate_child(__MODULE__, pid)
     end
   end
 

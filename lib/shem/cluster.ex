@@ -42,7 +42,15 @@ defmodule Shem.Cluster do
 
     Process.flag(:trap_exit, true)
     :net_kernel.monitor_nodes(true)
+    # Bootstrap Horde membership with currently connected nodes (no NodeListener).
+    send(self(), :bootstrap_horde)
     {:ok, %{}}
+  end
+
+  @impl true
+  def handle_info(:bootstrap_horde, state) do
+    sync_horde(Node.self())
+    {:noreply, state}
   end
 
   @impl true

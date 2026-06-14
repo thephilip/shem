@@ -15,7 +15,12 @@ defmodule Shem.PlacementStrategy do
     target = Map.get(child_spec, :placement_node)
 
     if target do
-      case Enum.find(members, fn m -> match?({_, ^target}, m.name) end) do
+      # Only match alive members — dead/uninitialized members must not be returned
+      # as chosen_node, or Horde's handoff_processes treats the dead peer as the
+      # authoritative home and never redistributes the child after a crash.
+      alive = Enum.filter(members, &match?(%{status: :alive}, &1))
+
+      case Enum.find(alive, fn m -> match?({_, ^target}, m.name) end) do
         nil -> Horde.UniformDistribution.choose_node(child_spec, members)
         member -> {:ok, member}
       end
