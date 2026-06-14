@@ -39,6 +39,16 @@ defmodule Shem.Agent.CheckpointTest do
       assert event.payload.history == state.history
       assert event.payload.config == state.config
     end
+
+    test "checkpoint payload contains node field" do
+      id = open_session("ses_CKPT_NODE_#{System.unique_integer([:positive])}")
+      state = make_state()
+      Checkpoint.save(id, state)
+      {:ok, events} = EventLog.events(id)
+      event = Enum.find(events, &(&1.type == :agent_checkpoint))
+      assert Map.has_key?(event.payload, :node)
+      assert event.payload.node == Node.self()
+    end
   end
 
   describe "reconstruct/1" do
@@ -96,6 +106,13 @@ defmodule Shem.Agent.CheckpointTest do
       })
       assert {:ok, checkpoint} = Checkpoint.reconstruct(sid)
       assert checkpoint.turn_count == 1
+    end
+
+    test "reconstructed checkpoint includes node field" do
+      id = open_session("ses_CKPT_NODE_RT_#{System.unique_integer([:positive])}")
+      Checkpoint.save(id, make_state())
+      {:ok, checkpoint} = Checkpoint.reconstruct(id)
+      assert checkpoint.node == Node.self()
     end
   end
 end

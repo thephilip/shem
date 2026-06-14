@@ -95,6 +95,7 @@ defmodule Shem.Agent.Server do
         {:ok, checkpoint} ->
           EventLog.append(session_id, :agent_resumed, %{
             node: Node.self(),
+            prior_node: Map.get(checkpoint, :node),
             turn: checkpoint.turn_count
           })
           {checkpoint.history, checkpoint.turn_count}

@@ -6,7 +6,8 @@ defmodule Shem.Agent.Checkpoint do
     case EventLog.append(session_id, :agent_checkpoint, %{
            history: state.history,
            turn_count: state.turn_count,
-           config: state.config
+           config: state.config,
+           node: Node.self()
          }) do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
