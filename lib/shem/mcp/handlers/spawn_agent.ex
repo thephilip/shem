@@ -32,7 +32,12 @@ defmodule Shem.MCP.Handlers.SpawnAgent do
   defp parse_placement("node:" <> node_str) do
     case node_str do
       "" -> {:error, :invalid_args, "placement node name cannot be empty"}
-      n -> {:ok, {:node, String.to_atom(n)}}
+      n ->
+        try do
+          {:ok, {:node, String.to_existing_atom(n)}}
+        rescue
+          ArgumentError -> {:error, :invalid_args, "unknown node: #{n}"}
+        end
     end
   end
 

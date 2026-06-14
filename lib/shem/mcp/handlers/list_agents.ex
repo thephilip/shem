@@ -26,6 +26,7 @@ defmodule Shem.MCP.Handlers.ListAgents do
 
         %{
           "agent_id" => session_id,
+          "name" => name,
           "status" => status,
           "goal" => goal,
           "events" => count,
