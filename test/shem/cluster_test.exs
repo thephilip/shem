@@ -58,6 +58,15 @@ defmodule Shem.ClusterTest do
     end
   end
 
+  describe "graceful shutdown" do
+    test "Cluster traps exits — terminate/2 runs cleanly on GenServer.stop" do
+      {:ok, pid} = Shem.Cluster.start_link([])
+      assert Process.alive?(pid)
+      GenServer.stop(pid, :normal)
+      refute Process.alive?(pid)
+    end
+  end
+
   describe "NodeRegistry integration" do
     test "nodeup causes NodeRegistry.sync_node to be called without crash" do
       {:ok, pid} = Shem.Cluster.start_link([])
@@ -220,7 +229,16 @@ defmodule Shem.ClusterDistributedTest do
     Node.connect(peer_node)
 
     {:ok, cluster_pid} = Shem.Cluster.start_link([])
-    on_exit(fn -> if Process.alive?(cluster_pid), do: GenServer.stop(cluster_pid) end)
+
+    on_exit(fn ->
+      if Process.alive?(cluster_pid) do
+        try do
+          GenServer.stop(cluster_pid, :normal, 1000)
+        catch
+          :exit, _ -> :ok
+        end
+      end
+    end)
 
     :peer.stop(peer)
 

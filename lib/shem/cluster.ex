@@ -40,6 +40,7 @@ defmodule Shem.Cluster do
       )
     end
 
+    Process.flag(:trap_exit, true)
     :net_kernel.monitor_nodes(true)
     {:ok, %{}}
   end
@@ -64,6 +65,12 @@ defmodule Shem.Cluster do
 
   @impl true
   def handle_info(_msg, state), do: {:noreply, state}
+
+  @impl true
+  def terminate(_reason, _state) do
+    Logger.info("Shem.Cluster: graceful shutdown — evacuating agents")
+    Shem.AgentSupervisor.evacuate_all()
+  end
 
   # ── Private ─────────────────────────────────────────────────────────────────
 
