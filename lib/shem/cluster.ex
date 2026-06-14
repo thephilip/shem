@@ -50,6 +50,7 @@ defmodule Shem.Cluster do
     emit(:cluster_node_joined, %{node: node})
     sync_horde(node)
     onboard_mnesia(node)
+    Shem.NodeRegistry.sync_node(node)
     {:noreply, state}
   end
 
@@ -57,6 +58,7 @@ defmodule Shem.Cluster do
   def handle_info({:nodedown, node}, state) do
     Logger.info("Shem.Cluster: node left — #{node}")
     emit(:cluster_node_left, %{node: node})
+    Shem.NodeRegistry.remove_node(node)
     {:noreply, state}
   end
 

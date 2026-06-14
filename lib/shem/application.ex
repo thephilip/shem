@@ -19,7 +19,8 @@ defmodule Shem.Application do
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
         Shem.LLM.BudgetServer,
-        {Registry, keys: :duplicate, name: Shem.StreamRegistry}
+        {Registry, keys: :duplicate, name: Shem.StreamRegistry},
+        Shem.NodeRegistry
       ] ++
         adversarial_children() ++
         shadow_children() ++

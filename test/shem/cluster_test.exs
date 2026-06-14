@@ -57,6 +57,26 @@ defmodule Shem.ClusterTest do
       GenServer.stop(pid)
     end
   end
+
+  describe "NodeRegistry integration" do
+    test "nodeup causes NodeRegistry.sync_node to be called without crash" do
+      {:ok, pid} = Shem.Cluster.start_link([])
+      send(pid, {:nodeup, :"fake@127.0.0.1"})
+      Process.sleep(100)
+      assert Process.alive?(pid)
+      GenServer.stop(pid)
+    end
+
+    test "nodedown causes node to be removed from NodeRegistry" do
+      fake = :"fake_nr@127.0.0.1"
+      Shem.NodeRegistry.put_node(fake, %{"role" => "worker"})
+      {:ok, pid} = Shem.Cluster.start_link([])
+      send(pid, {:nodedown, fake})
+      Process.sleep(100)
+      assert Shem.NodeRegistry.labels(fake) == %{}
+      GenServer.stop(pid)
+    end
+  end
 end
 
 defmodule Shem.ClusterDistributedTest do
