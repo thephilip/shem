@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-13 (Phase 39 complete)_
+_Last updated: 2026-06-14 (Phase 41 complete)_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -38,9 +38,10 @@ _Last updated: 2026-06-13 (Phase 39 complete)_
 - Currently committing directly to master; branching and PRs are welcome when appropriate.
 
 ## Current Phase
-**Phase 40 — Agent Failover, Evacuation & Placement**: Third of four distributed mesh phases (38–41).
-Goal: agents survive node death transparently, shut down gracefully without losing progress, and can be targeted to nodes by capability.
-Spec: `docs/superpowers/specs/2026-06-13-distributed-mesh-design.md`.
+**Phase 41 — Node-aware TUI, Streaming & API**: COMPLETE (2026-06-14). Final distributed mesh phase (38–41).
+`Shem.StreamRegistry` replaced by OTP `:pg` scope `:shem_streams` for cross-node token broadcast; TUI agent list shows `[node@host]` badge for remote agents; dashboard has per-node cluster strip; `GET /api/agents` list endpoint with `node` field; `GET /:id` adds `node`; MCP `list_agents` adds `node`; MCP `spawn_agent` adds `placement` arg (`any` / `node:X` / `labels:k=v`); 2 distributed streaming tests prove cross-node `:pg` membership. Non-distributed suite: 1018 pass, 9 pre-existing distributed failures (require `--sname`). All 12 distributed tests pass with `elixir --sname shem_test -S mix test --only distributed`.
+
+**Phase 40 — Agent Failover, Evacuation & Placement**: COMPLETE (2026-06-14, 1001 non-distributed + 10 distributed tests). `:transient` restart strategy enables Horde crash recovery; `Shem.NodeRegistry` ETS-backed node label registry; `Agent.Config.placement` with soft/strict label matching; `AgentSupervisor.evacuate_all/0` implements push-handoff; `Shem.Cluster.terminate/2` wires evacuation to graceful shutdown. Key fix: removed `members: :auto` (NodeListener prevented crash recovery); explicit Horde membership lets `mark_dead` fire on `:DOWN`; `PlacementStrategy` filters to alive members only.
 
 **Phase 39 — Distributed EventLog (MnesiaStore)**: COMPLETE. `Shem.EventLog.MnesiaStore` implements the `Store` behaviour over `:mnesia` dirty ops; `EventLog.init/1` auto-selects MnesiaStore when clustered or `:force_mnesia` set; `Shem.Cluster` onboards Mnesia on `:nodeup`; four distributed `:peer` tests pass (write/read cross-node, node death survival, new-node replication, single-node DETSStore fallback).
 
