@@ -69,7 +69,15 @@ defmodule Shem.Cluster do
   @impl true
   def terminate(_reason, _state) do
     Logger.info("Shem.Cluster: graceful shutdown — evacuating agents")
-    Shem.AgentSupervisor.evacuate_all()
+
+    try do
+      Shem.AgentSupervisor.evacuate_all()
+    catch
+      kind, reason ->
+        Logger.warning(
+          "Shem.Cluster: evacuation error during shutdown: #{kind} #{inspect(reason)}"
+        )
+    end
   end
 
   # ── Private ─────────────────────────────────────────────────────────────────
