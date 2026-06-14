@@ -140,7 +140,8 @@ defmodule Shem.Agent do
         max_turns: 20,
         spawn_depth: Keyword.get(opts, :spawn_depth, 0),
         conversational: Keyword.get(opts, :conversational, false),
-        project_context: Keyword.get(opts, :project_context, Shem.Context.Project.detect())
+        project_context: Keyword.get(opts, :project_context, Shem.Context.Project.detect()),
+        placement: Keyword.get(opts, :placement, :any)
       }
       start(config)
     end

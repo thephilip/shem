@@ -46,6 +46,22 @@ defmodule Shem.MCP.Handlers.ListAgentsTest do
     end)
   end
 
+  test "each agent entry includes a node field" do
+    stub("done")
+    config = %Agent.Config{task: "test mcp node field", system_prompt: "be helpful"}
+    {:ok, name, session_id} = Agent.start(config)
+    {:ok, :done} = Agent.await(name, 2_000)
+    on_exit(fn -> Agent.stop(name) end)
+
+    {:ok, result} = ListAgents.call(%{})
+    agents = result["agents"]
+
+    entry = Enum.find(agents, &(&1["agent_id"] == session_id))
+    assert entry, "expected to find agent with session_id #{session_id}"
+    assert Map.has_key?(entry, "node"), "expected node field in #{inspect(entry)}"
+    assert is_binary(entry["node"])
+  end
+
   defp eventually(fun, attempts \\ 40)
   defp eventually(fun, 0), do: assert(fun.())
 

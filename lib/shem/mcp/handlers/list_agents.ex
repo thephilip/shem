@@ -18,7 +18,19 @@ defmodule Shem.MCP.Handlers.ListAgents do
             {:error, _} -> {"", 0}
           end
 
-        %{"agent_id" => session_id, "status" => status, "goal" => goal, "events" => count}
+        node_str =
+          case GenServer.whereis(Shem.ProcessRegistry.via_tuple(name)) do
+            pid when is_pid(pid) -> Atom.to_string(node(pid))
+            _ -> nil
+          end
+
+        %{
+          "agent_id" => session_id,
+          "status" => status,
+          "goal" => goal,
+          "events" => count,
+          "node" => node_str
+        }
       end)
 
     {:ok, %{"agents" => agents}}

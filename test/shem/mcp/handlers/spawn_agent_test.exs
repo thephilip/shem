@@ -52,4 +52,18 @@ defmodule Shem.MCP.Handlers.SpawnAgentTest do
   test "rejects a missing goal" do
     assert {:error, :invalid_args, _} = SpawnAgent.call(%{})
   end
+
+  test "accepts placement: any without error" do
+    stub("done")
+    assert {:ok, %{"agent_id" => agent_id}} =
+             SpawnAgent.call(%{"goal" => "test placement", "placement" => "any"})
+
+    on_exit(fn -> stop_by_session(agent_id) end)
+    assert String.starts_with?(agent_id, "ses_")
+  end
+
+  test "rejects unknown placement format" do
+    result = SpawnAgent.call(%{"goal" => "test", "placement" => "badformat"})
+    assert {:error, :invalid_args, _} = result
+  end
 end
