@@ -114,5 +114,18 @@ defmodule Shem.Agent.CheckpointTest do
       {:ok, checkpoint} = Checkpoint.reconstruct(id)
       assert checkpoint.node == Node.self()
     end
+
+    test "reconstructed checkpoint without node field returns nil for node (backward compat)" do
+      id = open_session("ses_CKPT_COMPAT_#{System.unique_integer([:positive])}")
+      # Manually write a checkpoint event without the node field (simulates pre-Phase-40 data)
+      EventLog.append(id, :agent_checkpoint, %{
+        history: [%{role: :user, content: "task"}],
+        turn_count: 1,
+        config: %{}
+      })
+      {:ok, checkpoint} = Checkpoint.reconstruct(id)
+      assert checkpoint.turn_count == 1
+      assert Map.get(checkpoint, :node) == nil
+    end
   end
 end

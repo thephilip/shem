@@ -93,6 +93,7 @@ defmodule Shem.Agent.Server do
           {[%{role: :user, content: config.task}], 0}
 
         {:ok, checkpoint} ->
+          # EventLog.append failures in init are non-fatal — consistent with all other append call sites in this module.
           EventLog.append(session_id, :agent_resumed, %{
             node: Node.self(),
             prior_node: Map.get(checkpoint, :node),
