@@ -153,7 +153,8 @@ defmodule Shem.Agent.Server do
         manifest = ToolDispatch.build_manifest(state.config)
 
         case Turn.stream_step(state.config, state.session_id, state.history, manifest) do
-          {:done, answer} ->
+          {:done, answer, rc} ->
+            emit_thinking(state.session_id, state.turn_count + 1, rc)
             history = state.history ++ [%{role: :assistant, content: answer}]
             EventLog.append(state.session_id, :agent_turn_completed, %{
               turn: state.turn_count + 1,
@@ -162,7 +163,8 @@ defmodule Shem.Agent.Server do
             {:noreply,
              finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
 
-          {:tool_calls, calls, raw} ->
+          {:tool_calls, calls, raw, rc} ->
+            emit_thinking(state.session_id, state.turn_count + 1, rc)
             assistant_entry = %{
               role: :assistant,
               content: (if raw == "", do: nil, else: raw),
@@ -246,6 +248,14 @@ defmodule Shem.Agent.Server do
   defp broadcast_stream_done(session_id) do
     Enum.each(:pg.get_members(:shem_streams, session_id), fn pid ->
       send(pid, {:stream_done, session_id})
+    end)
+  end
+
+  defp emit_thinking(_session_id, _turn, rc) when rc in [nil, ""], do: :ok
+  defp emit_thinking(session_id, turn, rc) do
+    EventLog.append(session_id, :agent_thinking, %{content: rc, turn: turn})
+    Enum.each(:pg.get_members(:shem_streams, session_id), fn pid ->
+      send(pid, {:stream_thinking, session_id, rc})
     end)
   end
 
