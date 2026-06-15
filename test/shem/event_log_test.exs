@@ -190,6 +190,53 @@ defmodule Shem.EventLogTest do
     end
   end
 
+  describe "scrub/2" do
+    test "removes events after the pivot ID, keeping pivot" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :evt_a, %{})
+      EventLog.append(sid, :evt_b, %{})
+      EventLog.append(sid, :evt_c, %{})
+      {:ok, [a, b, _c]} = EventLog.events(sid)
+
+      :ok = EventLog.scrub(sid, b.id)
+
+      {:ok, remaining} = EventLog.events(sid)
+      assert length(remaining) == 2
+      assert Enum.any?(remaining, &(&1.id == a.id))
+      assert Enum.any?(remaining, &(&1.id == b.id))
+      refute Enum.any?(remaining, &(&1.type == :evt_c))
+    end
+
+    test "scrubbing the last event ID is a no-op" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :evt_a, %{})
+      {:ok, [a]} = EventLog.events(sid)
+
+      :ok = EventLog.scrub(sid, a.id)
+
+      {:ok, remaining} = EventLog.events(sid)
+      assert length(remaining) == 1
+    end
+
+    test "scrubbing the first event ID removes all after it" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :evt_a, %{})
+      EventLog.append(sid, :evt_b, %{})
+      EventLog.append(sid, :evt_c, %{})
+      {:ok, [a | _]} = EventLog.events(sid)
+
+      :ok = EventLog.scrub(sid, a.id)
+
+      {:ok, remaining} = EventLog.events(sid)
+      assert length(remaining) == 1
+      assert hd(remaining).type == :evt_a
+    end
+
+    test "returns {:error, :session_not_found} for unknown session" do
+      assert {:error, :session_not_found} = EventLog.scrub("ses_no_such", "evt_x")
+    end
+  end
+
   describe "hash chain" do
     test "appended events carry chained hashes and the session verifies" do
       {:ok, sid} = EventLog.start_session()

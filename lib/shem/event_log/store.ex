@@ -14,4 +14,7 @@ defmodule Shem.EventLog.Store do
               {:ok, Event.t()} | {:error, :not_found}
 
   @callback close(handle :: term()) :: :ok
+
+  @callback scrub(handle :: term(), after_event_id :: String.t()) ::
+              :ok | {:error, :event_not_found}
 end

@@ -32,6 +32,11 @@ defmodule Shem.EventLog do
   @spec events(String.t()) :: {:ok, [Event.t()]} | {:error, :session_not_found | :session_ended}
   def events(session_id), do: GenServer.call(__MODULE__, {:events, session_id})
 
+  @spec scrub(String.t(), String.t()) ::
+          :ok | {:error, :session_not_found | :session_ended | :event_not_found}
+  def scrub(session_id, after_event_id),
+    do: GenServer.call(__MODULE__, {:scrub, session_id, after_event_id})
+
   @spec event(String.t(), String.t()) ::
           {:ok, Event.t()} | {:error, :session_not_found | :session_ended | :not_found}
   def event(session_id, event_id),
@@ -184,6 +189,14 @@ defmodule Shem.EventLog do
           _ ->
             {:reply, read_dets_file(session_id), state}
         end
+    end
+  end
+
+  @impl true
+  def handle_call({:scrub, session_id, after_event_id}, _from, state) do
+    case get_active_handle(state, session_id) do
+      {:ok, handle} -> {:reply, state.store.scrub(handle, after_event_id), state}
+      error -> {:reply, error, state}
     end
   end
 
