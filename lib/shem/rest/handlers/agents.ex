@@ -212,6 +212,16 @@ defmodule Shem.REST.Handlers.Agents do
             conn
         end
 
+      {:stream_thinking, ^session_id, rc} ->
+        event = Jason.encode!(%{type: "thinking", content: rc})
+
+        case Plug.Conn.chunk(conn, "data: #{event}\n\n") do
+          {:ok, conn} -> stream_loop(conn, session_id)
+          {:error, _} ->
+            :pg.leave(:shem_streams, session_id, self())
+            conn
+        end
+
       {:stream_done, ^session_id} ->
         event = Jason.encode!(%{type: "done", status: "done"})
         Plug.Conn.chunk(conn, "data: #{event}\n\n")
