@@ -110,5 +110,24 @@ defmodule Shem.EventLog.MnesiaStore do
   end
 
   @impl true
+  def scrub(session_id, after_event_id) do
+    {:ok, events} = read_all(session_id)
+
+    case Enum.find_index(events, &(&1.id == after_event_id)) do
+      nil ->
+        {:error, :event_not_found}
+
+      cut_index ->
+        events
+        |> Enum.drop(cut_index + 1)
+        |> Enum.each(fn event ->
+          :mnesia.dirty_delete(@table, {session_id, event.id})
+        end)
+
+        :ok
+    end
+  end
+
+  @impl true
   def close(_session_id), do: :ok
 end

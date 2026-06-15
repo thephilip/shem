@@ -192,6 +192,28 @@ defmodule Shem.Distributed.EventLogTest do
     )
   end
 
+  test "scrub/2 removes events after pivot in Mnesia" do
+    session_id = "ses_scrub_#{:erlang.unique_integer([:positive])}"
+    {:ok, handle} = MnesiaStore.open(session_id, "/ignored")
+
+    e_a = Event.new(session_id, :m_a, %{})
+    e_b = Event.new(session_id, :m_b, %{})
+    e_c = Event.new(session_id, :m_c, %{})
+    :ok = MnesiaStore.append(handle, e_a)
+    :ok = MnesiaStore.append(handle, e_b)
+    :ok = MnesiaStore.append(handle, e_c)
+
+    {:ok, [a, b, _c]} = MnesiaStore.read_all(session_id)
+
+    :ok = MnesiaStore.scrub(session_id, b.id)
+
+    {:ok, remaining} = MnesiaStore.read_all(session_id)
+    assert length(remaining) == 2
+    assert Enum.any?(remaining, &(&1.id == a.id))
+    assert Enum.any?(remaining, &(&1.id == b.id))
+    refute Enum.any?(remaining, &(&1.type == :m_c))
+  end
+
   test "single-node: EventLog auto-selects DETSStore" do
     # Verify that without Node.list() and without :force_mnesia,
     # EventLog init selects DETSStore (no peers connected in this test).
