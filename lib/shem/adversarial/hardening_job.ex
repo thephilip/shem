@@ -235,7 +235,8 @@ defmodule Shem.Adversarial.HardeningJob do
       NO_FAILURES_FOUND
       """,
       tools: ["run_code", "read_file"],
-      max_turns: 10
+      max_turns: 10,
+      placement: Application.get_env(:shem, :adversarial_agent_placement, :any)
     }
   end
 
@@ -253,7 +254,8 @@ defmodule Shem.Adversarial.HardeningJob do
       The new version must pass its own tests before graduating.
       """,
       tools: ["write_tool", "run_code"],
-      max_turns: 10
+      max_turns: 10,
+      placement: Application.get_env(:shem, :adversarial_agent_placement, :any)
     }
   end
 
