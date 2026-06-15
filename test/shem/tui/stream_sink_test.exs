@@ -1,64 +1,37 @@
 defmodule Shem.TUI.StreamSinkTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   alias Shem.TUI.StreamSink
 
   setup do
-    case :pg.start_link(:shem_streams) do
-      {:ok, _} -> :ok
-      {:error, {:already_started, _}} -> :ok
-    end
-    :ok
+    session_id = "test_#{:erlang.unique_integer([:positive])}"
+    {:ok, pid} = StreamSink.start_link(session_id)
+    %{pid: pid, session_id: session_id}
   end
 
-  test "init/1 joins :pg group for session" do
-    session_id = "ses_test_#{:erlang.unique_integer([:positive])}"
-    {:ok, pid} = StreamSink.start_link(session_id)
-
-    members = :pg.get_members(:shem_streams, session_id)
-    assert pid in members
-
-    StreamSink.stop(pid)
+  test "take_thinking returns nil before any thinking arrives", %{pid: pid} do
+    assert StreamSink.take_thinking(pid) == nil
   end
 
-  test "receives :stream_chunk tokens and buffers them" do
-    session_id = "ses_test_#{:erlang.unique_integer([:positive])}"
-    {:ok, pid} = StreamSink.start_link(session_id)
-
-    send(pid, {:stream_chunk, session_id, "hello"})
-    send(pid, {:stream_chunk, session_id, " world"})
-    Process.sleep(10)
-
-    assert StreamSink.take_tokens(pid) == ["hello", " world"]
-
-    StreamSink.stop(pid)
+  test "take_thinking returns stored thinking and then nil", %{pid: pid, session_id: sid} do
+    send(pid, {:stream_thinking, sid, "I need to reason about this"})
+    :timer.sleep(10)
+    assert StreamSink.take_thinking(pid) == "I need to reason about this"
+    assert StreamSink.take_thinking(pid) == nil
   end
 
-  test "take_tokens/1 drains the buffer" do
-    session_id = "ses_test_#{:erlang.unique_integer([:positive])}"
-    {:ok, pid} = StreamSink.start_link(session_id)
-
-    send(pid, {:stream_chunk, session_id, "token"})
-    Process.sleep(10)
-
-    assert StreamSink.take_tokens(pid) == ["token"]
-    assert StreamSink.take_tokens(pid) == []
-
-    StreamSink.stop(pid)
+  test "second stream_thinking replaces the first", %{pid: pid, session_id: sid} do
+    send(pid, {:stream_thinking, sid, "first"})
+    send(pid, {:stream_thinking, sid, "second"})
+    :timer.sleep(10)
+    assert StreamSink.take_thinking(pid) == "second"
   end
 
-  test "process death removes it from :pg group" do
-    session_id = "ses_test_#{:erlang.unique_integer([:positive])}"
-    {:ok, pid} = StreamSink.start_link(session_id)
-    ref = Process.monitor(pid)
-
-    assert pid in :pg.get_members(:shem_streams, session_id)
-
-    StreamSink.stop(pid)
-    receive do {:DOWN, ^ref, _, _, _} -> :ok after 1000 -> flunk("process didn't stop") end
-    # :pg removes dead processes asynchronously; give it a moment
-    Process.sleep(20)
-
-    assert pid not in :pg.get_members(:shem_streams, session_id)
+  test "take_tokens still works alongside take_thinking", %{pid: pid, session_id: sid} do
+    send(pid, {:stream_chunk, sid, "hello"})
+    send(pid, {:stream_thinking, sid, "thinking..."})
+    :timer.sleep(10)
+    assert StreamSink.take_tokens(pid) == ["hello"]
+    assert StreamSink.take_thinking(pid) == "thinking..."
   end
 end

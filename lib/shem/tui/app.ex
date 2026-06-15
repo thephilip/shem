@@ -440,18 +440,25 @@ defmodule Shem.TUI.App do
             trust_counts: safe_trust_counts()
         }
 
-        # Drain streaming tokens from StreamSink into streaming_buffer
+        # Drain streaming tokens and thinking from StreamSink
         model =
           case model.stream_sink do
             nil -> model
             pid when is_pid(pid) ->
               if Process.alive?(pid) do
-                tokens = StreamSink.take_tokens(pid)
-                case tokens do
-                  [] -> model
-                  _ ->
-                    new_buf = (model.agent_view && (model.agent_view.streaming_buffer || "")) <> Enum.join(tokens)
-                    agent_view = model.agent_view && %{model.agent_view | streaming_buffer: new_buf}
+                model =
+                  case StreamSink.take_tokens(pid) do
+                    [] -> model
+                    tokens ->
+                      new_buf = (model.agent_view && (model.agent_view.streaming_buffer || "")) <> Enum.join(tokens)
+                      agent_view = model.agent_view && %{model.agent_view | streaming_buffer: new_buf}
+                      %{model | agent_view: agent_view}
+                  end
+
+                case StreamSink.take_thinking(pid) do
+                  nil -> model
+                  rc ->
+                    agent_view = model.agent_view && %{model.agent_view | current_reasoning: rc}
                     %{model | agent_view: agent_view}
                 end
               else

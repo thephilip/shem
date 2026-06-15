@@ -92,6 +92,9 @@ defmodule Shem.TUI.AgentView do
         content = event.payload[:content] || ""
         %{acc | current_reasoning: content}
 
+      :agent_thinking ->
+        %{acc | current_reasoning: event.payload[:content] || ""}
+
       :agent_tool_called ->
         %{
           acc
