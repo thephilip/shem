@@ -137,6 +137,36 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
     end
   end
 
+  describe "call/3 — reasoning_content" do
+    test "parses reasoning_content from response body" do
+      body = %{
+        "choices" => [%{"message" => %{
+          "role" => "assistant",
+          "content" => "hello from qwen",
+          "reasoning_content" => "Let me think about this carefully."
+        }}],
+        "usage" => %{"total_tokens" => 50}
+      }
+      opts = [api_key: "sk-test", http_post_fn: mock_post(200, body)]
+      assert {:ok, %Response{} = resp} = OpenAITransport.call(req(), opts, nil)
+      assert resp.content == "hello from qwen"
+      assert resp.reasoning_content == "Let me think about this carefully."
+    end
+
+    test "reasoning_content is nil when field is empty string" do
+      body = %{
+        "choices" => [%{"message" => %{
+          "role" => "assistant",
+          "content" => "hi",
+          "reasoning_content" => ""
+        }}],
+        "usage" => %{"total_tokens" => 10}
+      }
+      opts = [api_key: "sk-test", http_post_fn: mock_post(200, body)]
+      assert {:ok, %Response{reasoning_content: nil}} = OpenAITransport.call(req(), opts, nil)
+    end
+  end
+
   describe "call/3 — message formatting" do
     test "formats assistant message with tool_calls" do
       calls = [%{id: "call_1", name: "run_code", args: %{"source" => "1+1"}}]
