@@ -346,6 +346,33 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
       assert {:error, {:transport, :unauthorized}} =
                OpenAITransport.stream(request, opts, fn _ -> :ok end, fn _, _ -> {:error, :no_next} end)
     end
+
+    test "reasoning_content chunks are accumulated and returned in Response" do
+      req_fn = fn _url, opts ->
+        into_fn = opts[:into]
+        # thinking phase: delta has reasoning_content
+        think1 = "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"Let me think \"}}]}\n\n"
+        think2 = "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"carefully.\"}}]}\n\n"
+        # content phase: delta has content
+        content1 = "data: {\"choices\":[{\"delta\":{\"content\":\"hello\"}}]}\n\ndata: {\"usage\":{\"prompt_tokens\":5,\"completion_tokens\":10}}\n\n"
+        {:cont, a1} = into_fn.({:data, think1}, "")
+        {:cont, a2} = into_fn.({:data, think2}, a1)
+        {:cont, _}  = into_fn.({:data, content1}, a2)
+        {:ok, %{status: 200}}
+      end
+
+      {:ok, collector} = Agent.start_link(fn -> [] end)
+      chunk_fn = fn t -> Agent.update(collector, &(&1 ++ [t])) end
+
+      request = %Shem.LLM.Request{prompt: "hi", model: :default}
+      opts = [api_key: "sk-test", req_fn: req_fn]
+
+      assert {:ok, %{content: "hello", reasoning_content: "Let me think carefully.", tokens_used: 15}} =
+               OpenAITransport.stream(request, opts, chunk_fn, fn _, _ -> {:error, :no_next} end)
+
+      # reasoning_content chunks must NOT be forwarded to chunk_fn
+      assert Agent.get(collector, & &1) == ["hello"]
+    end
   end
 
   describe "call/3 — structured messages" do

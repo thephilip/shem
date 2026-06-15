@@ -151,6 +151,7 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
     Process.put(ref, %{
       buf: "",
       content: "",
+      reasoning_content: "",
       tool_calls: %{},
       tool_cut: false,
       prompt_tokens: 0,
@@ -257,6 +258,9 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
               %{acc | tool_calls: Map.put(acc.tool_calls, idx, updated)}
           end)
 
+        %{"reasoning_content" => rc} when is_binary(rc) and rc != "" ->
+          %{state | reasoning_content: state.reasoning_content <> rc}
+
         _ ->
           state
       end
@@ -300,10 +304,17 @@ defmodule Shem.LLM.Middleware.OpenAITransport do
 
     content = if final.content == "", do: nil, else: final.content
 
+    reasoning_content =
+      case final.reasoning_content do
+        rc when is_binary(rc) and rc != "" -> rc
+        _ -> nil
+      end
+
     {:ok,
      %Shem.LLM.Response{
        content: content,
        tool_calls: tool_calls,
+       reasoning_content: reasoning_content,
        tokens_used: tokens_used,
        model: model,
        latency_ms: latency_ms
