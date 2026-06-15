@@ -388,11 +388,187 @@ defmodule Mix.Tasks.Demo do
     Map.put(state, :recovery_session_id, alpha_sid)
   end
 
-  # ── Phase 3: Time-Travel (stubs filled in Task 7) ───────────────────────────
+  # ── Phase 3: Time-Travel (Scrub + Fork) ─────────────────────────────────────
 
-  defp phase_3(state), do: state
+  defp phase_3(%{recovery_session_id: sid} = state) do
+    phase_banner("PHASE 3: TIME-TRAVEL (SCRUB + FORK)")
 
-  # ── Phase 4: Adversarial Hardening (stubs filled in Task 7) ─────────────────
+    {:ok, events_before} = EventLog.events(sid)
+    step("EventLog for worker_alpha: #{length(events_before)} events")
 
-  defp phase_4(state), do: state
+    pivot =
+      events_before
+      |> Enum.reverse()
+      |> Enum.find(&(&1.type == :agent_checkpoint))
+
+    unless pivot do
+      fail!(3, :no_checkpoint, "No agent_checkpoint event found in session #{sid}")
+    end
+
+    info("Last checkpoint event: #{pivot.id}")
+
+    :ok = EventLog.scrub(sid, pivot.id)
+    {:ok, events_after} = EventLog.events(sid)
+    ok("Scrubbed dirty tail — #{length(events_before)} → #{length(events_after)} events")
+
+    step("Forking timeline from turn 1 checkpoint...")
+
+    alt = [
+      %{content: "Taking the alternate path — diverging from original timeline.", tokens_used: 5}
+    ]
+
+    case Shem.LLM.Branch.branch_after_call(sid, 0, alt, fn fork_sid -> fork_sid end) do
+      {:ok, fork_sid, _} ->
+        ok("Fork created.")
+        info("Original session: #{sid}")
+        info("Fork session:     #{fork_sid}")
+        info("Two parallel histories now exist.")
+
+      err ->
+        fail!(3, err, "branch_after_call failed")
+    end
+
+    state
+  end
+
+  # ── Phase 4: Adversarial Hardening ──────────────────────────────────────────
+
+  defp phase_4(state) do
+    phase_banner("PHASE 4: ADVERSARIAL HARDENING")
+
+    tool = buggy_tool()
+    step("Graduating demo tool: #{tool.name} (known bug: crashes on nil input)...")
+    :ok = Shem.Lab.Registry.register(tool)
+    :ok = Shem.Lab.Workspace.graduate(tool)
+    ok("word_count registered")
+
+    Application.put_env(:shem, :adversarial_agent_placement, {:node, node()})
+
+    resp = fn content ->
+      {:ok,
+       %Shem.LLM.Response{content: content, tokens_used: 1, model: :default, latency_ms: 0}}
+    end
+
+    StubServer.push_response(
+      Shem.LLM.StubTransport.Server,
+      resp.("FAILURES_FOUND: crashes on nil input")
+    )
+
+    StubServer.push_response(
+      Shem.LLM.StubTransport.Server,
+      resp.("Task complete.")
+    )
+
+    StubServer.push_response(
+      Shem.LLM.StubTransport.Server,
+      resp.("NO_FAILURES_FOUND")
+    )
+
+    StubServer.set_default(Shem.LLM.StubTransport.Server, resp.("Task complete."))
+
+    step("Starting HardeningJob...")
+
+    {:ok, job_name} =
+      case Shem.Adversarial.start_hardening("demo_word_count") do
+        {:ok, :disabled} ->
+          fail!(4, :adversarial_disabled, "Shem.Adversarial.Supervisor not running")
+
+        result ->
+          result
+      end
+
+    job_pid = GenServer.whereis(Shem.ProcessRegistry.via_tuple(job_name))
+    poll_hardening(job_pid, state)
+  end
+
+  defp poll_hardening(job_pid, state) do
+    wait_for_round(job_pid, 1)
+    info("[stub] FAILURES_FOUND: crashes on nil input")
+    info("[demo] Patching word_count — registering fixed version...")
+    fixed = fixed_tool()
+    :ok = Shem.Lab.Registry.register(fixed)
+    :ok = Shem.Lab.Workspace.graduate(fixed)
+    info("[demo] Fixed version graduated")
+
+    wait_for_round(job_pid, 2)
+    info("[stub] NO_FAILURES_FOUND")
+
+    unless assert_eventually(
+             fn ->
+               case GenServer.call(job_pid, :status) do
+                 %{status: :done} -> true
+                 _ -> false
+               end
+             end,
+             30_000
+           ) do
+      fail!(4, :hardening_timeout, "HardeningJob did not complete within 30s")
+    end
+
+    case Shem.Trust.Store.entry("demo_word_count") do
+      {:ok, entry} ->
+        ok("HardeningJob: real rounds, real EventLog, real trust store. LLM responses scripted.")
+        info("Trust score: #{Float.round(entry.score, 2)} | rounds: #{entry.hardening_count}")
+
+      {:error, :unrated} ->
+        info("Trust store: no entry (hardening may have errored)")
+    end
+
+    state
+  end
+
+  defp wait_for_round(job_pid, target_round) do
+    assert_eventually(
+      fn ->
+        case GenServer.call(job_pid, :status) do
+          %{round: r} when r >= target_round -> true
+          %{status: :done} -> true
+          _ -> false
+        end
+      end,
+      15_000
+    )
+  end
+
+  # ── Demo Tool ────────────────────────────────────────────────────────────────
+
+  defp buggy_tool do
+    %Shem.Tool{
+      id: "demo_word_count",
+      name: "word_count",
+      module: Shem.Lab.Tool.DemoWordCount,
+      source: """
+      def run(%{"text" => text}) do
+        words = String.split(text)
+        {:ok, "\#{length(words)} words"}
+      end
+      """,
+      test_source: "",
+      input_schema: %{
+        "type" => "object",
+        "properties" => %{"text" => %{"type" => "string"}},
+        "required" => ["text"]
+      },
+      graduated_at: DateTime.utc_now()
+    }
+  end
+
+  defp fixed_tool do
+    %Shem.Tool{
+      id: "demo_word_count",
+      name: "word_count",
+      module: Shem.Lab.Tool.DemoWordCount,
+      source: """
+      def run(%{"text" => nil}), do: {:ok, "0 words"}
+      def run(%{"text" => text}), do: {:ok, "\#{length(String.split(text))} words"}
+      """,
+      test_source: "",
+      input_schema: %{
+        "type" => "object",
+        "properties" => %{"text" => %{"type" => "string"}},
+        "required" => ["text"]
+      },
+      graduated_at: DateTime.utc_now()
+    }
+  end
 end
