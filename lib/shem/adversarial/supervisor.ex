@@ -1,7 +1,7 @@
 defmodule Shem.Adversarial.Supervisor do
   use DynamicSupervisor
 
-  def start_link(opts \\ []) do
+  def start_link(_opts \\ []) do
     DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
