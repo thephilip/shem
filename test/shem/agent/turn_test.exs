@@ -242,22 +242,22 @@ defmodule Shem.Agent.TurnTest do
       :ok
     end
 
-    test "returns {:done, content} when LLM response has no tool call" do
+    test "returns {:done, content, rc} when LLM response has no tool call" do
       StubTransport.Server.push_response(
         {:ok, %Response{content: "The answer is 42.", tokens_used: 5, model: :default, latency_ms: 1}}
       )
       {:ok, sid} = Shem.EventLog.start_session()
-      assert {:done, "The answer is 42."} =
+      assert {:done, "The answer is 42.", _rc} =
                Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
     end
 
-    test "returns {:tool_calls, calls, raw} when LLM response contains tool call" do
+    test "returns {:tool_calls, calls, raw, rc} when LLM response contains tool call" do
       raw = ~s(I'll call a tool.\n{"tool": "list_tools", "args": {}})
       StubTransport.Server.push_response(
         {:ok, %Response{content: raw, tokens_used: 10, model: :default, latency_ms: 1}}
       )
       {:ok, sid} = Shem.EventLog.start_session()
-      assert {:tool_calls, [%{name: "list_tools", args: %{}}], ^raw} =
+      assert {:tool_calls, [%{name: "list_tools", args: %{}}], ^raw, _rc} =
                Turn.step(@config, sid, [%{role: :user, content: "do X"}], @manifest)
     end
 
@@ -294,7 +294,7 @@ defmodule Shem.Agent.TurnTest do
       config = %Config{task: "test", system_prompt: "be helpful"}
       history = [%{role: :user, content: "what is 6*7?"}]
 
-      assert {:done, _} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
+      assert {:done, _, _rc} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
 
       messages =
         receive do
@@ -312,7 +312,7 @@ defmodule Shem.Agent.TurnTest do
       config = %Config{task: "test", system_prompt: "be helpful"}
       history = [%{role: :user, content: "compute"}]
 
-      assert {:done, answer} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
+      assert {:done, answer, _rc} = Shem.Agent.Turn.stream_step(config, session_id, history, [])
       assert answer =~ "42"
     end
 
@@ -331,7 +331,7 @@ defmodule Shem.Agent.TurnTest do
       config = %Config{task: "test", system_prompt: "be helpful"}
       history = [%{role: :user, content: "list tools"}]
 
-      assert {:tool_calls, [%{name: "list_tools"}], _raw} =
+      assert {:tool_calls, [%{name: "list_tools"}], _raw, _rc} =
                Shem.Agent.Turn.stream_step(config, session_id, history, [])
     end
 
@@ -343,6 +343,30 @@ defmodule Shem.Agent.TurnTest do
 
       assert {:error, :transport_down} =
                Shem.Agent.Turn.stream_step(config, session_id, history, [])
+    end
+  end
+
+  describe "step/4 and stream_step/4 return tuples include reasoning_content" do
+    test "parse_response with rc=nil produces {:done, content, nil}" do
+      content = "The answer is 42."
+      rc = nil
+      result =
+        case Turn.parse_response(content) do
+          {:done, c} -> {:done, c, rc}
+          {:tool_calls, calls, raw} -> {:tool_calls, calls, raw, rc}
+        end
+      assert {:done, "The answer is 42.", nil} = result
+    end
+
+    test "parse_response with rc=nil produces {:tool_calls, calls, raw, nil}" do
+      raw = ~s({"tool": "list_tools", "args": {}})
+      rc = nil
+      result =
+        case Turn.parse_response(raw) do
+          {:done, c} -> {:done, c, rc}
+          {:tool_calls, calls, raw2} -> {:tool_calls, calls, raw2, rc}
+        end
+      assert {:tool_calls, [%{name: "list_tools"}], ^raw, nil} = result
     end
   end
 
@@ -369,7 +393,7 @@ defmodule Shem.Agent.TurnTest do
 
       {:ok, sid} = Shem.EventLog.start_session()
       result = Turn.step(config, sid, [], [])
-      assert {:tool_calls, [^tool_call], ""} = result
+      assert {:tool_calls, [^tool_call], "", _rc} = result
     end
   end
 end

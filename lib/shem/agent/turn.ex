@@ -120,8 +120,8 @@ defmodule Shem.Agent.Turn do
   end
 
   @spec stream_step(Config.t(), String.t(), [map()], [map()]) ::
-          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t()}
-          | {:done, String.t()}
+          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t(), String.t() | nil}
+          | {:done, String.t(), String.t() | nil}
           | {:error, term()}
   def stream_step(%Config{} = config, session_id, history, tools_manifest) do
     chunk_fn = fn token ->
@@ -136,11 +136,14 @@ defmodule Shem.Agent.Turn do
       |> Map.put(:session_id, session_id)
 
     case LLM.stream_complete(request, chunk_fn) do
-      {:ok, %Response{tool_calls: [_ | _] = calls, content: content}} ->
-        {:tool_calls, calls, content || ""}
+      {:ok, %Response{tool_calls: [_ | _] = calls, content: content, reasoning_content: rc}} ->
+        {:tool_calls, calls, content || "", rc}
 
-      {:ok, %Response{content: content}} ->
-        (content || "") |> strip_thinking() |> parse_response()
+      {:ok, %Response{content: content, reasoning_content: rc}} ->
+        case (content || "") |> strip_thinking() |> parse_response() do
+          {:done, c} -> {:done, c, rc}
+          {:tool_calls, calls, raw} -> {:tool_calls, calls, raw, rc}
+        end
 
       {:error, reason} ->
         {:error, reason}
@@ -148,8 +151,8 @@ defmodule Shem.Agent.Turn do
   end
 
   @spec step(Config.t(), String.t(), [map()], [map()]) ::
-          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t()}
-          | {:done, String.t()}
+          {:tool_calls, [%{id: String.t() | nil, name: String.t(), args: map()}], String.t(), String.t() | nil}
+          | {:done, String.t(), String.t() | nil}
           | {:error, term()}
   def step(%Config{} = config, session_id, history, tools_manifest) do
     request =
@@ -158,11 +161,14 @@ defmodule Shem.Agent.Turn do
       |> Map.put(:session_id, session_id)
 
     case LLM.complete(request) do
-      {:ok, %Response{tool_calls: [_ | _] = calls, content: content}} ->
-        {:tool_calls, calls, content || ""}
+      {:ok, %Response{tool_calls: [_ | _] = calls, content: content, reasoning_content: rc}} ->
+        {:tool_calls, calls, content || "", rc}
 
-      {:ok, %Response{content: content}} ->
-        (content || "") |> strip_thinking() |> parse_response()
+      {:ok, %Response{content: content, reasoning_content: rc}} ->
+        case (content || "") |> strip_thinking() |> parse_response() do
+          {:done, c} -> {:done, c, rc}
+          {:tool_calls, calls, raw} -> {:tool_calls, calls, raw, rc}
+        end
 
       {:error, reason} ->
         {:error, reason}
