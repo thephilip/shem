@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-15 (Launch Demo complete)_
+_Last updated: 2026-06-15_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -36,13 +36,32 @@ _Last updated: 2026-06-15 (Launch Demo complete)_
 - Container executor for sandboxed code generation.
 - Travelling-agent / task-drift detection folds into `Shem.Shadow.Agent` — no separate detector.
 - Currently committing directly to master; branching and PRs are welcome when appropriate.
+- Tool authorship is delegated via `spawn_agent(preset: "<language>_toolsmith", task: "...")` —
+  the delegation is explicit and visible in the EventLog, not hidden behind a wrapper builtin.
+- `write_tool` builtin gains `description` (required string) and `schema` (optional JSON object,
+  default empty) — stored in `tool.metadata`, surfaced in the tool manifest for future agents.
+- Naming convention for language-specific tool-writing presets: `<language>_toolsmith`
+  (e.g., `elixir_toolsmith`, `python_toolsmith`, `rust_toolsmith`). Convention established now;
+  non-Elixir smiths are future work.
+- Polyglot GraduationGate (language routing, non-Elixir executor backends) is a future phase —
+  not part of Phase 42. Phase 42 is Elixir-only.
 
 ## Current Phase
+**Phase 42 — Self-Evolution Loop (Toolsmith)**: IN DESIGN (2026-06-15).
+Closes the loop: agents delegate tool authorship to a language-specific `elixir_toolsmith`
+sub-agent via `spawn_agent`. Toolsmith writes Elixir source + StreamData property tests,
+calls `write_tool` (extended with `description`), graduates the tool, returns
+`"graduated: <name>"`. Parent agent then calls the new tool in the same session.
+
+**Reasoning Visibility — COMPLETE** (2026-06-15). `reasoning_content` from qwen3 captured
+in EventLog as `:agent_thinking` events; broadcast to TUI (`StreamSink`) and REST SSE
+(`type: "thinking"`). 8 commits, 1028 tests passing.
+
+**Real LLM wiring — COMPLETE** (2026-06-15). `OpenAITransport` pointed at LM Studio on
+port 1234, model `"qwen"`, `llm_max_tokens: 4096`. End-to-end verified.
+
 **Launch Demo — COMPLETE** (2026-06-15). `mix demo` runs end-to-end in ~90s.
 Four phases: distributed Horde mesh (3 nodes, 2 agents) → node kill + Horde recovery in ~100ms → EventLog scrub + timeline fork → adversarial hardening loop (real rounds, trust score 0.85). All LLM responses scripted via StubTransport; no external services required. Run with `elixir --sname shem_demo -S mix demo`.
-Key fixes during integration: peer nodes need `BudgetServer` started; `Agent.await` needs CRDT sync polling wrapper; `conversational: true` agents correctly return `:waiting` after recovery.
-
-**Next**: Open. The core North Star goal (ship the launch demo) is achieved.
 
 **Phase 41 — Node-aware TUI, Streaming & API**: COMPLETE (2026-06-14). Final distributed mesh phase (38–41).
 `Shem.StreamRegistry` replaced by OTP `:pg` scope `:shem_streams` for cross-node token broadcast; TUI agent list shows `[node@host]` badge for remote agents; dashboard has per-node cluster strip; `GET /api/agents` list endpoint with `node` field; `GET /:id` adds `node`; MCP `list_agents` adds `node`; MCP `spawn_agent` adds `placement` arg (`any` / `node:X` / `labels:k=v`); 2 distributed streaming tests prove cross-node `:pg` membership. Non-distributed suite: 1018 pass, 9 pre-existing distributed failures (require `--sname`). All 12 distributed tests pass with `elixir --sname shem_test -S mix test --only distributed`.
