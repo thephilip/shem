@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-14 (Launch Demo plan written)_
+_Last updated: 2026-06-15 (Launch Demo complete)_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -38,7 +38,11 @@ _Last updated: 2026-06-14 (Launch Demo plan written)_
 - Currently committing directly to master; branching and PRs are welcome when appropriate.
 
 ## Current Phase
-**Launch Demo — Implementation**: Plan written 2026-06-14. 7-task plan at `docs/superpowers/plans/2026-06-14-launch-demo.md`. Spec at `docs/superpowers/specs/2026-06-14-launch-demo-design.md` (rev 2). New code required: `EventLog.scrub/2` (Tasks 1–3), `HardeningJob` placement env (Task 4), `lib/mix/tasks/demo.ex` (Tasks 5–7). Run with `elixir --sname shem_demo -S mix demo`.
+**Launch Demo — COMPLETE** (2026-06-15). `mix demo` runs end-to-end in ~90s.
+Four phases: distributed Horde mesh (3 nodes, 2 agents) → node kill + Horde recovery in ~100ms → EventLog scrub + timeline fork → adversarial hardening loop (real rounds, trust score 0.85). All LLM responses scripted via StubTransport; no external services required. Run with `elixir --sname shem_demo -S mix demo`.
+Key fixes during integration: peer nodes need `BudgetServer` started; `Agent.await` needs CRDT sync polling wrapper; `conversational: true` agents correctly return `:waiting` after recovery.
+
+**Next**: Open. The core North Star goal (ship the launch demo) is achieved.
 
 **Phase 41 — Node-aware TUI, Streaming & API**: COMPLETE (2026-06-14). Final distributed mesh phase (38–41).
 `Shem.StreamRegistry` replaced by OTP `:pg` scope `:shem_streams` for cross-node token broadcast; TUI agent list shows `[node@host]` badge for remote agents; dashboard has per-node cluster strip; `GET /api/agents` list endpoint with `node` field; `GET /:id` adds `node`; MCP `list_agents` adds `node`; MCP `spawn_agent` adds `placement` arg (`any` / `node:X` / `labels:k=v`); 2 distributed streaming tests prove cross-node `:pg` membership. Non-distributed suite: 1018 pass, 9 pre-existing distributed failures (require `--sname`). All 12 distributed tests pass with `elixir --sname shem_test -S mix test --only distributed`.
