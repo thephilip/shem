@@ -47,10 +47,11 @@ _Last updated: 2026-06-15_
   not part of Phase 42. Phase 42 is Elixir-only.
 
 ## Current Phase
-**Phase 42 — Self-Evolution Loop (Toolsmith)**: IN DESIGN (2026-06-15).
-Closes the loop: agents delegate tool authorship to a language-specific `elixir_toolsmith`
-sub-agent via `spawn_agent`. Toolsmith writes Elixir source + StreamData property tests,
-calls `write_tool` (extended with `description`), graduates the tool, returns
+**Phase 42 — Self-Evolution Loop (Toolsmith)**: SPEC WRITTEN, AWAITING IMPLEMENTATION (2026-06-15).
+Spec: `docs/superpowers/specs/2026-06-15-phase42-toolsmith-design.md`. Next: write implementation
+plan, then execute. Closes the loop: agents delegate tool authorship to a language-specific
+`elixir_toolsmith` sub-agent via `spawn_agent`. Toolsmith writes Elixir source + StreamData
+property tests, calls `write_tool` (extended with `description`), graduates the tool, returns
 `"graduated: <name>"`. Parent agent then calls the new tool in the same session.
 
 **Reasoning Visibility — COMPLETE** (2026-06-15). `reasoning_content` from qwen3 captured
