@@ -31,6 +31,16 @@ defmodule Shem.LLM.Middleware.OpenAITransportTest do
       assert resp.latency_ms >= 0
       assert resp.model == :default
     end
+
+    test "reasoning_content is nil when absent from response body" do
+      opts = [
+        model_string: "gpt-4o",
+        api_key: "sk-test",
+        http_post_fn: mock_post(200, success_body("Hello", 20))
+      ]
+      assert {:ok, %Response{} = resp} = OpenAITransport.call(req(), opts, nil)
+      assert resp.reasoning_content == nil
+    end
   end
 
   describe "call/3 — HTTP errors" do
