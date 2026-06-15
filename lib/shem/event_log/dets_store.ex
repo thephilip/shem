@@ -39,6 +39,23 @@ defmodule Shem.EventLog.DETSStore do
   end
 
   @impl true
+  def scrub(table, after_event_id) do
+    {:ok, events} = read_all(table)
+
+    case Enum.find_index(events, &(&1.id == after_event_id)) do
+      nil ->
+        {:error, :event_not_found}
+
+      cut_index ->
+        events
+        |> Enum.drop(cut_index + 1)
+        |> Enum.each(fn event -> :dets.delete(table, event.id) end)
+
+        :ok
+    end
+  end
+
+  @impl true
   def close(table) do
     :dets.close(table)
     :ok

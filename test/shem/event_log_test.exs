@@ -237,6 +237,38 @@ defmodule Shem.EventLogTest do
     end
   end
 
+  describe "scrub/2 (DETSStore)" do
+    setup do
+      Application.put_env(:shem, :event_log_store, Shem.EventLog.DETSStore)
+      Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+      Supervisor.restart_child(Shem.Supervisor, Shem.EventLog)
+
+      on_exit(fn ->
+        Application.put_env(:shem, :event_log_store, Shem.EventLog.FakeStore)
+        Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+        Supervisor.restart_child(Shem.Supervisor, Shem.EventLog)
+      end)
+
+      :ok
+    end
+
+    test "removes events after the pivot ID in DETS" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :d_a, %{})
+      EventLog.append(sid, :d_b, %{})
+      EventLog.append(sid, :d_c, %{})
+      {:ok, [a, b, _c]} = EventLog.events(sid)
+
+      :ok = EventLog.scrub(sid, b.id)
+
+      {:ok, remaining} = EventLog.events(sid)
+      assert length(remaining) == 2
+      assert Enum.any?(remaining, &(&1.id == a.id))
+      assert Enum.any?(remaining, &(&1.id == b.id))
+      refute Enum.any?(remaining, &(&1.type == :d_c))
+    end
+  end
+
   describe "hash chain" do
     test "appended events carry chained hashes and the session verifies" do
       {:ok, sid} = EventLog.start_session()
