@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Demo do
 
   alias Shem.LLM.StubTransport.Server, as: StubServer
   alias Shem.Agent.Config
-  alias Shem.{Agent, EventLog, Lab, LLM}
+  alias Shem.{Agent, EventLog}
 
   @impl Mix.Task
   def run(_args) do
@@ -372,10 +372,8 @@ defmodule Mix.Tasks.Demo do
 
     unless assert_eventually(
              fn ->
-               case Shem.EventLog.MnesiaStore.read_all(alpha_sid) do
-                 {:ok, events} -> Enum.any?(events, &(&1.type == :agent_checkpoint))
-                 _ -> false
-               end
+               {:ok, events} = Shem.EventLog.MnesiaStore.read_all(alpha_sid)
+               Enum.any?(events, &(&1.type == :agent_checkpoint))
              end,
              8_000
            ) do
