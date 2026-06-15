@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-14 (Phase 41 complete)_
+_Last updated: 2026-06-14 (Launch Demo plan written)_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -38,6 +38,8 @@ _Last updated: 2026-06-14 (Phase 41 complete)_
 - Currently committing directly to master; branching and PRs are welcome when appropriate.
 
 ## Current Phase
+**Launch Demo — Implementation**: Plan written 2026-06-14. 7-task plan at `docs/superpowers/plans/2026-06-14-launch-demo.md`. Spec at `docs/superpowers/specs/2026-06-14-launch-demo-design.md` (rev 2). New code required: `EventLog.scrub/2` (Tasks 1–3), `HardeningJob` placement env (Task 4), `lib/mix/tasks/demo.ex` (Tasks 5–7). Run with `elixir --sname shem_demo -S mix demo`.
+
 **Phase 41 — Node-aware TUI, Streaming & API**: COMPLETE (2026-06-14). Final distributed mesh phase (38–41).
 `Shem.StreamRegistry` replaced by OTP `:pg` scope `:shem_streams` for cross-node token broadcast; TUI agent list shows `[node@host]` badge for remote agents; dashboard has per-node cluster strip; `GET /api/agents` list endpoint with `node` field; `GET /:id` adds `node`; MCP `list_agents` adds `node`; MCP `spawn_agent` adds `placement` arg (`any` / `node:X` / `labels:k=v`); 2 distributed streaming tests prove cross-node `:pg` membership. Non-distributed suite: 1018 pass, 9 pre-existing distributed failures (require `--sname`). All 12 distributed tests pass with `elixir --sname shem_test -S mix test --only distributed`.
 
