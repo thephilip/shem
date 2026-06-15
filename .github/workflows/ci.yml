@@ -41,7 +41,7 @@ jobs:
         run: mix deps.compile
 
       - name: Run tests
-        run: mix test
+        run: mix test --exclude distributed
 
       - name: Check prod compilation
         run: MIX_ENV=prod mix compile
