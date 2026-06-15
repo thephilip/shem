@@ -142,6 +142,7 @@ defmodule Mix.Tasks.Demo do
         {:ok, _} = Shem.EventLog.start_link([])
         {:ok, _} = Shem.Lab.Registry.start_link([])
         {:ok, _} = :pg.start_link(:shem_streams)
+        {:ok, _} = Shem.LLM.BudgetServer.start_link([])
         {:ok, _} = Shem.LLM.StubTransport.Server.start_link(name: Shem.LLM.StubTransport.Server)
         Process.sleep(:infinity)
       end)
@@ -160,6 +161,42 @@ defmodule Mix.Tasks.Demo do
     )
 
     {peer, peer_node}
+  end
+
+  # ── await_agent ─────────────────────────────────────────────────────────────
+  # Agent.await does a single whereis and returns :not_found immediately if
+  # Horde's CRDT registration hasn't propagated from the remote node yet.
+  # This wrapper polls until the agent is visible in the local registry, then
+  # calls into the GenServer for completion.
+
+  defp await_agent(name, timeout_ms) do
+    deadline = System.monotonic_time(:millisecond) + timeout_ms
+
+    via = Shem.ProcessRegistry.via_tuple(name)
+
+    result =
+      Enum.reduce_while(Stream.repeatedly(fn -> :tick end), nil, fn _, _ ->
+        remaining = deadline - System.monotonic_time(:millisecond)
+
+        cond do
+          remaining <= 0 ->
+            {:halt, {:error, :timeout}}
+
+          (pid = GenServer.whereis(via)) != nil ->
+            try do
+              {:halt, GenServer.call(pid, :await, remaining)}
+            catch
+              :exit, {:timeout, _} -> {:halt, {:error, :timeout}}
+              :exit, _ -> {:halt, {:error, :process_died}}
+            end
+
+          true ->
+            Process.sleep(100)
+            {:cont, nil}
+        end
+      end)
+
+    result
   end
 
   # ── assert_eventually ────────────────────────────────────────────────────────
@@ -272,7 +309,7 @@ defmodule Mix.Tasks.Demo do
         placement: {:node, peer_c_node}
       })
 
-    case Agent.await(alpha_name, 15_000) do
+    case await_agent(alpha_name, 15_000) do
       {:ok, :done} ->
         info("worker_alpha: \"Checkpoint written.\"")
 
@@ -280,7 +317,7 @@ defmodule Mix.Tasks.Demo do
         fail!(1, err, "worker_alpha did not complete within 15s")
     end
 
-    case Agent.await(beta_name, 10_000) do
+    case await_agent(beta_name, 10_000) do
       {:ok, :done} ->
         info("worker_beta: \"Parallel analysis running on shem_c…\"")
 
@@ -376,8 +413,8 @@ defmodule Mix.Tasks.Demo do
       nil -> fail!(2, :not_found, "worker_alpha not found after relocation")
     end
 
-    case Agent.await(alpha_name, 10_000) do
-      {:ok, :done} ->
+    case await_agent(alpha_name, 10_000) do
+      {:ok, status} when status in [:done, :waiting] ->
         info("worker_alpha resumed: \"Recovered from checkpoint. Completing task.\"")
         ok("Work continued without interruption.")
 
