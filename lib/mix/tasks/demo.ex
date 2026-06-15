@@ -80,6 +80,7 @@ defmodule Mix.Tasks.Demo do
   defp configure_app do
     Application.delete_env(:shem, :event_log_store)
     Application.put_env(:shem, :force_mnesia, true)
+    Application.put_env(:shem, :start_tui, false)
 
     Application.put_env(:shem, :llm_pipeline, [
       {Shem.LLM.Middleware.EventLogger, []},
@@ -429,6 +430,10 @@ defmodule Mix.Tasks.Demo do
 
   defp phase_3(%{recovery_session_id: sid} = state) do
     phase_banner("PHASE 3: TIME-TRAVEL (SCRUB + FORK)")
+
+    # Session was opened on whichever node the agent relocated to — register it
+    # locally so events/1, scrub/2, and branch_after_call/4 all resolve the handle.
+    {:ok, ^sid} = EventLog.start_session(sid)
 
     {:ok, events_before} = EventLog.events(sid)
     step("EventLog for worker_alpha: #{length(events_before)} events")
