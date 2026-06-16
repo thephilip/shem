@@ -55,14 +55,42 @@ This is analogous to MCP tool definitions. The BEAM Port mechanism (mentioned in
 
 **Status:** Not yet designed in detail. Needs its own brainstorm. Relevant to the tool marketplace and SDK story.
 
+### 5. Non-Elixir tools use persistent BEAM Ports, not fresh processes
+
+Rejected: `run_shell` (fresh process per call) for runtime invocation of graduated tools.
+Reason: agents call tools repeatedly in a ReAct loop — `fork/exec` + container startup per call is hundreds of milliseconds each time. BEAM Ports are designed for exactly this: a supervised OS process started once, handling N calls with near-zero per-call overhead.
+
+**Decision:** Graduated non-Elixir tools get a BEAM Port per tool (started on first use, kept alive, restarted on crash via a `PortPool` supervisor). Python processes send/receive JSON lines on stdin/stdout.
+
+Graduation (testing) still uses a fresh container per graduation — that happens rarely, startup cost is acceptable.
+
+### 6. Elixir tools stay in-BEAM
+
+Rejected: running Elixir graduated tools in containers.
+Reason: the BEAM compilation model + StreamData + adversarial hardening IS the Elixir isolation story. Containerizing Elixir tools would destroy zero-overhead function calls, OTP access, hot loading, and the entire trust pipeline. The asymmetry is justified by runtime model, not language preference.
+
+### 7. `Tool` struct gets a `runtime:` union field
+
+`module:` is currently `@enforce_keys` — meaningless for non-Elixir tools.
+
+**Decision:** Replace with `runtime:` union:
+- `{:beam, ModuleName}` — Elixir tools (in-process call)
+- `{:port, command}` — non-Elixir tools (BEAM Port, JSON in/out)
+
+Makes dispatch branching explicit and self-documenting. `module:` removed from enforce_keys; `runtime:` added.
+
+### 8. Phases may be split if scope is too large
+
+The polyglot tool runtime (Port pool, GraduationGate router, Tool struct change, write_tool extension) and the python_toolsmith preset may be separate phases if the combined scope is too large for one implementation plan.
+
 ## Open Questions (to address in the Phase 43 spec)
 
-- `write_tool` schema shape for non-Elixir: are `source` + `test_source` still the right field names? (They are language-agnostic enough.)
-- GraduationGate router: how does it detect/dispatch by language? New `Shem.Lab.GraduationGate.Python` module, or a single gate with language-tagged clauses?
-- `Tool` struct: add `language:` field (`:elixir` default for backwards compat with existing graduated tools).
-- `dispatch_lab` branching: Elixir → `tool.module.run(args)`; Python → `run_shell("python3 -c ...")` with JSON in/out.
-- Trust model for non-Elixir tools: StreamData property tests are Elixir-specific. What's the equivalent signal for Python tools? (pytest property tests via Hypothesis?)
-- BEAM Port vs `run_shell` for Python tools: `run_shell` spawns a new process per call; BEAM Ports can keep a process alive across calls. Which is right for Python tools?
+- BEAM Port lifecycle: one Port per tool (global, shared across agents) or one Port per tool per agent session? Global is simpler; per-session is safer for isolation.
+- `write_tool` schema: `source` + `test_source` field names are language-agnostic enough to keep. `language:` defaults to `"elixir"` for full backwards compat.
+- GraduationGate router: single module with language-tagged function clauses, or separate `GraduationGate.Python` / `GraduationGate.Elixir` modules?
+- Trust model for Python tools: StreamData is Elixir-specific. Python equivalent could be Hypothesis (property testing library). Or trust is seeded at 0.5 (same as Elixir tools without property tests) and earned through adversarial hardening. Decision deferred.
+- Container image config per language: `executor_image_python: "python:3.12-slim"` alongside existing `executor_image`.
+- Backwards compat for existing `Tool` structs: existing graduated Elixir tools have no `runtime:` field in DETS/Mnesia. Migration strategy needed (default to `{:beam, module}` on read).
 
 ## Related External Feedback
 
