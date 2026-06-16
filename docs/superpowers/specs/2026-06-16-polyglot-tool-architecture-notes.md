@@ -83,6 +83,26 @@ Makes dispatch branching explicit and self-documenting. `module:` removed from e
 
 The polyglot tool runtime (Port pool, GraduationGate router, Tool struct change, write_tool extension) and the python_toolsmith preset may be separate phases if the combined scope is too large for one implementation plan.
 
+### 9. Pre-existing bug: metadata lost on restart — fix in 43a
+
+`Workspace.graduate` writes only `tool.source` to `graduated/{id}.ex`. `scan_graduated` in `Lab.Registry` reconstructs `%Tool{}` structs from those files via regex — it has no access to `description`, `schema`, `constraints`, `test_source`, or `runtime`. All metadata is lost on every node restart.
+
+Symptom: Phase 42 graduated tools reappear in `build_manifest` with `"graduated tool: <name>"` instead of their description after a restart.
+
+**Fix in 43a:** `Workspace.graduate` writes a companion `graduated/{id}.json` manifest alongside the source, containing all metadata. `scan_graduated` reads the manifest when present; falls back to source-regex extraction for legacy `.ex`-only tools (backwards compat). Python tools write `graduated/{id}.py` + `graduated/{id}.json`.
+
+### 10. Three dispatch sites use `tool.module` — all need updating
+
+- `lib/shem/agent/tool_dispatch.ex:415` — `tool.module.run(args)` in `dispatch_lab`
+- `lib/shem/mcp/handlers/invoke_tool.ex:19` — `tool.module.run(args)`
+- `lib/shem/mcp/handlers/invoke_tool.ex:27` — `ensure_loaded(%{module: module, source: source})` pattern-matches the field directly
+
+All three must branch on `tool.runtime`: `{:beam, mod}` → existing path; `{:port, cmd}` → PortPool dispatch.
+
+### 11. `scan_graduated` migration shim lives in `scan_graduated`, not in a deserializer
+
+Tools are stored as source files, not serialized structs. The backwards-compat shim for the `module:` → `runtime:` rename lives in `scan_graduated`: for `.ex` files with no manifest, synthesize `runtime: {:beam, extracted_module}` instead of `module: extracted_module`.
+
 ## Open Questions (to address in the Phase 43 spec)
 
 - BEAM Port lifecycle: one Port per tool (global, shared across agents) or one Port per tool per agent session? Global is simpler; per-session is safer for isolation.
