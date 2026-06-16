@@ -255,26 +255,44 @@ end
 
 ### 4. `Shem.Lab.GraduationGate`
 
-`run/3` routes on `language:` opt. The existing body becomes `run_elixir/3`; `module:` in the Tool struct literal changes to `runtime: {:beam, module}`:
+`run/3` routes on `language:` opt via a config-driven dispatch map rather than a hardcoded `case`. Built-in languages (`"elixir"`, `"python"`) are seeded at startup; additional languages can be registered at runtime without code changes. This opens the door to agent-proposed language configs in a future phase.
 
 ```elixir
+@builtin_languages %{
+  "elixir" => :elixir,
+  "python" => :python
+}
+
 @spec run(String.t(), String.t(), keyword()) ::
         {:ok, Tool.t()}
         | {:error, :compile, String.t()}
         | {:error, :gate, any()}
         | {:error, :timeout}
-        | {:error, :unsupported_language, String.t()}
+        | {:error, :language_not_configured, String.t()}
 def run(source, test_source, opts \\ []) do
-  case Keyword.get(opts, :language, "elixir") do
-    "elixir" -> run_elixir(source, test_source, opts)
-    "python" -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
-    lang      -> {:error, :unsupported_language, lang}
+  lang = Keyword.get(opts, :language, "elixir")
+  languages = Application.get_env(:shem, :graduation_languages, @builtin_languages)
+
+  case Map.get(languages, lang) do
+    :elixir -> run_elixir(source, test_source, opts)
+    :python -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
+    nil     -> {:error, :language_not_configured, lang}
   end
 end
 
 defp run_elixir(source, test_source, opts) do
   # existing implementation — only change: tool struct uses runtime: {:beam, module} instead of module: module
 end
+```
+
+`graduation_languages` can be extended in config or at runtime:
+```elixir
+# config/dev.exs — adding a future language
+config :shem, :graduation_languages, %{
+  "elixir" => :elixir,
+  "python" => :python
+  # "rust" => :rust  ← Phase 44+
+}
 ```
 
 **`Shem.Lab.GraduationGate.Python`** — new module:
