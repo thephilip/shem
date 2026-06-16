@@ -140,7 +140,7 @@ defmodule Shem.Agent.Preset do
   ]
 
   @spec resolve(String.t()) ::
-          {:ok, %{system_prompt: String.t(), tools: :all | [String.t()]}}
+          {:ok, %{system_prompt: String.t(), tools: :all | [String.t()], max_turns: pos_integer()}}
           | {:error, :not_found}
   def resolve(name) do
     case find_in_static(name) do
