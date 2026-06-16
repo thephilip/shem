@@ -182,12 +182,12 @@ No `runtime_path` field — the module name is already extractable from source a
 
 ```elixir
 def runtime_path(id) do
-  Path.join([priv_dir(), "graduated", "#{id}_runtime.py"])
+  Path.join([lab_dir(), "graduated", "#{id}_runtime.py"])
   |> Path.expand()
 end
 ```
 
-Returns the absolute path to the runtime wrapper script. Used by `GraduationGate.Python` when building the tool struct and by `graduate/1` when writing the file.
+Uses the existing private `lab_dir/0` helper (returns `~/.config/shem/lab` by default, overridable via `config :shem, :lab_dir`). Returns the absolute path to the runtime wrapper script. Used by `GraduationGate.Python` when building the tool struct and by `graduate/1` when writing the file.
 
 **`scan_graduated/0` — manifest-first reconstruction:**
 
@@ -201,28 +201,69 @@ Returns the absolute path to the runtime wrapper script. Used by `GraduationGate
 
 ### 3. `Shem.Lab.Executor.Backend.Container`
 
-Gains `mounts:` opt — a list of `{host_path, container_path}` tuples appended to `build_args` as `-v host:container:ro` flags:
+Gains `mounts:` opt — a list of `{host_path, container_path}` tuples appended to `build_args` as `-v host:container:ro` flags.
+
+`default_run/3` must be updated to extract and thread `mounts` through to `build_args`:
 
 ```elixir
-defp build_args(image, network, name, cmd, mounts) do
+defp default_run(cmd, timeout_ms, opts) do
+  bin = Keyword.get(opts, :runtime_bin, Application.get_env(:shem, :container_runtime_bin))
+
+  if is_nil(bin) do
+    {:error, "no container runtime available (tried podman, docker)"}
+  else
+    image   = Keyword.get(opts, :image, Application.get_env(:shem, :executor_image, "debian:12-slim"))
+    network = Keyword.get(opts, :network, Application.get_env(:shem, :executor_network, :default))
+    mounts  = Keyword.get(opts, :mounts, [])   # NEW
+    name    = "shem-#{:erlang.unique_integer([:positive])}"
+    args    = build_args(image, network, name, cmd, mounts)  # updated arity
+
+    task = Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
+      System.cmd(bin, args, stderr_to_stdout: true)
+    end)
+
+    case Task.yield(task, timeout_ms) do
+      {:ok, {output, 0}}  -> {:ok, output}
+      {:ok, {output, code}} -> {:error, "exit #{code}: #{output}"}
+      {:exit, reason}     -> {:error, "container process crashed: #{inspect(reason)}"}
+      nil ->
+        Task.shutdown(task, :brutal_kill)
+        System.cmd(bin, ["rm", "-f", name], stderr_to_stdout: true)
+        {:error, "timeout after #{timeout_ms}ms"}
+    end
+  end
+end
+
+defp build_args(image, network, name, cmd, mounts \\ []) do
+  network_args =
+    case network do
+      :none -> ["--network=none"]
+      :host -> ["--network=host"]
+      _ -> []
+    end
+
   mount_args = Enum.flat_map(mounts, fn {host, container} ->
     ["-v", "#{host}:#{container}:ro"]
   end)
 
   ["run", "--rm", "--name", name, "-i"] ++
-    network_args(network) ++
+    network_args ++
     mount_args ++
     [image, "sh", "-c", cmd]
 end
 ```
 
-`run_shell/3` passes `Keyword.get(opts, :mounts, [])` through to `build_args`.
-
 ### 4. `Shem.Lab.GraduationGate`
 
-`run/3` routes on `language:` opt:
+`run/3` routes on `language:` opt. The existing body becomes `run_elixir/3`; `module:` in the Tool struct literal changes to `runtime: {:beam, module}`:
 
 ```elixir
+@spec run(String.t(), String.t(), keyword()) ::
+        {:ok, Tool.t()}
+        | {:error, :compile, String.t()}
+        | {:error, :gate, any()}
+        | {:error, :timeout}
+        | {:error, :unsupported_language, String.t()}
 def run(source, test_source, opts \\ []) do
   case Keyword.get(opts, :language, "elixir") do
     "elixir" -> run_elixir(source, test_source, opts)
@@ -232,7 +273,7 @@ def run(source, test_source, opts \\ []) do
 end
 
 defp run_elixir(source, test_source, opts) do
-  # existing implementation, unchanged
+  # existing implementation — only change: tool struct uses runtime: {:beam, module} instead of module: module
 end
 ```
 
@@ -293,8 +334,15 @@ defmodule Shem.Lab.GraduationGate.Python do
 
     :ok = Shem.Lab.Workspace.graduate(tool)
     :ok = Shem.Lab.Registry.register(tool)
+    seed_trust(tool.id)
     Shem.Adversarial.start_hardening(tool.id)
     {:ok, tool}
+  end
+
+  defp seed_trust(tool_id) do
+    Shem.Trust.Store.seed(tool_id, 0.5)
+  catch
+    :exit, _ -> {:error, :store_down}
   end
 
   defp extract_name(source) do
@@ -381,15 +429,17 @@ Error handling: if response contains `{"__error__": "..."}`, return `{:error, re
 
 ### 6. `Shem.Agent.ToolDispatch` — `dispatch_lab` update
 
+`dispatch_lab/2` branches on `tool.runtime`. The existing `ensure_loaded/1` at line 426 pattern-matches `%{module: module, source: source}` — this must be updated since `module:` is removed from the struct:
+
 ```elixir
 defp dispatch_lab(id, args) do
   case Lab.Registry.lookup(id) do
     {:ok, tool} ->
       case tool.runtime do
-        {:beam, _mod} ->
+        {:beam, mod} ->
           with :ok <- ensure_loaded(tool) do
             try do
-              {:ok, inspect(tool.runtime |> elem(1) |> apply(:run, [args]))}
+              {:ok, inspect(mod.run(args))}
             rescue
               e -> {:error, "runtime error: #{Exception.message(e)}"}
             end
@@ -405,11 +455,34 @@ defp dispatch_lab(id, args) do
       {:error, "tool not found in registry: #{id}"}
   end
 end
+
+# Updated: pattern-match on runtime: {:beam, mod} instead of module: mod
+defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
+  case :code.is_loaded(module) do
+    false ->
+      try do
+        case Code.compile_string(source) do
+          compiled when is_list(compiled) ->
+            case Enum.find(compiled, fn {mod, _bc} -> mod == module end) do
+              {^module, bc} ->
+                case :code.load_binary(module, ~c"nofile", bc) do
+                  {:module, _} -> :ok
+                  {:error, _} -> {:error, "failed to load #{module}"}
+                end
+              nil -> {:error, "failed to compile #{module}"}
+            end
+        end
+      rescue
+        e -> {:error, "compile error: #{Exception.message(e)}"}
+      end
+    _ -> :ok
+  end
+end
 ```
 
-`ensure_loaded` is unchanged — only called for `{:beam, mod}` path.
-
 ### 7. `Shem.MCP.Handlers.InvokeTool` update
+
+The existing `ensure_loaded/1` at line 27 pattern-matches `%{module: module, source: source}` and must be updated. The `with` pipeline is also restructured so `ensure_loaded` is only called for BEAM tools:
 
 ```elixir
 def call(params) do
@@ -419,7 +492,8 @@ def call(params) do
 
     case tool.runtime do
       {:beam, mod} ->
-        with :ok <- ensure_loaded(tool) do
+        with :ok <- ensure_loaded(tool),
+             {:ok, _} <- Schema.validate(args, tool.input_schema) do
           try do
             {:ok, mod.run(args)}
           rescue
@@ -430,6 +504,22 @@ def call(params) do
       {:port, _path} ->
         Lab.PortPool.call(tool.id, args)
     end
+  end
+end
+
+# Updated: pattern-match on runtime: {:beam, mod} instead of module: mod
+defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
+  case :code.is_loaded(module) do
+    false ->
+      case Code.compile_string(source) do
+        [{^module, bytecode} | _] ->
+          case :code.load_binary(module, ~c"nofile", bytecode) do
+            {:module, _} -> :ok
+            {:error, _}  -> {:error, :load_failed}
+          end
+        _ -> {:error, :load_failed}
+      end
+    _ -> :ok
   end
 end
 ```
