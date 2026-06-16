@@ -171,6 +171,71 @@ defmodule Shem.Agent.ToolDispatchTest do
       entry = Enum.find(manifest, &(&1.name == tool.name))
       assert entry.schema == %{type: "object", properties: %{}, required: []}
     end
+
+    test "write_tool schema includes description (required) and schema (optional)" do
+      manifest = ToolDispatch.build_manifest(@config)
+      write_tool = Enum.find(manifest, &(&1.name == "write_tool"))
+      assert write_tool != nil
+      props = write_tool.schema.properties
+      assert Map.has_key?(props, "description")
+      assert Map.has_key?(props, "schema")
+      assert "description" in write_tool.schema.required
+      refute "schema" in write_tool.schema.required
+    end
+  end
+
+  describe "execute/3 — write_tool" do
+    test "description is stored in graduated tool metadata" do
+      source = """
+      defmodule DispatchDescTool do
+        def run(%{"n" => n}), do: n + 1
+      end
+      """
+      test_src = """
+      defmodule DispatchDescToolTest do
+        def run do
+          unless DispatchDescTool.run(%{"n" => 1}) == 2, do: raise "broken"
+          :ok
+        end
+      end
+      """
+      manifest = ToolDispatch.build_manifest(@config)
+      args = %{
+        "source"      => source,
+        "test_source" => test_src,
+        "description" => "Increments n by 1. Args: n (integer). Returns integer."
+      }
+      assert {:ok, "graduated: DispatchDescTool"} =
+               ToolDispatch.execute(%{name: "write_tool", args: args}, manifest)
+
+      {:ok, tool} = Shem.Lab.Registry.lookup("dispatch_desc_tool")
+      assert tool.metadata["description"] == "Increments n by 1. Args: n (integer). Returns integer."
+    end
+
+    test "graduated tool appears in manifest with its description" do
+      source = """
+      defmodule DispatchManifestTool do
+        def run(_args), do: :manifest_ok
+      end
+      """
+      test_src = """
+      defmodule DispatchManifestToolTest do
+        def run, do: :ok
+      end
+      """
+      manifest = ToolDispatch.build_manifest(@config)
+      args = %{
+        "source"      => source,
+        "test_source" => test_src,
+        "description" => "Always returns :manifest_ok. No args required."
+      }
+      assert {:ok, _} = ToolDispatch.execute(%{name: "write_tool", args: args}, manifest)
+
+      fresh_manifest = ToolDispatch.build_manifest(@config)
+      entry = Enum.find(fresh_manifest, &(&1.name == "DispatchManifestTool"))
+      assert entry != nil
+      assert entry.description == "Always returns :manifest_ok. No args required."
+    end
   end
 
   describe "execute/2 — list_tools built-in" do

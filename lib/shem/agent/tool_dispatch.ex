@@ -30,16 +30,18 @@ defmodule Shem.Agent.ToolDispatch do
     },
     %{
       name: "write_tool",
-      description: "Graduate a new Elixir tool into the Lab.",
+      description: "Graduate a new Elixir tool into the Lab. Requires description of what the tool does.",
       source: :builtin,
       trust: :builtin,
       schema: %{
         type: "object",
         properties: %{
           "source"      => %{"type" => "string"},
-          "test_source" => %{"type" => "string"}
+          "test_source" => %{"type" => "string"},
+          "description" => %{"type" => "string"},
+          "schema"      => %{"type" => "object"}
         },
-        required: ["source", "test_source"]
+        required: ["source", "test_source", "description"]
       }
     },
     %{
@@ -265,14 +267,16 @@ defmodule Shem.Agent.ToolDispatch do
   end
 
   defp dispatch_builtin("write_tool", args) do
-    source = args["source"] || ""
+    source      = args["source"] || ""
     test_source = args["test_source"] || ""
+    description = args["description"] || ""
+    schema      = args["schema"] || %{}
 
-    case Lab.GraduationGate.run(source, test_source) do
+    case Lab.GraduationGate.run(source, test_source, description: description, schema: schema) do
       {:ok, tool} -> {:ok, "graduated: #{tool.name}"}
       {:error, :compile, msg} -> {:error, "compile error: #{msg}"}
       {:error, :gate, reason} -> {:error, "test failed: #{inspect(reason)}"}
-      {:error, :timeout} -> {:error, "graduation timed out"}
+      {:error, :timeout}      -> {:error, "graduation timed out"}
     end
   end
 
