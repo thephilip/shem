@@ -172,6 +172,25 @@ defmodule Shem.Agent.ToolDispatchTest do
       assert entry.schema == %{type: "object", properties: %{}, required: []}
     end
 
+    test "Lab tools surface schema from metadata when toolsmith provided one" do
+      source = """
+      defmodule SchemaProvidedTool do
+        def run(%{"x" => x}), do: x
+      end
+      """
+      test_src = """
+      defmodule SchemaProvidedToolTest do
+        def run, do: :ok
+      end
+      """
+      provided_schema = %{"type" => "object", "properties" => %{"x" => %{"type" => "integer"}}, "required" => ["x"]}
+      {:ok, tool} = Shem.Lab.GraduationGate.run(source, test_src, schema: provided_schema)
+      config = %Config{task: "t", system_prompt: "s", tools: []}
+      manifest = ToolDispatch.build_manifest(config)
+      entry = Enum.find(manifest, &(&1.name == tool.name))
+      assert entry.schema == provided_schema
+    end
+
     test "write_tool schema includes description (required) and schema (optional)" do
       manifest = ToolDispatch.build_manifest(@config)
       write_tool = Enum.find(manifest, &(&1.name == "write_tool"))

@@ -192,7 +192,10 @@ defmodule Shem.Agent.ToolDispatch do
           description: Map.get(tool.metadata, "description", "graduated tool: #{tool.name}"),
           source: {:lab, tool.id},
           trust: trust,
-          schema: %{type: "object", properties: %{}, required: []}
+          schema: case Map.get(tool.metadata, "schema", %{}) do
+            s when map_size(s) > 0 -> s
+            _ -> %{type: "object", properties: %{}, required: []}
+          end
         }
       end)
 
