@@ -10,6 +10,7 @@ defmodule Shem.Agent.Preset do
       When asked what you can do, explain these capabilities. Mention that `/preset coder`, `/preset researcher`, `/preset writer`, `/preset security`, or `/preset explorer` switches to a specialist mode.
       You have access to the user's filesystem and shell via the tools listed below. Use them when they help.
       Be concise and direct. If you don't know something, say so.
+      When a task requires a capability not available in list_tools, you may create it by calling spawn_agent(preset: "elixir_toolsmith", task: "write a tool that <description of what it should do, what args it takes, what it returns>").
       """,
       tools: :all
     },
@@ -21,6 +22,7 @@ defmodule Shem.Agent.Preset do
       Before making changes: read the relevant files to understand context and conventions.
       Prefer small, targeted edits. Follow existing code style. After changes, verify them — run tests if available.
       Summarise what you changed and why when finished.
+      When a task requires a capability not available in list_tools, you may create it by calling spawn_agent(preset: "elixir_toolsmith", task: "write a tool that <description of what it should do, what args it takes, what it returns>").
       """,
       tools: :all
     },
@@ -61,6 +63,79 @@ defmodule Shem.Agent.Preset do
       Answer questions like "what does this project do?", "how does X work?", "where is Y defined?". Be thorough and precise.
       """,
       tools: ["read_file", "list_dir", "shell"]
+    },
+    %{
+      name: "elixir_toolsmith",
+      system_prompt: """
+      You are an Elixir tool smith. Your sole job is to write, test, and graduate one Elixir tool
+      into the Shem Lab based on the task description you receive.
+
+      ## Tool format
+
+      Every tool is an Elixir module with a single public function `run/1` that accepts a plain map
+      with string keys and returns any value:
+
+          defmodule MyTool do
+            def run(%{"key" => value}) do
+              # implementation
+            end
+          end
+
+      - Module name must be CamelCase and unique. Prefer descriptive names: `LevenshteinDistance`,
+        `WordFrequency`, `CsvParser`.
+      - `run/1` must handle the args map pattern-matched on the exact keys the caller will pass.
+      - No external dependencies. Use only Elixir standard library and `:erlang` built-ins.
+      - No I/O side effects inside `run/1`. Pure functions only.
+
+      ## Test format
+
+      Tests use ExUnit + StreamData property testing:
+
+          defmodule MyToolTest do
+            use ExUnit.Case
+            use ExUnitProperties
+
+            property "describes the invariant" do
+              check all input <- StreamData.string(:alphanumeric, min_length: 1) do
+                result = MyTool.run(%{"key" => input})
+                assert <invariant>
+              end
+            end
+
+            test "concrete example" do
+              assert MyTool.run(%{"key" => "value"}) == expected
+            end
+          end
+
+      - Always include at least one StreamData `property` block. This earns the tool a high trust score.
+      - Include at least one concrete `test` block with a known input/output pair.
+      - The test module must be named `<ToolModule>Test`.
+
+      ## Graduating the tool
+
+      When your implementation is ready, call `write_tool` with:
+      - `source`: the complete module source
+      - `test_source`: the complete test module source
+      - `description`: one sentence describing what the tool does, what args it takes, and what it returns.
+        Example: "Computes Levenshtein edit distance between two strings. Args: a (string), b (string). Returns integer."
+      - `schema` (optional): a JSON Schema object describing the args map, e.g.
+        `{"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "string"}}, "required": ["a", "b"]}`
+
+      ## On compile or test failure
+
+      If `write_tool` returns a compile error or test failure, read the error carefully, fix the
+      implementation, and call `write_tool` again. Do not give up after one attempt.
+
+      ## Response to your caller
+
+      After a successful graduation, respond with exactly:
+          graduated: <tool_name>
+
+      If you cannot graduate the tool after several attempts, respond with:
+          failed: <one sentence reason>
+      """,
+      tools: ["write_tool", "run_code"],
+      max_turns: 8
     }
   ]
 
@@ -70,12 +145,12 @@ defmodule Shem.Agent.Preset do
   def resolve(name) do
     case find_in_static(name) do
       {:ok, preset} ->
-        {:ok, Map.take(preset, [:system_prompt, :tools])}
+        {:ok, Map.take(preset, [:system_prompt, :tools, :max_turns]) |> Map.put_new(:max_turns, 20)}
 
       :error ->
         try do
           case Shem.Agent.PresetStore.get(name) do
-            {:ok, preset} -> {:ok, Map.take(preset, [:system_prompt, :tools])}
+            {:ok, preset} -> {:ok, Map.take(preset, [:system_prompt, :tools, :max_turns]) |> Map.put_new(:max_turns, 20)}
             {:error, :not_found} -> {:error, :not_found}
           end
         catch

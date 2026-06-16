@@ -167,11 +167,57 @@ defmodule Shem.Agent.PresetTest do
   end
 
   describe "all/0 — built-in presets" do
-    test "includes all six built-in presets" do
+    test "includes all seven built-in presets" do
       names = Preset.all() |> Enum.map(& &1.name)
-      for name <- ~w[general coder researcher writer security explorer] do
+      for name <- ~w[general coder researcher writer security explorer elixir_toolsmith] do
         assert name in names
       end
+    end
+  end
+
+  describe "elixir_toolsmith preset" do
+    test "resolves successfully" do
+      assert {:ok, preset} = Preset.resolve("elixir_toolsmith")
+      assert is_binary(preset.system_prompt)
+    end
+
+    test "tools restricted to write_tool and run_code" do
+      assert {:ok, preset} = Preset.resolve("elixir_toolsmith")
+      assert is_list(preset.tools)
+      assert "write_tool" in preset.tools
+      assert "run_code" in preset.tools
+      refute "shell" in preset.tools
+      refute "spawn_agent" in preset.tools
+      refute "read_file" in preset.tools
+    end
+
+    test "max_turns is 8" do
+      assert {:ok, preset} = Preset.resolve("elixir_toolsmith")
+      assert preset.max_turns == 8
+    end
+
+    test "system prompt teaches write_tool calling convention" do
+      assert {:ok, preset} = Preset.resolve("elixir_toolsmith")
+      assert preset.system_prompt =~ "write_tool"
+      assert preset.system_prompt =~ "description"
+      assert preset.system_prompt =~ "graduated:"
+    end
+  end
+
+  describe "resolve/1 — max_turns and cross-preset mentions" do
+    test "general preset system prompt mentions elixir_toolsmith" do
+      assert {:ok, preset} = Preset.resolve("general")
+      assert preset.system_prompt =~ "elixir_toolsmith"
+    end
+
+    test "coder preset system prompt mentions elixir_toolsmith" do
+      assert {:ok, preset} = Preset.resolve("coder")
+      assert preset.system_prompt =~ "elixir_toolsmith"
+    end
+
+    test "general preset max_turns defaults to 20" do
+      assert {:ok, preset} = Preset.resolve("general")
+      assert preset.max_turns == 20
     end
   end
 end
