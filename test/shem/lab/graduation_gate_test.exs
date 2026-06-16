@@ -78,8 +78,64 @@ defmodule Shem.Lab.GraduationGateTest do
     end
     """
     constraints = ["must handle negative numbers", "must return integer"]
-    assert {:ok, tool} = GraduationGate.run(source, test_source, constraints)
+    assert {:ok, tool} = GraduationGate.run(source, test_source, constraints: constraints)
     assert tool.constraints == constraints
+  end
+
+  describe "opts keyword arg" do
+    test "stores description in tool.metadata" do
+      source = """
+      defmodule GateDesc1 do
+        def run(%{"x" => x}), do: x * 2
+      end
+      """
+      test_src = """
+      defmodule GateDesc1Test do
+        def run do
+          unless GateDesc1.run(%{"x" => 3}) == 6, do: raise "broken"
+          :ok
+        end
+      end
+      """
+      assert {:ok, tool} = GraduationGate.run(source, test_src,
+        description: "Doubles x. Args: x (integer). Returns integer.")
+      assert tool.metadata["description"] == "Doubles x. Args: x (integer). Returns integer."
+    end
+
+    test "stores schema in tool.metadata" do
+      source = """
+      defmodule GateDesc2 do
+        def run(%{"x" => x}), do: x + 1
+      end
+      """
+      test_src = """
+      defmodule GateDesc2Test do
+        def run do
+          unless GateDesc2.run(%{"x" => 1}) == 2, do: raise "broken"
+          :ok
+        end
+      end
+      """
+      schema = %{"type" => "object", "properties" => %{"x" => %{"type" => "integer"}}}
+      assert {:ok, tool} = GraduationGate.run(source, test_src, schema: schema)
+      assert tool.metadata["schema"] == schema
+    end
+
+    test "description defaults to empty string and schema defaults to empty map when not provided" do
+      source = """
+      defmodule GateDesc3 do
+        def run(_args), do: :ok
+      end
+      """
+      test_src = """
+      defmodule GateDesc3Test do
+        def run, do: :ok
+      end
+      """
+      assert {:ok, tool} = GraduationGate.run(source, test_src)
+      assert tool.metadata["description"] == ""
+      assert tool.metadata["schema"] == %{}
+    end
   end
 
   describe "property-gated graduation" do

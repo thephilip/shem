@@ -4,12 +4,16 @@ defmodule Shem.Lab.GraduationGate do
 
   @no_property_seed 0.5
 
-  @spec run(String.t(), String.t(), [String.t()]) ::
+  @spec run(String.t(), String.t(), keyword()) ::
           {:ok, Tool.t()}
           | {:error, :compile, String.t()}
           | {:error, :gate, any()}
           | {:error, :timeout}
-  def run(source, test_source, constraints \\ []) do
+  def run(source, test_source, opts \\ []) do
+    description = Keyword.get(opts, :description, "")
+    schema      = Keyword.get(opts, :schema, %{})
+    constraints = Keyword.get(opts, :constraints, [])
+
     combined = source <> "\n" <> test_source
 
     executor_opts =
@@ -32,7 +36,11 @@ defmodule Shem.Lab.GraduationGate do
             test_source: test_source,
             constraints: constraints,
             graduated_at: DateTime.utc_now(),
-            metadata: %{property_tested: property?}
+            metadata: %{
+              :property_tested => property?,
+              "description"    => description,
+              "schema"         => schema
+            }
           }
 
           :ok = Workspace.graduate(tool)
