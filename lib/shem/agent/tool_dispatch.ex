@@ -478,7 +478,4 @@ defmodule Shem.Agent.ToolDispatch do
     end
   end
 
-  defp score_to_band(score) when score >= 0.8, do: :high
-  defp score_to_band(score) when score >= 0.5, do: :medium
-  defp score_to_band(_score), do: :low
 end

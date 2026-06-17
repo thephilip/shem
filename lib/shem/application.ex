@@ -27,7 +27,8 @@ defmodule Shem.Application do
         llm_stub_children() ++
         mcp_children() ++
         cluster_children() ++
-        tui_children()
+        tui_children() ++
+        port_pool_children()
 
     opts = [strategy: :one_for_one, name: Shem.Supervisor]
     Supervisor.start_link(children, opts)
@@ -82,6 +83,14 @@ defmodule Shem.Application do
   defp tui_children do
     if Application.get_env(:shem, :start_tui, true) do
       [Shem.TUI.RuntimeSupervisor]
+    else
+      []
+    end
+  end
+
+  defp port_pool_children do
+    if Application.get_env(:shem, :start_port_pool, true) do
+      [Shem.Lab.PortPool.Supervisor]
     else
       []
     end

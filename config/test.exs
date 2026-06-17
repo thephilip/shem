@@ -44,3 +44,4 @@ config :shem, spawn_agent_max_depth: 2
 config :shem, executor_backend: :local
 
 config :shem, shadow_agent_enabled: false
+config :shem, start_port_pool: false

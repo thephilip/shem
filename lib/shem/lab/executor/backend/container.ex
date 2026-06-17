@@ -48,7 +48,7 @@ defmodule Shem.Lab.Executor.Backend.Container do
     end
   end
 
-  defp build_args(image, network, name, cmd, mounts \\ []) do
+  defp build_args(image, network, name, cmd, mounts) do
     network_args =
       case network do
         :none -> ["--network=none"]

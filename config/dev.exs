@@ -13,13 +13,15 @@ config :shem,
     {Shem.LLM.Middleware.RouterTransport, []}
   ],
   llm_routes: %{
-    default: {:llama_cpp, "qwen3.6-27b-uncensored-hauhaucs-balanced"}
+    default: {:openai, "qwen"}
     # Cloud examples (requires OPENAI_API_KEY / ANTHROPIC_API_KEY env vars):
     # default: {:openai, "gpt-4o"},
     # reasoning: {:anthropic, "claude-sonnet-4-6"},
   },
-  llm_models: %{default: "qwen3.6-27b-uncensored-hauhaucs-balanced"},
-  llm_llama_cpp_url: "http://localhost:1234",
+  llm_models: %{default: "qwen"},
+  llm_openai_base_url: "http://localhost:1234",
+  llm_openai_api_key: "lm-studio",
+  llm_max_tokens: 4096,
   llm_budget_limit: 500_000,
   llm_soft_threshold: 0.8
 
@@ -41,3 +43,8 @@ config :shem,
 
 config :shem, shadow_agent_enabled: true
 config :shem, shadow_agent_poll_ms: 2_000
+
+config :shem,
+  executor_image_python: "python:3.12-slim",
+  port_pool_size: 2,
+  start_port_pool: true
