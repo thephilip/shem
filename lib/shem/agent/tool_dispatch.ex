@@ -30,7 +30,7 @@ defmodule Shem.Agent.ToolDispatch do
     },
     %{
       name: "write_tool",
-      description: "Graduate a new Elixir tool into the Lab. Requires description of what the tool does.",
+      description: "Graduate a new tool into the Lab. Supports language: \"elixir\" (default) or \"python\".",
       source: :builtin,
       trust: :builtin,
       schema: %{
@@ -39,7 +39,8 @@ defmodule Shem.Agent.ToolDispatch do
           "source"      => %{"type" => "string"},
           "test_source" => %{"type" => "string"},
           "description" => %{"type" => "string"},
-          "schema"      => %{"type" => "object"}
+          "schema"      => %{"type" => "object"},
+          "language"    => %{"type" => "string"}
         },
         required: ["source", "test_source", "description"]
       }
@@ -274,12 +275,16 @@ defmodule Shem.Agent.ToolDispatch do
     test_source = args["test_source"] || ""
     description = args["description"] || ""
     schema      = args["schema"] || %{}
+    language    = args["language"] || "elixir"
 
-    case Lab.GraduationGate.run(source, test_source, description: description, schema: schema) do
-      {:ok, tool} -> {:ok, "graduated: #{tool.name}"}
-      {:error, :compile, msg} -> {:error, "compile error: #{msg}"}
-      {:error, :gate, reason} -> {:error, "test failed: #{inspect(reason)}"}
-      {:error, :timeout}      -> {:error, "graduation timed out"}
+    case Lab.GraduationGate.run(source, test_source,
+      description: description, schema: schema, language: language
+    ) do
+      {:ok, tool}                        -> {:ok, "graduated: #{tool.name}"}
+      {:error, :compile, msg}            -> {:error, "compile error: #{msg}"}
+      {:error, :gate, reason}            -> {:error, "test failed: #{inspect(reason)}"}
+      {:error, :timeout}                 -> {:error, "graduation timed out"}
+      {:error, :language_not_configured, lang} -> {:error, "language not configured: #{lang}"}
     end
   end
 
