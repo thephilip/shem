@@ -576,7 +576,7 @@ defmodule Mix.Tasks.Demo do
     %Shem.Tool{
       id: "demo_word_count",
       name: "word_count",
-      module: Shem.Lab.Tool.DemoWordCount,
+      runtime: {:beam, Shem.Lab.Tool.DemoWordCount},
       source: """
       def run(%{"text" => text}) do
         words = String.split(text)
@@ -597,7 +597,7 @@ defmodule Mix.Tasks.Demo do
     %Shem.Tool{
       id: "demo_word_count",
       name: "word_count",
-      module: Shem.Lab.Tool.DemoWordCount,
+      runtime: {:beam, Shem.Lab.Tool.DemoWordCount},
       source: """
       def run(%{"text" => nil}), do: {:ok, "0 words"}
       def run(%{"text" => text}), do: {:ok, "\#{length(String.split(text))} words"}

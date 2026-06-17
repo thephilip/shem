@@ -14,7 +14,7 @@ defmodule Shem.MCP.Handlers.InvokeToolTest do
   @tool %Tool{
     id: "invoke_target_1",
     name: "InvokeTarget1",
-    module: InvokeTarget1,
+    runtime: {:beam, InvokeTarget1},
     source: @source,
     test_source: "",
     graduated_at: DateTime.utc_now(),

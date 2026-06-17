@@ -91,7 +91,7 @@ defmodule Shem.Lab.Registry do
         [%Tool{
           id: id,
           name: module |> Atom.to_string() |> String.split(".") |> List.last(),
-          module: module,
+          runtime: {:beam, module},
           source: source,
           test_source: "",
           graduated_at: DateTime.utc_now(),

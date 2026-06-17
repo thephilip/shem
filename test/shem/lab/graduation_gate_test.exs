@@ -28,7 +28,7 @@ defmodule Shem.Lab.GraduationGateTest do
     """
     assert {:ok, tool} = GraduationGate.run(source, test_source)
     assert tool.id == "gate_add1"
-    assert tool.module == GateAdd1
+    assert tool.runtime == {:beam, GateAdd1}
     assert tool.source == source
     assert File.exists?(Workspace.graduated_path("gate_add1"))
   end

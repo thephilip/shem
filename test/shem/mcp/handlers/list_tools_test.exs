@@ -8,7 +8,7 @@ defmodule Shem.MCP.Handlers.ListToolsTest do
   @tool %Tool{
     id: "lt_tool_1",
     name: "LtTool1",
-    module: LtTool1,
+    runtime: {:beam, LtTool1},
     source: "defmodule LtTool1 do\n  def run(_args), do: :ok\nend",
     test_source: "",
     graduated_at: DateTime.utc_now(),

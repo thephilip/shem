@@ -4,11 +4,11 @@ defmodule Shem.Tool do
   passes the graduation gate — before that, code is represented as plain strings.
   """
 
-  @enforce_keys [:id, :name, :module, :source, :test_source, :graduated_at]
+  @enforce_keys [:id, :name, :runtime, :source, :test_source, :graduated_at]
   defstruct [
     :id,
     :name,
-    :module,
+    :runtime,
     :source,
     :test_source,
     :graduated_at,
@@ -17,10 +17,12 @@ defmodule Shem.Tool do
     metadata: %{}
   ]
 
+  @type runtime :: {:beam, module()} | {:port, String.t()}
+
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),
-          module: atom(),
+          runtime: runtime(),
           source: String.t(),
           test_source: String.t(),
           constraints: [String.t()],

@@ -3,18 +3,18 @@ defmodule Shem.ToolTest do
 
   alias Shem.Tool
 
-  test "can be constructed with all required fields" do
+  test "can be constructed with all required fields using runtime:" do
     tool = %Tool{
       id: "parse_csv_v1",
       name: "ParseCsv",
-      module: ParseCsv,
+      runtime: {:beam, ParseCsv},
       source: "defmodule ParseCsv do end",
       test_source: "defmodule ParseCsvTest do def run, do: :ok end",
       graduated_at: ~U[2026-06-03 00:00:00Z]
     }
 
     assert tool.id == "parse_csv_v1"
-    assert tool.module == ParseCsv
+    assert tool.runtime == {:beam, ParseCsv}
     assert tool.constraints == []
     assert tool.metadata == %{}
   end
@@ -29,7 +29,7 @@ defmodule Shem.ToolTest do
     tool = %Shem.Tool{
       id: "foo",
       name: "Foo",
-      module: Foo,
+      runtime: {:beam, Foo},
       source: "defmodule Foo do\nend",
       test_source: "",
       graduated_at: DateTime.utc_now()
@@ -41,12 +41,24 @@ defmodule Shem.ToolTest do
     tool = %Shem.Tool{
       id: "bar",
       name: "Bar",
-      module: Bar,
+      runtime: {:beam, Bar},
       source: "defmodule Bar do\nend",
       test_source: "",
       graduated_at: DateTime.utc_now(),
       input_schema: %{"n" => %{"type" => "integer"}}
     }
     assert tool.input_schema == %{"n" => %{"type" => "integer"}}
+  end
+
+  test "accepts python port runtime" do
+    tool = %Shem.Tool{
+      id: "py_tool",
+      name: "PyTool",
+      runtime: {:port, "/abs/path/py_tool_runtime.py"},
+      source: "def run(args): return args",
+      test_source: "",
+      graduated_at: DateTime.utc_now()
+    }
+    assert tool.runtime == {:port, "/abs/path/py_tool_runtime.py"}
   end
 end

@@ -22,7 +22,7 @@ defmodule Shem.Lab.WorkspaceTest do
     tool = %Tool{
       id: "adder_v1",
       name: "Adder",
-      module: Adder,
+      runtime: {:beam, Adder},
       source: "defmodule Adder do\n  def add(a, b), do: a + b\nend",
       test_source: "",
       graduated_at: DateTime.utc_now()
@@ -40,7 +40,7 @@ defmodule Shem.Lab.WorkspaceTest do
     tool = %Tool{
       id: "multiplier_v1",
       name: "Multiplier",
-      module: Multiplier,
+      runtime: {:beam, Multiplier},
       source: "defmodule Multiplier do\n  def mul(a, b), do: a * b\nend",
       test_source: "",
       graduated_at: DateTime.utc_now()

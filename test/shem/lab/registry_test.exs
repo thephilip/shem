@@ -8,7 +8,7 @@ defmodule Shem.Lab.RegistryTest do
   @tool %Tool{
     id: "greeter_v1",
     name: "Greeter",
-    module: Greeter,
+    runtime: {:beam, Greeter},
     source: "defmodule Greeter do\n  def hi(name), do: \"Hello, \#{name}\"\nend",
     test_source: "",
     graduated_at: ~U[2026-06-03 00:00:00Z]
