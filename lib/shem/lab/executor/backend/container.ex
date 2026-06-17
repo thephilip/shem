@@ -21,8 +21,9 @@ defmodule Shem.Lab.Executor.Backend.Container do
       network =
         Keyword.get(opts, :network, Application.get_env(:shem, :executor_network, :default))
 
+      mounts = Keyword.get(opts, :mounts, [])
       name = "shem-#{:erlang.unique_integer([:positive])}"
-      args = build_args(image, network, name, cmd)
+      args = build_args(image, network, name, cmd, mounts)
 
       task =
         Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn ->
@@ -47,7 +48,7 @@ defmodule Shem.Lab.Executor.Backend.Container do
     end
   end
 
-  defp build_args(image, network, name, cmd) do
+  defp build_args(image, network, name, cmd, mounts \\ []) do
     network_args =
       case network do
         :none -> ["--network=none"]
@@ -55,6 +56,10 @@ defmodule Shem.Lab.Executor.Backend.Container do
         _ -> []
       end
 
-    ["run", "--rm", "--name", name, "-i"] ++ network_args ++ [image, "sh", "-c", cmd]
+    mount_args = Enum.flat_map(mounts, fn {host, container} ->
+      ["-v", "#{host}:#{container}:ro"]
+    end)
+
+    ["run", "--rm", "--name", name, "-i"] ++ network_args ++ mount_args ++ [image, "sh", "-c", cmd]
   end
 end

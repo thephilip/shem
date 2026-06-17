@@ -23,4 +23,20 @@ defmodule Shem.Lab.Executor.Backend.ContainerTest do
     result = Container.run_shell("ls", 5_000, [])
     assert {:error, "no container runtime available (tried podman, docker)"} = result
   end
+
+  test "mounts: opt is passed through to run_fn in opts" do
+    parent = self()
+    run_fn = fn _cmd, _timeout, opts ->
+      send(parent, {:opts, opts})
+      {:ok, "ok"}
+    end
+
+    Container.run_shell("ls", 1_000,
+      run_fn: run_fn,
+      mounts: [{"/tmp/a", "/mnt/a"}, {"/tmp/b", "/mnt/b"}]
+    )
+
+    assert_receive {:opts, opts}
+    assert [{"/tmp/a", "/mnt/a"}, {"/tmp/b", "/mnt/b"}] = Keyword.get(opts, :mounts)
+  end
 end
