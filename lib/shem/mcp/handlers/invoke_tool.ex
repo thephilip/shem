@@ -1,5 +1,5 @@
 defmodule Shem.MCP.Handlers.InvokeTool do
-  alias Shem.Lab.Registry
+  alias Shem.Lab.{Registry, PortPool}
   alias Shem.MCP.Schema
 
   @schema %{
@@ -10,21 +10,29 @@ defmodule Shem.MCP.Handlers.InvokeTool do
   @spec call(map()) :: {:ok, any()} | {:error, atom()} | {:error, atom(), any()}
   def call(params) do
     with {:ok, valid} <- Schema.validate(params, @schema),
-         {:ok, tool} <- Registry.lookup(valid["id"]),
-         :ok <- ensure_loaded(tool) do
+         {:ok, tool} <- Registry.lookup(valid["id"]) do
       args = Map.get(valid, "args", %{})
 
-      with {:ok, _} <- Schema.validate(args, tool.input_schema) do
-        try do
-          {:ok, tool.module.run(args)}
-        rescue
-          e -> {:error, :runtime, Exception.message(e)}
-        end
+      case tool.runtime do
+        {:beam, mod} ->
+          with :ok <- ensure_loaded(tool),
+               {:ok, _} <- Schema.validate(args, tool.input_schema) do
+            try do
+              {:ok, mod.run(args)}
+            rescue
+              e -> {:error, :runtime, Exception.message(e)}
+            end
+          end
+
+        {:port, runtime_path} ->
+          with {:ok, pool} <- Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path) do
+            PortPool.call(pool, args)
+          end
       end
     end
   end
 
-  defp ensure_loaded(%{module: module, source: source}) do
+  defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
     case :code.is_loaded(module) do
       false ->
         case Code.compile_string(source) do

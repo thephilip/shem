@@ -410,12 +410,30 @@ defmodule Shem.Agent.ToolDispatch do
   defp dispatch_lab(id, args) do
     case Lab.Registry.lookup(id) do
       {:ok, tool} ->
-        with :ok <- ensure_loaded(tool) do
-          try do
-            {:ok, inspect(tool.module.run(args))}
-          rescue
-            e -> {:error, "runtime error: #{Exception.message(e)}"}
-          end
+        case tool.runtime do
+          {:beam, mod} ->
+            with :ok <- ensure_loaded(tool) do
+              try do
+                {:ok, inspect(mod.run(args))}
+              rescue
+                e -> {:error, "runtime error: #{Exception.message(e)}"}
+              end
+            end
+
+          {:port, runtime_path} ->
+            trust_band =
+              case Shem.Trust.Store.score(tool.id) do
+                {:ok, score} -> score_to_band(score)
+                {:error, :unrated} -> :unrated
+              end
+
+            if gate_blocks?(trust_band) do
+              {:error, "tool blocked (trust: #{trust_band})"}
+            else
+              with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path) do
+                Lab.PortPool.call(pool, args)
+              end
+            end
         end
 
       {:error, :not_found} ->
@@ -423,7 +441,11 @@ defmodule Shem.Agent.ToolDispatch do
     end
   end
 
-  defp ensure_loaded(%{module: module, source: source}) do
+  defp score_to_band(score) when score >= 0.8, do: :high
+  defp score_to_band(score) when score >= 0.5, do: :medium
+  defp score_to_band(_score), do: :low
+
+  defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
     case :code.is_loaded(module) do
       false ->
         try do
