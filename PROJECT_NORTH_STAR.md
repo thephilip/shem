@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-15_
+_Last updated: 2026-06-17_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -43,16 +43,16 @@ _Last updated: 2026-06-15_
 - Naming convention for language-specific tool-writing presets: `<language>_toolsmith`
   (e.g., `elixir_toolsmith`, `python_toolsmith`, `rust_toolsmith`). Convention established now;
   non-Elixir smiths are future work.
-- Polyglot GraduationGate (language routing, non-Elixir executor backends) is a future phase —
-  not part of Phase 42. Phase 42 is Elixir-only.
+- Polyglot GraduationGate (language routing, non-Elixir executor backends) is COMPLETE in Phase 43a.
+  `Tool.runtime` union, manifest persistence, PortPool, GraduationGate.Python, config-driven dispatch all shipped.
+- Phase 43b (python_toolsmith preset) is next after 43a.
 
 ## Current Phase
-**Phase 42 — Self-Evolution Loop (Toolsmith)**: SPEC WRITTEN, AWAITING IMPLEMENTATION (2026-06-15).
-Spec: `docs/superpowers/specs/2026-06-15-phase42-toolsmith-design.md`. Next: write implementation
-plan, then execute. Closes the loop: agents delegate tool authorship to a language-specific
-`elixir_toolsmith` sub-agent via `spawn_agent`. Toolsmith writes Elixir source + StreamData
-property tests, calls `write_tool` (extended with `description`), graduates the tool, returns
-`"graduated: <name>"`. Parent agent then calls the new tool in the same session.
+**Phase 43a — Polyglot Tool Runtime**: COMPLETE (2026-06-17). 9 commits, 1057 tests passing.
+`Tool.runtime` replaces `Tool.module` as `{:beam, Mod} | {:port, path}` union. `Workspace.graduate/1` writes `.json` manifest alongside source; `Registry.scan_graduated` reads manifests (legacy `.ex`-only fallback preserved). `GraduationGate.run/3` gains config-driven language dispatch (`@builtin_languages` map, overridable via app env); Elixir path extracted to `run_elixir/3`. New `GraduationGate.Python`: pytest-in-container graduation (volume-mounted temp dir), registers tool with `{:port, runtime_path}`. `Backend.Container` gains `mounts:` opt for `-v` flags. New `PortPool` GenServer (JSON lines stdio, crash-recovery, per-tool lazy-started via `PortPool.Supervisor`). `write_tool` builtin gains `language:` field (default `"elixir"`). All dispatch sites (`dispatch_lab`, MCP `invoke_tool`, `ensure_loaded`) updated to branch on `tool.runtime`. Phase 43b (python_toolsmith preset) is next.
+
+**Phase 42 — Self-Evolution Loop (Toolsmith)**: COMPLETE (2026-06-16). 4 commits, 1041 tests passing.
+`GraduationGate.run/3` takes keyword opts — `description:` and `schema:` stored in `tool.metadata` (string keys). `write_tool` builtin schema extended with `description` (required) + `schema` (optional), threaded through dispatch. New `elixir_toolsmith` builtin preset: restricted to `["write_tool", "run_code"]`, `max_turns: 8`, system prompt teaches full tool/test/graduation format including StreamData property tests and retry-on-failure. `general` and `coder` presets now point agents to `spawn_agent(preset: "elixir_toolsmith", ...)` when a capability is missing. `max_turns` plumbed from preset through `Preset.resolve/1` into `Agent.start_with_preset/3`. Loop is closed: agents can now create and immediately use new tools within a single session.
 
 **Reasoning Visibility — COMPLETE** (2026-06-15). `reasoning_content` from qwen3 captured
 in EventLog as `:agent_thinking` events; broadcast to TUI (`StreamSink`) and REST SSE
