@@ -209,6 +209,43 @@ defmodule Shem.Lab.GraduationGateTest do
     end
   end
 
+  describe "language dispatch" do
+    test "defaults to elixir path when no language opt given" do
+      source = """
+      defmodule LangDefault1 do
+        def run(_), do: :ok
+      end
+      """
+      test_source = """
+      defmodule LangDefault1Test do
+        def run, do: :ok
+      end
+      """
+      assert {:ok, tool} = GraduationGate.run(source, test_source)
+      assert match?({:beam, _}, tool.runtime)
+    end
+
+    test "language: elixir explicitly routes to elixir path" do
+      source = """
+      defmodule LangExplicit1 do
+        def run(_), do: :ok
+      end
+      """
+      test_source = """
+      defmodule LangExplicit1Test do
+        def run, do: :ok
+      end
+      """
+      assert {:ok, tool} = GraduationGate.run(source, test_source, language: "elixir")
+      assert match?({:beam, _}, tool.runtime)
+    end
+
+    test "unknown language returns {:error, :language_not_configured, lang}" do
+      assert {:error, :language_not_configured, "rust"} =
+        GraduationGate.run("fn main() {}", "fn test() {}", language: "rust")
+    end
+  end
+
   test "generates versioned id when a tool with the same base id already exists" do
     source_v1 = """
     defmodule GateAdd5 do

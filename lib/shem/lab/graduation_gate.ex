@@ -4,12 +4,29 @@ defmodule Shem.Lab.GraduationGate do
 
   @no_property_seed 0.5
 
+  @builtin_languages %{
+    "elixir" => :elixir,
+    "python" => :python
+  }
+
   @spec run(String.t(), String.t(), keyword()) ::
           {:ok, Tool.t()}
           | {:error, :compile, String.t()}
           | {:error, :gate, any()}
           | {:error, :timeout}
+          | {:error, :language_not_configured, String.t()}
   def run(source, test_source, opts \\ []) do
+    lang = Keyword.get(opts, :language, "elixir")
+    languages = Application.get_env(:shem, :graduation_languages, @builtin_languages)
+
+    case Map.get(languages, lang) do
+      :elixir -> run_elixir(source, test_source, opts)
+      :python -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
+      nil     -> {:error, :language_not_configured, lang}
+    end
+  end
+
+  defp run_elixir(source, test_source, opts) do
     description = Keyword.get(opts, :description, "")
     schema      = Keyword.get(opts, :schema, %{})
     constraints = Keyword.get(opts, :constraints, [])
