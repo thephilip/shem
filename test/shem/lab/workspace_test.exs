@@ -36,7 +36,7 @@ defmodule Shem.Lab.WorkspaceTest do
     assert Workspace.list_graduated() == []
   end
 
-  test "list_graduated/0 returns [{id, path}] tuples after graduation" do
+  test "list_graduated/0 returns [{id, json_path}] tuples after graduation" do
     tool = %Tool{
       id: "multiplier_v1",
       name: "Multiplier",
@@ -48,6 +48,36 @@ defmodule Shem.Lab.WorkspaceTest do
 
     Workspace.graduate(tool)
     assert [{"multiplier_v1", path}] = Workspace.list_graduated()
-    assert String.ends_with?(path, "graduated/multiplier_v1.ex")
+    assert String.ends_with?(path, "graduated/multiplier_v1.json")
+  end
+
+  test "graduate/1 writes a companion .json manifest with metadata" do
+    tool = %Tool{
+      id: "manifest_test_tool",
+      name: "ManifestTestTool",
+      runtime: {:beam, ManifestTestTool},
+      source: "defmodule ManifestTestTool do\n  def run(_), do: :ok\nend",
+      test_source: "test source here",
+      graduated_at: ~U[2026-06-16 12:00:00Z],
+      metadata: %{"description" => "adds things", "schema" => %{"type" => "object"}}
+    }
+
+    assert :ok = Workspace.graduate(tool)
+
+    manifest_path = Workspace.manifest_path("manifest_test_tool")
+    assert File.exists?(manifest_path)
+
+    manifest = manifest_path |> File.read!() |> Jason.decode!()
+    assert manifest["id"] == "manifest_test_tool"
+    assert manifest["name"] == "ManifestTestTool"
+    assert manifest["language"] == "elixir"
+    assert manifest["description"] == "adds things"
+    assert manifest["test_source"] == "test source here"
+  end
+
+  test "runtime_path/1 returns absolute path to _runtime.py in lab graduated dir" do
+    path = Workspace.runtime_path("my_tool")
+    assert String.ends_with?(path, "graduated/my_tool_runtime.py")
+    assert Path.type(path) == :absolute
   end
 end

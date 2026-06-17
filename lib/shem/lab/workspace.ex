@@ -3,26 +3,104 @@ defmodule Shem.Lab.Workspace do
 
   def messy_path(id), do: Path.join([lab_dir(), "messy", "#{id}.ex"])
   def graduated_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.ex"])
+  def manifest_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.json"])
+  def runtime_path(id), do: Path.join([lab_dir(), "graduated", "#{id}_runtime.py"]) |> Path.expand()
 
   @spec graduate(Tool.t()) :: :ok
   def graduate(%Tool{} = tool) do
-    path = graduated_path(tool.id)
-    File.mkdir_p!(Path.dirname(path))
-    File.write!(path, tool.source)
+    dir = Path.join(lab_dir(), "graduated")
+    File.mkdir_p!(dir)
+
+    case tool.runtime do
+      {:beam, _mod} ->
+        File.write!(graduated_path(tool.id), tool.source)
+
+      {:port, runtime_path} ->
+        File.write!(Path.join(dir, "#{tool.id}.py"), tool.source)
+        File.write!(runtime_path, build_stdio_wrapper(tool.source))
+    end
+
+    File.write!(manifest_path(tool.id), build_manifest(tool))
+    :ok
   end
 
-  @spec list_graduated() :: [{String.t(), String.t()}]
+  @spec list_graduated() :: [{String.t(), String.t()} | {:legacy, String.t(), String.t()}]
   def list_graduated do
     dir = Path.join(lab_dir(), "graduated")
     File.mkdir_p!(dir)
 
-    dir
-    |> File.ls!()
-    |> Enum.filter(&String.ends_with?(&1, ".ex"))
-    |> Enum.map(fn filename ->
-      id = String.replace_suffix(filename, ".ex", "")
-      {id, Path.join(dir, filename)}
-    end)
+    json_entries =
+      dir
+      |> File.ls!()
+      |> Enum.filter(&String.ends_with?(&1, ".json"))
+      |> Enum.map(fn filename ->
+        id = String.replace_suffix(filename, ".json", "")
+        {id, Path.join(dir, filename)}
+      end)
+
+    legacy_entries =
+      dir
+      |> File.ls!()
+      |> Enum.filter(&String.ends_with?(&1, ".ex"))
+      |> Enum.reject(fn filename ->
+        id = String.replace_suffix(filename, ".ex", "")
+        File.exists?(manifest_path(id))
+      end)
+      |> Enum.map(fn filename ->
+        id = String.replace_suffix(filename, ".ex", "")
+        {:legacy, id, Path.join(dir, filename)}
+      end)
+
+    json_entries ++ legacy_entries
+  end
+
+  defp build_manifest(%Tool{runtime: {:beam, _}} = tool) do
+    %{
+      "id"           => tool.id,
+      "name"         => tool.name,
+      "language"     => "elixir",
+      "description"  => Map.get(tool.metadata, "description", ""),
+      "schema"       => Map.get(tool.metadata, "schema", %{}),
+      "constraints"  => tool.constraints,
+      "test_source"  => tool.test_source,
+      "graduated_at" => DateTime.to_iso8601(tool.graduated_at)
+    }
+    |> Jason.encode!(pretty: true)
+  end
+
+  defp build_manifest(%Tool{runtime: {:port, runtime_path}} = tool) do
+    %{
+      "id"           => tool.id,
+      "name"         => tool.name,
+      "language"     => Map.get(tool.metadata, "language", "python"),
+      "runtime_path" => runtime_path,
+      "description"  => Map.get(tool.metadata, "description", ""),
+      "schema"       => Map.get(tool.metadata, "schema", %{}),
+      "constraints"  => tool.constraints,
+      "test_source"  => tool.test_source,
+      "graduated_at" => DateTime.to_iso8601(tool.graduated_at)
+    }
+    |> Jason.encode!(pretty: true)
+  end
+
+  defp build_stdio_wrapper(source) do
+    """
+    import sys
+    import json
+
+    #{source}
+
+    if __name__ == "__main__":
+        for line in sys.stdin:
+            line = line.strip()
+            if line:
+                try:
+                    args = json.loads(line)
+                    result = run(args)
+                    print(json.dumps(result), flush=True)
+                except Exception as e:
+                    print(json.dumps({"__error__": str(e)}), flush=True)
+    """
   end
 
   defp lab_dir do

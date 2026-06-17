@@ -81,26 +81,87 @@ defmodule Shem.Lab.Registry do
 
   # ── Helpers ─────────────────────────────────────────────────────────────────
 
-  # Phase 3: reads source and builds catalogue without loading modules into VM.
-  # Module loading at boot is deferred to Phase 4 when tool invocation is needed.
   defp scan_graduated do
     Workspace.list_graduated()
-    |> Enum.flat_map(fn {id, path} ->
-      with {:ok, source} <- File.read(path),
-           {:ok, module} <- extract_module(source) do
-        [%Tool{
-          id: id,
-          name: module |> Atom.to_string() |> String.split(".") |> List.last(),
-          runtime: {:beam, module},
-          source: source,
-          test_source: "",
-          graduated_at: DateTime.utc_now(),
-          metadata: %{}
-        }]
-      else
-        _ -> []
-      end
+    |> Enum.flat_map(fn
+      {id, manifest_path} ->
+        with {:ok, json} <- File.read(manifest_path),
+             {:ok, m} <- Jason.decode(json) do
+          [build_tool_from_manifest(id, m)]
+        else
+          _ -> []
+        end
+
+      {:legacy, id, source_path} ->
+        with {:ok, source} <- File.read(source_path),
+             {:ok, module} <- extract_module(source) do
+          [%Tool{
+            id: id,
+            name: module |> Atom.to_string() |> String.split(".") |> List.last(),
+            runtime: {:beam, module},
+            source: source,
+            test_source: "",
+            graduated_at: DateTime.utc_now(),
+            metadata: %{}
+          }]
+        else
+          _ -> []
+        end
     end)
+  end
+
+  defp build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
+    source_path = Workspace.graduated_path(id)
+    source = case File.read(source_path) do
+      {:ok, s} -> s
+      _ -> ""
+    end
+    {:ok, module} = extract_module(source)
+
+    %Tool{
+      id: id,
+      name: m["name"] || (module |> Atom.to_string() |> String.split(".") |> List.last()),
+      runtime: {:beam, module},
+      source: source,
+      test_source: m["test_source"] || "",
+      constraints: m["constraints"] || [],
+      graduated_at: parse_dt(m["graduated_at"]),
+      metadata: %{
+        "description" => m["description"] || "",
+        "schema"      => m["schema"] || %{}
+      }
+    }
+  end
+
+  defp build_tool_from_manifest(id, %{"runtime_path" => runtime_path} = m) do
+    source_path = Path.join(Path.dirname(runtime_path), "#{id}.py")
+    source = case File.read(source_path) do
+      {:ok, s} -> s
+      _ -> ""
+    end
+
+    %Tool{
+      id: id,
+      name: m["name"] || id,
+      runtime: {:port, runtime_path},
+      source: source,
+      test_source: m["test_source"] || "",
+      constraints: m["constraints"] || [],
+      graduated_at: parse_dt(m["graduated_at"]),
+      metadata: %{
+        "language"    => m["language"] || "python",
+        "description" => m["description"] || "",
+        "schema"      => m["schema"] || %{}
+      }
+    }
+  end
+
+  defp parse_dt(nil), do: DateTime.utc_now()
+  defp parse_dt(str) do
+    case DateTime.from_iso8601(str) do
+      {:ok, dt, _} -> dt
+      _ -> DateTime.utc_now()
+    end
   end
 
   defp extract_module(source) do
