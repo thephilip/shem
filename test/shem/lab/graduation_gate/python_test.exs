@@ -3,9 +3,22 @@ defmodule Shem.Lab.GraduationGate.PythonTest do
 
   alias Shem.Lab.GraduationGate.Python
 
-  setup do
+  setup context do
     lab_dir = Application.get_env(:shem, :lab_dir, System.tmp_dir!())
     on_exit(fn -> File.rm_rf!(lab_dir) end)
+
+    # Integration tests need a real container — test config defaults to the Local
+    # backend (can't cd /workspace) and a 200ms timeout (too short for pip install).
+    if context[:python_integration] do
+      runtime = System.find_executable("podman") || System.find_executable("docker")
+      Process.put(:shem_executor_backend, Shem.Lab.Executor.Backend.Container)
+      Application.put_env(:shem, :container_runtime_bin, runtime)
+
+      prev_timeout = Application.get_env(:shem, :executor_timeout_ms)
+      Application.put_env(:shem, :executor_timeout_ms, 180_000)
+      on_exit(fn -> Application.put_env(:shem, :executor_timeout_ms, prev_timeout) end)
+    end
+
     :ok
   end
 
@@ -58,12 +71,17 @@ defmodule Shem.Lab.GraduationGate.PythonTest do
     import sys
     sys.path.insert(0, '.')
     from tool import run
+    from hypothesis import given, strategies as st
 
     def test_doubles():
         assert run({"n": 5}) == {"result": 10}
 
     def test_zero():
         assert run({}) == {"result": 0}
+
+    @given(st.integers())
+    def test_double_invariant(n):
+        assert run({"n": n})["result"] == n * 2
     """
 
     opts = [description: "doubles n", schema: %{"n" => %{"type" => "integer"}}]
