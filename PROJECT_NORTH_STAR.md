@@ -54,7 +54,8 @@ tools that survive node death." These two things together are what no competitor
   non-Elixir smiths are future work.
 - Polyglot GraduationGate (language routing, non-Elixir executor backends) is COMPLETE in Phase 43a.
   `Tool.runtime` union, manifest persistence, PortPool, GraduationGate.Python, config-driven dispatch all shipped.
-- Phase 43b (python_toolsmith preset) is next after 43a.
+- Phase 43b (python_toolsmith preset) COMPLETE + VERIFIED 2026-06-21. Preset shipped; full
+  Python loop proven end-to-end against podman (graduate → pytest+hypothesis → PortPool round-trip).
 - **Progressive hardening**: `GraduationGate.run/3` will run a lightweight single-turn trust
   check on every graduated tool (does behavior match declared schema? do boundary inputs produce
   sensible errors?). The full adversarial red-team loop stays as an explicit opt-in primitive
@@ -74,6 +75,15 @@ tools that survive node death." These two things together are what no competitor
   addressed before any production-readiness claim.
 
 ## Current Phase
+**Phase 43b — python_toolsmith preset**: COMPLETE + VERIFIED (2026-06-21). `python_toolsmith`
+builtin preset added (`write_tool` only — `run_code` is Elixir-only; `max_turns: 10`; system prompt
+teaches `run(args: dict)` format, pytest + Hypothesis property tests). `GraduationGate.Python` now
+pip-installs `hypothesis` alongside `pytest`. The `:python_integration` tests were rewritten to
+actually drive the Container backend (were silently running against Local) and are excluded by
+default (`mix test --only python_integration`). Verified end-to-end against podman: graduate →
+pytest+hypothesis → PortPool round-trips `{"n":21}` → `{"result":42}`. Default suite 1058 passing.
+LLM-driven authoring half (agent calling `write_tool`) shares the proven `elixir_toolsmith` plumbing.
+
 **Phase 43a — Polyglot Tool Runtime**: COMPLETE (2026-06-17). 9 commits, 1057 tests passing.
 `Tool.runtime` replaces `Tool.module` as `{:beam, Mod} | {:port, path}` union. `Workspace.graduate/1` writes `.json` manifest alongside source; `Registry.scan_graduated` reads manifests (legacy `.ex`-only fallback preserved). `GraduationGate.run/3` gains config-driven language dispatch (`@builtin_languages` map, overridable via app env); Elixir path extracted to `run_elixir/3`. New `GraduationGate.Python`: pytest-in-container graduation (volume-mounted temp dir), registers tool with `{:port, runtime_path}`. `Backend.Container` gains `mounts:` opt for `-v` flags. New `PortPool` GenServer (JSON lines stdio, crash-recovery, per-tool lazy-started via `PortPool.Supervisor`). `write_tool` builtin gains `language:` field (default `"elixir"`). All dispatch sites (`dispatch_lab`, MCP `invoke_tool`, `ensure_loaded`) updated to branch on `tool.runtime`. Phase 43b (python_toolsmith preset) is next.
 
