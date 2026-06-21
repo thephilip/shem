@@ -52,6 +52,14 @@ defmodule Shem.CLI.ConfigFileTest do
   end
 
   @tag :tmp_dir
+  test "write/2 then read/1 round-trips unknown top-level key", %{tmp_dir: dir} do
+    path = Path.join(dir, "config.yaml")
+    assert :ok = ConfigFile.write(%{"log_level" => "debug"}, path)
+    assert {:ok, result} = ConfigFile.read(path)
+    assert result["log_level"] == "debug"
+  end
+
+  @tag :tmp_dir
   test "set/3 updates existing key without touching others", %{tmp_dir: dir} do
     path = Path.join(dir, "config.yaml")
     config = %{"server" => %{"port" => 4000, "host" => "127.0.0.1"}}

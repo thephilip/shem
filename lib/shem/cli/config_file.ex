@@ -63,70 +63,20 @@ defmodule Shem.CLI.ConfigFile do
     Map.put(map, key, put_in_nested(nested, rest, value))
   end
 
-  defp format(config) do
-    llm = Map.get(config, "llm", %{})
-    default = Map.get(llm, "default", %{})
-    server = Map.get(config, "server", %{})
-    executor = Map.get(config, "executor", %{})
+  # ponytail: generic recursive serializer — replaces 60-line hardcoded template that silently
+  # dropped unknown top-level keys. Keys are sorted for deterministic output.
+  defp format(config), do: to_yaml(config, "") <> "\n"
 
-    llm_section =
-      if Enum.empty?(default) do
-        ""
-      else
-        """
-        llm:
-          default:
-            backend: #{format_value(Map.get(default, "backend", "anthropic"))}
-            model: #{format_value(Map.get(default, "model", ""))}
-            api_key: #{format_value(Map.get(default, "api_key", ""))}
-            url: #{format_value(Map.get(default, "url", ""))}
-        """
+  defp to_yaml(map, indent) when is_map(map) do
+    map
+    |> Enum.reject(fn {_, v} -> is_map(v) and map_size(v) == 0 end)
+    |> Enum.sort_by(fn {k, _} -> k end)
+    |> Enum.map_join("\n", fn {k, v} ->
+      case v do
+        %{} -> "#{indent}#{k}:\n#{to_yaml(v, indent <> "  ")}"
+        s when is_binary(s) -> "#{indent}#{k}: \"#{String.replace(s, "\"", "\\\"")}\""
+        scalar -> "#{indent}#{k}: #{scalar}"
       end
-
-    server_section =
-      if Enum.empty?(server) do
-        ""
-      else
-        """
-        server:
-          port: #{format_value(Map.get(server, "port", 4000))}
-          host: #{format_value(Map.get(server, "host", "127.0.0.1"))}
-        """
-      end
-
-    executor_section =
-      if Enum.empty?(executor) do
-        ""
-      else
-        """
-        executor:
-          backend: #{format_value(Map.get(executor, "backend", "auto"))}
-          image: #{format_value(Map.get(executor, "image", "debian:12-slim"))}
-        """
-      end
-
-    tui_section =
-      case Map.get(config, "tui") do
-        nil -> ""
-        value -> "tui: #{format_value(value)}\n"
-      end
-
-    data_dir_section =
-      case Map.get(config, "data_dir") do
-        nil -> ""
-        value -> "data_dir: #{format_value(value)}\n"
-      end
-
-    [llm_section, server_section, executor_section, tui_section, data_dir_section]
-    |> Enum.filter(&(String.trim(&1) != ""))
-    |> Enum.join("\n")
-  end
-
-  defp format_value(value) when is_binary(value) do
-    "\"#{value}\""
-  end
-
-  defp format_value(value) do
-    to_string(value)
+    end)
   end
 end
