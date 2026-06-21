@@ -107,8 +107,8 @@ Tactical debt, no architectural impact. Fix before any "production-ready" claim:
 - ~~`yagni:` `Shadow.Supervisor` and `Adversarial.Supervisor` boilerplate files~~ — DONE 2026-06-21
 - ~~`delete:` Identity `case` at end of `AgentCommon.find_by_session/1`~~ — DONE 2026-06-21
 - ~~`delete:` Scratch files at repo root~~ — DONE 2026-06-21
-- `shrink:` `ConfigFile.format/1` is a 100-line hardcoded YAML template; silently drops unknown top-level keys. Fix with `Ymlr` dep or document the fixed-schema contract + roundtrip test.
-- `shrink:` `LLM.Replay.diff/2` and `LLM.Branch.compare/1` duplicate call-comparison logic; extract shared core to `LLM.Replay.Utils`.
+- ~~`shrink:` `ConfigFile.format/1` hardcoded YAML template~~ — DONE 2026-06-21 (generic recursive serializer, roundtrip test added)
+- ~~`shrink:` `LLM.Replay.diff/2` / `Branch.compare/1` duplication~~ — CLOSED: different operations (sparse 2-session diff vs dense N-session matrix); shared primitive already in `Utils.extract_llm_pairs`
 
 ## Off-Limits Paths
 - Language dogma: the principle is always "right tool for the job."
