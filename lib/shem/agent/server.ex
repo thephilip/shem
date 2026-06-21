@@ -152,11 +152,13 @@ defmodule Shem.Agent.Server do
         EventLog.append(state.session_id, :agent_turn_started, %{turn: state.turn_count + 1})
         manifest = ToolDispatch.build_manifest(state.config)
 
+        turn_meta = %{session_id: state.session_id, node: node()}
+
         turn_result =
           :telemetry.span(
             [:shem, :agent, :turn],
-            %{session_id: state.session_id, node: node()},
-            fn -> {Turn.stream_step(state.config, state.session_id, state.history, manifest), %{}} end
+            turn_meta,
+            fn -> {Turn.stream_step(state.config, state.session_id, state.history, manifest), turn_meta} end
           )
 
         case turn_result do

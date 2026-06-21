@@ -30,6 +30,27 @@ defmodule Shem.TelemetryTest do
     assert Map.has_key?(stats, {event, nil})
   end
 
+  # Regression: :telemetry.span only puts the RETURNED tuple's map on the :stop
+  # event — start_metadata is not carried over. Our spans must return their meta
+  # in the tuple or group/type/session_id are lost (silently blended).
+  test "span carries metadata on :stop via the returned tuple" do
+    ref = make_ref()
+    parent = self()
+
+    :telemetry.attach(
+      "span-stop-meta-#{inspect(ref)}",
+      [:test, :span, :stop],
+      fn _e, _m, meta, _ -> send(parent, {ref, meta}) end,
+      nil
+    )
+
+    meta = %{group: "g1"}
+    :telemetry.span([:test, :span], meta, fn -> {:ok, meta} end)
+
+    assert_receive {^ref, %{group: "g1"}}
+    :telemetry.detach("span-stop-meta-#{inspect(ref)}")
+  end
+
   test "prometheus_text renders gauges + count with group labels" do
     :telemetry.execute(
       [:shem, :llm, :call, :stop],
