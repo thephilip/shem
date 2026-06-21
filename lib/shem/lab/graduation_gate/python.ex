@@ -15,7 +15,7 @@ defmodule Shem.Lab.GraduationGate.Python do
 
     result =
       Executor.run_shell(
-        "cd /workspace && pip install pytest -q --no-warn-script-location 2>/dev/null && pytest test_tool.py -q",
+        "cd /workspace && pip install pytest hypothesis -q --no-warn-script-location 2>/dev/null && pytest test_tool.py -q",
         timeout,
         image: image,
         mounts: [{tmp_dir, "/workspace"}]
