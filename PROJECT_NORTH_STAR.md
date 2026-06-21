@@ -56,11 +56,14 @@ tools that survive node death." These two things together are what no competitor
   `Tool.runtime` union, manifest persistence, PortPool, GraduationGate.Python, config-driven dispatch all shipped.
 - Phase 43b (python_toolsmith preset) COMPLETE + VERIFIED 2026-06-21. Preset shipped; full
   Python loop proven end-to-end against podman (graduate → pytest+hypothesis → PortPool round-trip).
-- **Progressive hardening**: `GraduationGate.run/3` will run a lightweight single-turn trust
-  check on every graduated tool (does behavior match declared schema? do boundary inputs produce
-  sensible errors?). The full adversarial red-team loop stays as an explicit opt-in primitive
-  (`spawn_agent(preset: "red_team", ...)`), not wired into graduation automatically. This resolves
-  the uncanny valley: hardening becomes a graduation gate, not a demo feature.
+- **Progressive hardening**: COMPLETE 2026-06-21. `GraduationGate.Hardening.check/2` runs a
+  lightweight single-turn LLM review at graduation (source vs declared description/schema →
+  0..1 trust score refining the flat seed); logs a `:hardening_check` event. The full adversarial
+  red-team loop is now opt-in via `Shem.Adversarial.start_hardening/1` (no longer auto-run on
+  graduation; the demo calls it explicitly). Never blocks graduation — disabled or non-JSON LLM
+  output degrades to a safe `:skip` (flat seed). KNOWN LIMIT: local qwen often emits prose, not
+  JSON, so it skips; cloud / better-tuned models produce real scores. `progressive_hardening`
+  config (on by default, off in test). Property-tested tools stay unrated (earn trust via properties).
 - **`Shem.Telemetry`**: `:telemetry` events for agent turn latency (p50/p99), EventLog append
   latency, PortPool round-trip time, and LLM call latency per transport. TUI dashboard surfaces
   these as live rolling stats. Forensic replay (EventLog) and real-time metrics (Telemetry) are
@@ -75,6 +78,10 @@ tools that survive node death." These two things together are what no competitor
   addressed before any production-readiness claim.
 
 ## Current Phase
+**Progressive Hardening**: COMPLETE (2026-06-21). Lightweight single-turn trust review at
+graduation (`GraduationGate.Hardening`); full red-team loop now opt-in. See Closed Decisions.
+1063 tests passing. Next candidates: Shem.Telemetry, maturity labeling (docs), EventLog GC.
+
 **Phase 43b — python_toolsmith preset**: COMPLETE + VERIFIED (2026-06-21). `python_toolsmith`
 builtin preset added (`write_tool` only — `run_code` is Elixir-only; `max_turns: 10`; system prompt
 teaches `run(args: dict)` format, pytest + Hypothesis property tests). `GraduationGate.Python` now
