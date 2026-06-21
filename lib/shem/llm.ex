@@ -3,7 +3,7 @@ defmodule Shem.LLM do
 
   @spec complete(Request.t()) :: {:ok, Response.t()} | {:error, term()}
   def complete(%Request{} = request) do
-    :telemetry.span([:shem, :llm, :call], %{node: node()}, fn ->
+    :telemetry.span([:shem, :llm, :call], %{group: request.model, node: node()}, fn ->
       pipeline = build_pipeline()
       {pipeline.(request), %{}}
     end)

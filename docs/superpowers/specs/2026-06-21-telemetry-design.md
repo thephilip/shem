@@ -19,18 +19,24 @@ clean wrap exists, which yields `:start`/`:stop`/`:exception` for free):
 
 | Event | Measurement | Metadata |
 |---|---|---|
-| `[:shem, :agent, :turn, :stop]` | `%{duration: native}` | `%{agent_id, node}` |
-| `[:shem, :event_log, :append, :stop]` | `%{duration: native}` | `%{store, node}` |
-| `[:shem, :port_pool, :roundtrip, :stop]` | `%{duration: native}` | `%{runtime, node}` |
-| `[:shem, :llm, :call, :stop]` | `%{duration: native}` | `%{transport, node}` |
+| `[:shem, :agent, :turn, :stop]` | `%{duration: native}` | `%{session_id, node}` |
+| `[:shem, :event_log, :append, :stop]` | `%{duration: native}` | `%{type, node}` |
+| `[:shem, :port_pool, :roundtrip, :stop]` | `%{duration: native}` | `%{node}` |
+| `[:shem, :llm, :call, :stop]` | `%{duration: native}` | `%{group: model, node}` |
 
 `duration` is in `:native` units (telemetry convention); convert to ms at read.
 
+A span may set a `:group` in metadata; the collector keys its ring by
+`{event, group}` so latency is not blended across groups. LLM spans set
+`group: request.model` — the available proxy for "transport", since transport
+is pipeline-determined and not named at the call site. A stub model (~0 ms) and
+a real model (seconds) therefore get separate p50/p99 lines.
+
 ## 2. Collector — `Shem.Telemetry` GenServer
 - `attach_many/4` on boot for the four `:stop` events.
-- State: a bounded ring (last N=256 durations) per event key.
-- `stats/0` → `%{event_key => %{count, p50_ms, p99_ms}}`, percentiles computed
-  on read (sort the ring).
+- State: a bounded ring (last N=256 durations) per `{event, group}` key.
+- `stats/0` → `%{{event, group} => %{count, p50_ms, p99_ms}}`, percentiles
+  computed on read (sort the ring).
 - `ponytail:` ring + sort-on-read is O(n log n) per read; swap for an hdr
   histogram if read-rate ever hurts.
 

@@ -22,8 +22,12 @@ defmodule Shem.Telemetry do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  @doc "Rolling stats per event: %{event_key => %{count, p50_ms, p99_ms}}."
-  @spec stats() :: %{[atom()] => %{count: non_neg_integer(), p50_ms: float(), p99_ms: float()}}
+  @doc """
+  Rolling stats keyed by `{event, group}`: `%{{event, group} => %{count, p50_ms, p99_ms}}`.
+  `group` is `nil` unless the span set a `:group` in its metadata (LLM spans
+  set `group: request.model` so per-model latency stays unblended).
+  """
+  @spec stats() :: %{{[atom()], term()} => %{count: non_neg_integer(), p50_ms: float(), p99_ms: float()}}
   def stats, do: GenServer.call(__MODULE__, :stats)
 
   @impl true
@@ -40,24 +44,24 @@ defmodule Shem.Telemetry do
 
   @doc false
   # Runs in the caller's process; forwards the duration to the collector.
-  def handle_event(event, %{duration: duration}, _meta, _config) do
-    GenServer.cast(__MODULE__, {:record, event, duration})
+  def handle_event(event, %{duration: duration}, meta, _config) do
+    GenServer.cast(__MODULE__, {:record, {event, meta[:group]}, duration})
   end
 
   def handle_event(_event, _measurements, _meta, _config), do: :ok
 
   @impl true
-  def handle_cast({:record, event, duration_native}, state) do
+  def handle_cast({:record, key, duration_native}, state) do
     ms = System.convert_time_unit(duration_native, :native, :nanosecond) / 1_000_000
-    ring = [ms | Map.get(state, event, [])] |> Enum.take(@ring_size)
-    {:noreply, Map.put(state, event, ring)}
+    ring = [ms | Map.get(state, key, [])] |> Enum.take(@ring_size)
+    {:noreply, Map.put(state, key, ring)}
   end
 
   @impl true
   def handle_call(:stats, _from, state) do
     stats =
-      Map.new(state, fn {event, ring} ->
-        {event, %{count: length(ring), p50_ms: percentile(ring, 50), p99_ms: percentile(ring, 99)}}
+      Map.new(state, fn {key, ring} ->
+        {key, %{count: length(ring), p50_ms: percentile(ring, 50), p99_ms: percentile(ring, 99)}}
       end)
 
     {:reply, stats, state}

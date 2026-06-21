@@ -120,16 +120,16 @@ defmodule Shem.TUI.Views.Dashboard do
     [:shem, :port_pool, :roundtrip, :stop] => "port rtt"
   }
 
-  defp telemetry_lines(stats) when stats == %{}, do: ["  (no events yet)"]
+  defp telemetry_lines(stats) when map_size(stats) == 0, do: ["  (no events yet)"]
 
   defp telemetry_lines(stats) do
-    for {event, label} <- @telemetry_labels, s = stats[event] do
-      "  #{String.pad_trailing(label, 13)} #{fmt(s.p50_ms)}/#{fmt(s.p99_ms)}  (#{s.count})"
-    end
-    |> case do
-      [] -> ["  (no events yet)"]
-      lines -> lines
-    end
+    lines =
+      for {{event, group}, s} <- Enum.sort(stats), label = @telemetry_labels[event] do
+        name = if group, do: "#{label}:#{group}", else: label
+        "  #{String.pad_trailing(name, 18)} #{fmt(s.p50_ms)}/#{fmt(s.p99_ms)}  (#{s.count})"
+      end
+
+    if lines == [], do: ["  (no events yet)"], else: lines
   end
 
   defp fmt(ms), do: :erlang.float_to_binary(ms * 1.0, decimals: 1)

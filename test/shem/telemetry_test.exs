@@ -14,17 +14,19 @@ defmodule Shem.TelemetryTest do
     assert Telemetry.percentile([], 50) == 0.0
   end
 
-  test "stats/0 returns a map keyed by event" do
-    :telemetry.execute(
-      [:shem, :llm, :call, :stop],
-      %{duration: System.convert_time_unit(5, :millisecond, :native)},
-      %{node: node()}
-    )
+  test "stats/0 keys by {event, group}, splitting by metadata group" do
+    event = [:shem, :llm, :call, :stop]
+    dur = System.convert_time_unit(5, :millisecond, :native)
+
+    :telemetry.execute(event, %{duration: dur}, %{group: "stub-model"})
+    :telemetry.execute(event, %{duration: dur}, %{node: node()})
 
     Process.sleep(50)
 
     stats = Telemetry.stats()
     assert is_map(stats)
-    assert Map.has_key?(stats, [:shem, :llm, :call, :stop])
+    # Grouped (per-model) and ungrouped entries are kept separate, not blended.
+    assert Map.has_key?(stats, {event, "stub-model"})
+    assert Map.has_key?(stats, {event, nil})
   end
 end
