@@ -30,6 +30,32 @@ defmodule Shem.Telemetry do
   @spec stats() :: %{{[atom()], term()} => %{count: non_neg_integer(), p50_ms: float(), p99_ms: float()}}
   def stats, do: GenServer.call(__MODULE__, :stats)
 
+  @doc """
+  Renders current stats as Prometheus text exposition (p50/p99 gauges + count).
+  ponytail: exposes our rolling percentiles as gauges rather than pulling in
+  telemetry_metrics_prometheus (which starts its own server + re-aggregates).
+  Swap to native histograms if a scraper needs true quantile aggregation.
+  """
+  @spec prometheus_text() :: String.t()
+  def prometheus_text do
+    stats()
+    |> Enum.flat_map(fn {{event, group}, s} ->
+      name = event |> Enum.drop(-1) |> Enum.join("_")
+      labels = if group, do: ~s|{group="#{group}"}|, else: ""
+
+      [
+        "#{name}_duration_ms{quantile=\"0.5\"#{group_suffix(group)}} #{s.p50_ms}",
+        "#{name}_duration_ms{quantile=\"0.99\"#{group_suffix(group)}} #{s.p99_ms}",
+        "#{name}_count#{labels} #{s.count}"
+      ]
+    end)
+    |> Enum.join("\n")
+    |> Kernel.<>("\n")
+  end
+
+  defp group_suffix(nil), do: ""
+  defp group_suffix(group), do: ~s|,group="#{group}"|
+
   @impl true
   def init(_opts) do
     :telemetry.attach_many(

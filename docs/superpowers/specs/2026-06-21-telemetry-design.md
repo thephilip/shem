@@ -44,10 +44,15 @@ a real model (seconds) therefore get separate p50/p99 lines.
 A stats view rendering `Shem.Telemetry.stats/0` on the existing render tick:
 count + p50/p99 ms per event.
 
-## 4. Prometheus exporter (optional tail)
-Add `telemetry_metrics`, `telemetry_poller`, `telemetry_metrics_prometheus`;
-expose `/metrics` on the existing Bandit router. Documented here; built only if
-budget allows this session, otherwise next session.
+## 4. Prometheus exporter (landed)
+`GET /metrics` on the existing Bandit router (`Shem.HTTP.Router`, MCP port)
+returns `Shem.Telemetry.prometheus_text/0`: p50/p99 as `_duration_ms` gauges
+(quantile label) + a `_count`, with a `group` label when set.
+
+No new dependency — renders the collector's existing percentiles rather than
+adding `telemetry_metrics_prometheus` (which would start its own server and
+re-aggregate from raw events). Swap to native histograms if a scraper ever
+needs true server-side quantile aggregation.
 
 ## Test
 `test/shem/telemetry_test.exs`: feed synthetic events to the collector, assert

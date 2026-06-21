@@ -29,4 +29,18 @@ defmodule Shem.TelemetryTest do
     assert Map.has_key?(stats, {event, "stub-model"})
     assert Map.has_key?(stats, {event, nil})
   end
+
+  test "prometheus_text renders gauges + count with group labels" do
+    :telemetry.execute(
+      [:shem, :llm, :call, :stop],
+      %{duration: System.convert_time_unit(5, :millisecond, :native)},
+      %{group: "metric-test-model"}
+    )
+
+    Process.sleep(50)
+
+    text = Telemetry.prometheus_text()
+    assert text =~ ~s|shem_llm_call_duration_ms{quantile="0.5",group="metric-test-model"}|
+    assert text =~ ~s|shem_llm_call_count{group="metric-test-model"}|
+  end
 end

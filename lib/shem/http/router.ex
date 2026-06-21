@@ -20,6 +20,12 @@ defmodule Shem.HTTP.Router do
     |> send_file(200, path)
   end
 
+  get "/metrics" do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(200, Shem.Telemetry.prometheus_text())
+  end
+
   get "/timeline" do
     path = Application.app_dir(:shem, "priv/static/timeline.html")
     conn
