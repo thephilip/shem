@@ -26,10 +26,6 @@ defmodule Shem.MCP.Handlers.AgentCommon do
       sid = extract_session_id(value)
       if sid == session_id, do: {:ok, name}
     end)
-    |> case do
-      {:ok, name} -> {:ok, name}
-      :not_found -> :not_found
-    end
   end
 
   @spec live_agents() :: [{String.t(), String.t()}]

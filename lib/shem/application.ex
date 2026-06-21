@@ -38,7 +38,7 @@ defmodule Shem.Application do
 
   defp adversarial_children do
     if Application.get_env(:shem, :start_adversarial, true) do
-      [Shem.Adversarial.Supervisor]
+      [{DynamicSupervisor, name: Shem.Adversarial.Supervisor, strategy: :one_for_one}]
     else
       []
     end
@@ -46,7 +46,7 @@ defmodule Shem.Application do
 
   defp shadow_children do
     if Application.get_env(:shem, :shadow_agent_enabled, true) do
-      [Shem.Shadow.Supervisor]
+      [{DynamicSupervisor, name: Shem.Shadow.Supervisor, strategy: :one_for_one}]
     else
       []
     end

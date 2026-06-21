@@ -1,5 +1,5 @@
 # Project North Star
-_Last updated: 2026-06-17_
+_Last updated: 2026-06-21_
 
 ## Core Goals
 - Build an open-source, local-first, polyglot agent orchestration framework that earns adoption
@@ -13,6 +13,13 @@ _Last updated: 2026-06-17_
   work continues without interruption → scrub the event log → fork the timeline → red-team
   agent finds a flaw → agent patches itself → property tests prove correctness.
 
+## Lead Differentiator
+**Time-travel debugging is Shem's most unique capability** — no existing orchestration framework
+(Hermes, LangGraph, CrewAI, etc.) offers forkable, replayable EventLog timelines. This should
+lead the README narrative and demo story, not appear as a bullet point in a feature list.
+The combination of distribution + self-evolution is the second differentiator: "your agents write
+tools that survive node death." These two things together are what no competitor offers.
+
 ## Active Constraints
 - The BEAM (Erlang VM) is the runtime substrate for agent orchestration. Elixir is preferred
   because it is the right tool for this domain. Other languages are used where they are the
@@ -21,8 +28,10 @@ _Last updated: 2026-06-17_
   cover all persistence. No managed databases, no message brokers, no cloud dependencies required.
 - "Multi-node" means BEAM nodes connected via Erlang distribution. Nodes can be bare metal, VMs,
   cloud instances, or K8s pods. No external orchestrator is required, but K8s is not precluded.
-- TUI and Web UI are both first-class interfaces: equivalent capability, interchangeable, no
-  feature gaps between them.
+- TUI and Web UI are both first-class interfaces. The "equivalent capability, no feature gaps"
+  goal is correct long-term but is a maintenance tax enforced too strictly at this stage. MCP is
+  the most future-proof interface (editor integrations); REST is a thin programmatic layer; TUI
+  is the interactive console. Parity enforcement is deferred until the system is more stable.
 - Architectural elegance over familiarity. No premature rigidity. Systems built here should feel
   eloquent — unconventional approaches that fit the system well are preferred over familiar but
   mediocre ones.
@@ -46,6 +55,23 @@ _Last updated: 2026-06-17_
 - Polyglot GraduationGate (language routing, non-Elixir executor backends) is COMPLETE in Phase 43a.
   `Tool.runtime` union, manifest persistence, PortPool, GraduationGate.Python, config-driven dispatch all shipped.
 - Phase 43b (python_toolsmith preset) is next after 43a.
+- **Progressive hardening**: `GraduationGate.run/3` will run a lightweight single-turn trust
+  check on every graduated tool (does behavior match declared schema? do boundary inputs produce
+  sensible errors?). The full adversarial red-team loop stays as an explicit opt-in primitive
+  (`spawn_agent(preset: "red_team", ...)`), not wired into graduation automatically. This resolves
+  the uncanny valley: hardening becomes a graduation gate, not a demo feature.
+- **`Shem.Telemetry`**: `:telemetry` events for agent turn latency (p50/p99), EventLog append
+  latency, PortPool round-trip time, and LLM call latency per transport. TUI dashboard surfaces
+  these as live rolling stats. Forensic replay (EventLog) and real-time metrics (Telemetry) are
+  complementary tools for different questions ("what happened?" vs. "is it on fire now?").
+- **Maturity labeling**: README and docs distinguish distribution layer (stable, Phases 38–41)
+  from self-evolution layer (experimental, Phases 42–43+). Defuses "two projects at once" concern
+  without cutting scope.
+- **Standalone binary**: Burrito or Bakeware packaging of `mix demo`. "Download one binary, run
+  the demo in 90 seconds, zero Elixir install required" is the highest-leverage onboarding win.
+- **EventLog GC + migration story**: append-only logs grow unbounded; Mnesia schema evolution
+  needs a strategy before anyone runs a production cluster for more than a few days. Must be
+  addressed before any production-readiness claim.
 
 ## Current Phase
 **Phase 43a — Polyglot Tool Runtime**: COMPLETE (2026-06-17). 9 commits, 1057 tests passing.
@@ -75,13 +101,22 @@ Four phases: distributed Horde mesh (3 nodes, 2 agents) → node kill + Horde re
 `:nodedown` emit EventLog system events and trigger explicit Horde member sync; `GET /api/cluster`
 live; `GET /api/health` has `cluster_size`; distributed peer tests pass.
 
+## Known Cleanup (from 2026-06-21 ponytail-audit)
+Tactical debt, no architectural impact. Fix before any "production-ready" claim:
+- ~~`shrink:` `BudgetCheck` and `EventLogger` each duplicate `call`/`stream` bodies~~ — DONE 2026-06-21
+- ~~`yagni:` `Shadow.Supervisor` and `Adversarial.Supervisor` boilerplate files~~ — DONE 2026-06-21
+- ~~`delete:` Identity `case` at end of `AgentCommon.find_by_session/1`~~ — DONE 2026-06-21
+- ~~`delete:` Scratch files at repo root~~ — DONE 2026-06-21
+- `shrink:` `ConfigFile.format/1` is a 100-line hardcoded YAML template; silently drops unknown top-level keys. Fix with `Ymlr` dep or document the fixed-schema contract + roundtrip test.
+- `shrink:` `LLM.Replay.diff/2` and `LLM.Branch.compare/1` duplicate call-comparison logic; extract shared core to `LLM.Replay.Utils`.
+
 ## Off-Limits Paths
 - Language dogma: the principle is always "right tool for the job."
 - External message brokers for agent distribution when BEAM distribution solves it natively.
 - Premature abstraction or rigidity that forecloses future elegant solutions.
 
 ## Graphify
-Last run: 2026-06-13 — `graphify-out/` at project root.
-1034 nodes · 1127 edges · 194 communities (code only; docs/html excluded via `.graphifyignore`).
-God nodes: `Shem.TUI.App` (32), `Shem.EventLog` (17), `Shem.Agent` (15), `Shem.Trust.Store` (14).
+Last run: 2026-06-17 — `graphify-out/` at project root.
+1169 nodes · 1342 edges · 204 communities (code only; docs/html excluded via `.graphifyignore`).
+God nodes: `Shem.TUI.App` (33), `Shem.EventLog` (21), `Mix.Tasks.Demo` (22), `Shem.Agent` (15), `Shem.Trust.Store` (14).
 Run `graphify update .` after code changes (no API cost).
