@@ -82,7 +82,10 @@ pip-installs `hypothesis` alongside `pytest`. The `:python_integration` tests we
 actually drive the Container backend (were silently running against Local) and are excluded by
 default (`mix test --only python_integration`). Verified end-to-end against podman: graduate →
 pytest+hypothesis → PortPool round-trips `{"n":21}` → `{"result":42}`. Default suite 1058 passing.
-LLM-driven authoring half (agent calling `write_tool`) shares the proven `elixir_toolsmith` plumbing.
+**Live-LLM authoring verified (2026-06-21)**: a `python_toolsmith` agent against local qwen (LM Studio)
+wrote a `ReverseWords` tool, hit a pytest+hypothesis failure on turn 1, fixed it on turn 2, graduated,
+and the agent-authored tool executes via PortPool (`"hello world foo"` → `"foo world hello"`). The full
+self-evolution loop — including retry-on-failure — works end-to-end with a real local model.
 
 **Phase 43a — Polyglot Tool Runtime**: COMPLETE (2026-06-17). 9 commits, 1057 tests passing.
 `Tool.runtime` replaces `Tool.module` as `{:beam, Mod} | {:port, path}` union. `Workspace.graduate/1` writes `.json` manifest alongside source; `Registry.scan_graduated` reads manifests (legacy `.ex`-only fallback preserved). `GraduationGate.run/3` gains config-driven language dispatch (`@builtin_languages` map, overridable via app env); Elixir path extracted to `run_elixir/3`. New `GraduationGate.Python`: pytest-in-container graduation (volume-mounted temp dir), registers tool with `{:port, runtime_path}`. `Backend.Container` gains `mounts:` opt for `-v` flags. New `PortPool` GenServer (JSON lines stdio, crash-recovery, per-tool lazy-started via `PortPool.Supervisor`). `write_tool` builtin gains `language:` field (default `"elixir"`). All dispatch sites (`dispatch_lab`, MCP `invoke_tool`, `ensure_loaded`) updated to branch on `tool.runtime`. Phase 43b (python_toolsmith preset) is next.
