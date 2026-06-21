@@ -79,13 +79,21 @@ defmodule Shem.Lab.GraduationGate.Python do
 
     :ok = Workspace.graduate(tool)
     :ok = Registry.register(tool)
-    seed_trust(tool.id)
-    Shem.Adversarial.start_hardening(tool.id)
+    # Lightweight single-turn review refines the default seed; full red-team loop
+    # is opt-in via Shem.Adversarial.start_hardening/1.
+    seed_trust(tool.id, hardening_score(tool))
     {:ok, tool}
   end
 
-  defp seed_trust(tool_id) do
-    Shem.Trust.Store.seed(tool_id, 0.5)
+  defp hardening_score(tool) do
+    case Shem.Lab.GraduationGate.Hardening.check(tool) do
+      {:ok, score} -> score
+      :skip -> 0.5
+    end
+  end
+
+  defp seed_trust(tool_id, score) do
+    Shem.Trust.Store.seed(tool_id, score)
   catch
     :exit, _ -> :ok
   end

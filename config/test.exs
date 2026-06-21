@@ -43,5 +43,9 @@ config :shem, spawn_agent_max_depth: 2
 
 config :shem, executor_backend: :local
 
+# Off by default in tests so graduation seeds the flat default (no live LLM call);
+# the dedicated hardening test opts in.
+config :shem, progressive_hardening: false
+
 config :shem, shadow_agent_enabled: false
 config :shem, start_port_pool: false

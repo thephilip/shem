@@ -62,8 +62,10 @@ defmodule Shem.Lab.GraduationGate do
 
           :ok = Workspace.graduate(tool)
           :ok = Registry.register(tool)
-          unless property?, do: seed_trust(tool.id)
-          Shem.Adversarial.start_hardening(tool.id)
+          # Property tools earn trust by passing their properties; others get a
+          # lightweight single-turn review that refines the default seed. The full
+          # red-team loop is opt-in via Shem.Adversarial.start_hardening/1.
+          unless property?, do: seed_trust(tool.id, hardening_score(tool))
           {:ok, tool}
         else
           {:error, :compile, reason} -> {:error, :compile, reason}
@@ -115,8 +117,15 @@ defmodule Shem.Lab.GraduationGate do
   # the executor like any other test.
   defp property_tested?(test_source), do: test_source =~ ~r/check_all|StreamData\./
 
-  defp seed_trust(tool_id) do
-    Shem.Trust.Store.seed(tool_id, @no_property_seed)
+  defp hardening_score(tool) do
+    case Shem.Lab.GraduationGate.Hardening.check(tool) do
+      {:ok, score} -> score
+      :skip -> @no_property_seed
+    end
+  end
+
+  defp seed_trust(tool_id, score) do
+    Shem.Trust.Store.seed(tool_id, score)
   catch
     :exit, _ -> {:error, :store_down}
   end
