@@ -32,7 +32,8 @@ defmodule Shem.MixProject do
       {:req, "~> 0.5"},
       {:yaml_elixir, "~> 2.12"},
       {:horde, "~> 0.9"},
-      {:libcluster, "~> 3.3"}
+      {:libcluster, "~> 3.3"},
+      {:telemetry, "~> 1.0"}
     ]
   end
 

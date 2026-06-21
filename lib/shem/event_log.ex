@@ -26,8 +26,11 @@ defmodule Shem.EventLog do
 
   @spec append(String.t(), atom(), map(), String.t() | nil) ::
           {:ok, Event.t()} | {:error, :session_not_found | :session_ended}
-  def append(session_id, type, payload, parent_id \\ nil),
-    do: GenServer.call(__MODULE__, {:append, session_id, type, payload, parent_id})
+  def append(session_id, type, payload, parent_id \\ nil) do
+    :telemetry.span([:shem, :event_log, :append], %{type: type, node: node()}, fn ->
+      {GenServer.call(__MODULE__, {:append, session_id, type, payload, parent_id}), %{}}
+    end)
+  end
 
   @spec events(String.t()) :: {:ok, [Event.t()]} | {:error, :session_not_found | :session_ended}
   def events(session_id), do: GenServer.call(__MODULE__, {:events, session_id})

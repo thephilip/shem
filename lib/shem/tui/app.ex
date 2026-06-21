@@ -57,6 +57,7 @@ defmodule Shem.TUI.App do
       active_fence: nil,
       tick_count: 0,
       system_stats: Shem.TUI.SystemStats.empty(),
+      telemetry_stats: %{},
       budget: %{tokens_used: 0, global_limit: 0},
       ac_index: 0
     }
@@ -415,11 +416,11 @@ defmodule Shem.TUI.App do
       :tick ->
         tick_count = model.tick_count + 1
 
-        {system_stats, budget} =
+        {system_stats, budget, telemetry_stats} =
           if rem(tick_count, 10) == 1 do
-            {Shem.TUI.SystemStats.collect(), safe_budget()}
+            {Shem.TUI.SystemStats.collect(), safe_budget(), safe_telemetry_stats()}
           else
-            {model.system_stats, model.budget}
+            {model.system_stats, model.budget, Map.get(model, :telemetry_stats, %{})}
           end
 
         agents = safe_agent_list()
@@ -439,6 +440,9 @@ defmodule Shem.TUI.App do
             agent_view: safe_agent_view(model.focused_agent),
             trust_counts: safe_trust_counts()
         }
+
+        # Map.put (not | update) so partial test models without the key work.
+        model = Map.put(model, :telemetry_stats, telemetry_stats)
 
         # Drain streaming tokens and thinking from StreamSink
         model =
@@ -721,6 +725,12 @@ defmodule Shem.TUI.App do
     catch
       :exit, _ -> %{sessions: 0, total_events: 0}
     end
+  end
+
+  defp safe_telemetry_stats do
+    Shem.Telemetry.stats()
+  catch
+    :exit, _ -> %{}
   end
 
   defp safe_tool_count do

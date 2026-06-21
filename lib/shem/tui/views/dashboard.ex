@@ -16,6 +16,13 @@ defmodule Shem.TUI.Views.Dashboard do
               content: "Tokens: #{model.budget.tokens_used} / #{model.budget.global_limit} session",
               color: color(:yellow)
             )
+
+            label(content: "")
+            label(content: "Latency (p50/p99 ms)", attributes: [attribute(:bold)], color: color(:cyan))
+
+            for line <- telemetry_lines(Map.get(model, :telemetry_stats, %{})) do
+              label(content: line, color: color(:white))
+            end
           end
         end
 
@@ -105,6 +112,27 @@ defmodule Shem.TUI.Views.Dashboard do
   end
 
   defp trust_summary(_), do: "Trust: —"
+
+  @telemetry_labels %{
+    [:shem, :agent, :turn, :stop] => "agent turn",
+    [:shem, :llm, :call, :stop] => "llm call",
+    [:shem, :event_log, :append, :stop] => "evlog append",
+    [:shem, :port_pool, :roundtrip, :stop] => "port rtt"
+  }
+
+  defp telemetry_lines(stats) when stats == %{}, do: ["  (no events yet)"]
+
+  defp telemetry_lines(stats) do
+    for {event, label} <- @telemetry_labels, s = stats[event] do
+      "  #{String.pad_trailing(label, 13)} #{fmt(s.p50_ms)}/#{fmt(s.p99_ms)}  (#{s.count})"
+    end
+    |> case do
+      [] -> ["  (no events yet)"]
+      lines -> lines
+    end
+  end
+
+  defp fmt(ms), do: :erlang.float_to_binary(ms * 1.0, decimals: 1)
 
   defp agents_line(agents) do
     running = Enum.count(agents, &(&1.status == :running))

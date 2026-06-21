@@ -20,7 +20,9 @@ defmodule Shem.Lab.PortPool do
 
   @spec call(atom() | pid(), map(), timeout()) :: {:ok, any()} | {:error, String.t()}
   def call(pool, args, timeout \\ @default_timeout) do
-    GenServer.call(pool, {:call, args}, timeout)
+    :telemetry.span([:shem, :port_pool, :roundtrip], %{node: node()}, fn ->
+      {GenServer.call(pool, {:call, args}, timeout), %{}}
+    end)
   end
 
   # ── Server ────────────────────────────────────────────────────────────────────
