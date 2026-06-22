@@ -32,7 +32,11 @@ defmodule Shem.Lab.Registry do
   @impl true
   def init(_opts) do
     table = :ets.new(:shem_tool_registry, [:set, :protected])
-    tools = scan_graduated()
+    # Seed modules are compiled into the release but lazy-loaded; force-load so
+    # dispatch's ensure_loaded/1 (:code.is_loaded) is a true no-op, not a recompile.
+    Enum.each(Shem.SeedTools.modules(), &Code.ensure_loaded!/1)
+    # Seeds first, graduated last: a user-graduated tool overrides a seed on id collision.
+    tools = Shem.SeedTools.all() ++ scan_graduated()
     Enum.each(tools, fn tool -> :ets.insert(table, {tool.id, tool}) end)
     {:ok, %{table: table}}
   end

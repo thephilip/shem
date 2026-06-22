@@ -31,25 +31,27 @@ defmodule Shem.Lab.RegistryTest do
     assert {:ok, @tool} = GenServer.call(pid, {:lookup, "greeter_v1"})
   end
 
-  test "all/0 returns an empty list when no tools are registered" do
+  test "all/0 returns only seed tools when no graduated tools are registered" do
     {:ok, pid} = start_supervised({Registry, [name: :test_registry_3]})
-    assert [] = GenServer.call(pid, :all)
+    ids = GenServer.call(pid, :all) |> Enum.map(& &1.id) |> Enum.sort()
+    assert ids == ["diff_text", "graphify_query", "json_query"]
   end
 
   test "all/0 returns all registered tools" do
     {:ok, pid} = start_supervised({Registry, [name: :test_registry_4]})
     GenServer.call(pid, {:register, @tool})
-    tools = GenServer.call(pid, :all)
-    assert length(tools) == 1
-    assert hd(tools).id == "greeter_v1"
+    ids = GenServer.call(pid, :all) |> Enum.map(& &1.id)
+    assert "greeter_v1" in ids
+    assert "diff_text" in ids
+    assert "json_query" in ids
+    assert "graphify_query" in ids
   end
 
   test "boot scan loads tools pre-written to the graduated directory" do
     Workspace.graduate(@tool)
     {:ok, pid} = start_supervised({Registry, [name: :test_registry_5]})
-    tools = GenServer.call(pid, :all)
-    assert length(tools) == 1
-    assert hd(tools).id == "greeter_v1"
+    ids = GenServer.call(pid, :all) |> Enum.map(& &1.id)
+    assert "greeter_v1" in ids
   end
 
   test "boot scan skips a graduated tool with unloadable source instead of crashing" do
@@ -58,7 +60,12 @@ defmodule Shem.Lab.RegistryTest do
     File.write!(Workspace.graduated_path(@tool.id), "not elixir at all")
 
     assert {:ok, pid} = start_supervised({Registry, [name: :test_registry_broken]})
-    assert [] = GenServer.call(pid, :all)
+    ids = GenServer.call(pid, :all) |> Enum.map(& &1.id)
+    # corrupted graduated tool must be absent; seeds must still be present
+    refute "greeter_v1" in ids
+    assert "diff_text" in ids
+    assert "json_query" in ids
+    assert "graphify_query" in ids
   end
 
   describe "lookup_by_name/1" do
