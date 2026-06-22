@@ -44,9 +44,29 @@ docker run -it --rm \
   ghcr.io/thephilip/shem:latest
 ```
 
-## Why Shem?
+## What no other agent framework does
 
-**Debuggable.** Every LLM call, tool use, and agent decision is logged, replayable, and forkable. The log is sha256 hash-chained per session — retroactive edits are detectable (`GET /api/sessions/:id/verify`). When something goes wrong, you find out why — not just that it did.
+Every agent run is a hash-chained event log you can **rewind, fork, and replay**.
+
+Hit a bad answer at turn 7? Fork the session *at turn 6*, change one thing —
+the prompt, a tool result, the model — and replay both timelines side by side.
+The branch is deterministic: same inputs, same run. You're not re-rolling the
+dice and hoping; you're isolating the variable that mattered.
+
+```
+session a3f ──┬── turn 6 ──● fork here
+              │            └── turn 7 (gpt-4)    → wrong
+              └── turn 6' ──── turn 7 (claude)   → right
+```
+
+Python-based frameworks can't do this — they log text you read after the fact.
+Shem gives you a timeline you re-run. Open `/timeline`, click any event, fork it.
+
+And because the log is sha256 hash-chained per session, a retroactive edit is
+*detectable* (`GET /api/sessions/:id/verify`) — the replay you trust can't be
+quietly rewritten.
+
+## Why Shem?
 
 **Real concurrency.** Built on the BEAM (Erlang VM). Agents run as supervised OTP processes. No GIL, no asyncio, no mystery crashes under load.
 
