@@ -52,6 +52,15 @@ defmodule Shem.Lab.RegistryTest do
     assert hd(tools).id == "greeter_v1"
   end
 
+  test "boot scan skips a graduated tool with unloadable source instead of crashing" do
+    Workspace.graduate(@tool)
+    # corrupt the source so extract_module fails — must not bring down the registry
+    File.write!(Workspace.graduated_path(@tool.id), "not elixir at all")
+
+    assert {:ok, pid} = start_supervised({Registry, [name: :test_registry_broken]})
+    assert [] = GenServer.call(pid, :all)
+  end
+
   describe "lookup_by_name/1" do
     test "returns {:ok, tool} when a tool with that name exists" do
       source = """

@@ -1,5 +1,6 @@
 defmodule Shem.Lab.Registry do
   use GenServer
+  require Logger
 
   alias Shem.Lab.Workspace
   alias Shem.Tool
@@ -87,7 +88,14 @@ defmodule Shem.Lab.Registry do
       {id, manifest_path} ->
         with {:ok, json} <- File.read(manifest_path),
              {:ok, m} <- Jason.decode(json) do
-          [build_tool_from_manifest(id, m)]
+          # a single broken graduated tool must not crash boot — skip and log it
+          try do
+            [build_tool_from_manifest(id, m)]
+          rescue
+            e ->
+              Logger.warning("skipping unloadable graduated tool #{id}: #{Exception.message(e)}")
+              []
+          end
         else
           _ -> []
         end
