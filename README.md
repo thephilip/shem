@@ -169,8 +169,6 @@ MIX_ENV=prod mix release
 
 ## Roadmap
 
-See [`docs/superpowers/specs/2026-06-12-roadmap-v2-design.md`](docs/superpowers/specs/2026-06-12-roadmap-v2-design.md).
-
 Upcoming: the launch demo (multi-node cluster surviving node loss mid-task, timeline forking, red-team self-patching), human-in-the-loop approvals, and hive_mind trust-weighted consensus.
 
 ## License
