@@ -1,37 +1,49 @@
-# Session Handoff — 2026-06-21
+# Session Handoff — 2026-06-22
 
-All work committed and pushed (`master` == `origin/master`, head `439b3a2`). 1063 tests passing
-(`mix test --exclude distributed`). North Star + auto-memory already updated for next session.
+`master` pushed to origin (head after this commit). Full suite green: **1072 passed**
+(`mix test --exclude distributed --exclude python_integration`).
 
-## Done this session
-1. **Ponytail audit cleanup** — deduped `BudgetCheck`/`EventLogger` call/stream, deleted two
-   boilerplate supervisors (inlined as `{DynamicSupervisor, ...}`), removed dead identity case,
-   deleted root scratch files, replaced `ConfigFile.format/1`'s hardcoded YAML template with a
-   generic recursive serializer (was silently dropping unknown keys).
-2. **Phase 43b — `python_toolsmith` preset** — COMPLETE + VERIFIED. Preset added; `GraduationGate.Python`
-   pip-installs hypothesis; `:python_integration` tests fixed to actually use the container (were
-   silently on Local) and excluded by default. Proven live against qwen: agent wrote a Python tool,
-   hit a test failure, fixed it, graduated; tool runs via PortPool.
-3. **Progressive hardening** — COMPLETE. `GraduationGate.Hardening.check/2` = single `:shadow`
-   LLM-turn trust review at graduation, refining the trust seed + logging `:hardening_check`. Full
-   red-team loop is now opt-in (`Shem.Adversarial.start_hardening/1`); demo calls it explicitly.
+## Shipped this session
+- **Demo fix** (`b89ec04`) — peers now start `Shem.Trust.Store` with a per-node `/tmp` DETS path;
+  the launch demo had been silently failing Phase 1. All 4 phases pass now.
+- **Boot-crash fix** (`c16c6aa`) — one broken graduated tool on disk crashed app boot
+  (`Lab.Registry.build_tool_from_manifest` hard-matched `extract_module`). Now skips + logs.
+  Found while bringing up the MCP server headless.
+- **`edit_file` builtin** (`27c7545`) — surgical `old_string→new_string` replace; whole-file
+  rewrite was the main ergonomic gap vs Claude Code. Goes through the fence guardrail.
+- **Trust bands in prompt** (`076023f`) — manifest already computed trust; now surfaced so the
+  agent prefers higher-trust tools (the hard gate already blocked `:low`).
+- **`ponytail` preset** (`00110ef`) — lazy/YAGNI agent mode (distilled from the MIT Ponytail skill,
+  attributed in source). `/preset ponytail`.
+- **`mix shem.serve`** (`8ad8001`) — headless MCP/REST server (TUI + cluster off).
+- **dev LLM route** stays local qwen (keyless). Flip to `{:anthropic, ...}` needs `ANTHROPIC_API_KEY`.
+- **graphify graph** (`ca0a012`) — refreshed + now tracked; 1206 nodes. Query it to navigate
+  instead of full-parsing. Refreshes free via Elixir AST (`/graphify . --update`).
+- Commit messages no longer carry the Co-Authored-By trailer (user preference).
 
-## Known limitations / watch-outs
-- **Hardening + local qwen**: qwen returns prose, not JSON, so the review degrades to safe `:skip`
-  (flat 0.5 seed). Works for cloud / better-tuned models. Not a bug — the fallback is by design.
-- **LLM authoring half of 43b** is proven; the env: LM Studio on `:1234` serves `qwen` (dev route
-  `default: {:openai, "qwen"}`), NOT Ollama `:11434`.
-- **Test gotcha**: never mutate the global `progressive_hardening` config in tests — `turn_test` is
-  async and graduates tools, so the toggle races and steals stub LLM responses. Pass the enabled
-  flag explicitly to `check/2` (already done).
-- Dev boots the TUI (Ratatouille) which dies under piped `mix run` — use `mix run --no-start` +
-  `Application.put_env(:shem, :start_tui, false)` + `ensure_all_started(:shem)` for scripts.
+## Using Shem as a tool server in Claude Code (keyless, no local LLM)
+MCP server `shem` is registered in Claude Code local config and health-checks **✔ Connected**.
+Tools load at session **startup**, so a NEW Claude session is required to call `mcp__shem__*`.
 
-## Next candidates (North Star "Closed Decisions", none started)
-- **Shem.Telemetry** (medium) — `:telemetry` events (agent turn p50/p99, EventLog append, PortPool
-  round-trip, LLM latency/transport) + live TUI rolling stats.
-- **Maturity labeling** (tiny, docs only) — README split: stable distribution layer (38–41) vs
-  experimental self-evolution layer (42–43+).
-- **EventLog GC + migration** (medium) — append-only logs grow unbounded; Mnesia schema evolution
-  has no strategy. Gates any production-readiness claim.
-- **Standalone binary** (large) — Burrito/Bakeware packaging of `mix demo`.
+```bash
+mix shem.serve            # leave running (MCP SSE at http://127.0.0.1:4000/mcp/sse)
+# in a fresh terminal:
+claude                    # new session → mcp__shem__execute_code, __invoke_tool, __graduate_tool, ...
+```
+- Verified live: `execute_code` ran an Elixir module in Shem's sandbox → `2870` over MCP/SSE.
+- `spawn_agent` needs an LLM (LM Studio/qwen on `:1234`, currently DOWN). The keyless tools
+  (`execute_code`, `invoke_tool`, `graduate_tool`, `list_tools`) do not.
+
+## Next / open
+- **Client-transport inversion** (DEFERRED, spec in auto-memory `project-client-transport-inversion`):
+  let `spawn_agent` run Claude-Code-driven agents with no key/no local LLM. Claude Code lacks MCP
+  `sampling`, so hand-roll it: `ClientTransport` (parks turn) + `provide_turn` MCP tool +
+  suspend/resume in `Agent.Server`. Build only when Shem-orchestration-around-Claude is genuinely
+  wanted; plain tool-calling already works keyless. This is the wedge to make Shem needed by
+  Claude Code users the way local-LLM users need it.
+- Prior ponytail audit cleanup items (1–9) remain valid — see commit `67286bb`'s handoff in git history.
+
+## Watch-outs
+- TUI (Ratatouille) dies under piped `mix run`; `mix shem.serve` already disables it.
+- Never mutate global `progressive_hardening` config in async tests (steals stub LLM responses).
+- `spawn_agent` is a blocking `GenServer.call` — mind timeouts (auto-memory `project-spawn-agent-timeout`).
