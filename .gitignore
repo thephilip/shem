@@ -43,3 +43,9 @@ run_qwen.sh
 smoke_test.exs
 scripts/smoke_llm.exs
 shem-feature-ideas-scored.md
+
+# local dev scaffolding — not for the public remote
+PROJECT_NORTH_STAR.md
+SESSION_HANDOFF.md
+/docs/superpowers/
+/docs/archive/
