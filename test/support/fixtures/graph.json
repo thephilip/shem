@@ -1,0 +1,13 @@
+{
+  "directed": false,
+  "nodes": [
+    {"id": "a", "label": "Alpha"},
+    {"id": "b", "label": "Beta"},
+    {"id": "c", "label": "Gamma"}
+  ],
+  "links": [
+    {"source": "a", "target": "b", "relation": "calls"},
+    {"source": "b", "target": "c", "relation": "calls"},
+    {"source": "a", "target": "c", "relation": "uses"}
+  ]
+}
