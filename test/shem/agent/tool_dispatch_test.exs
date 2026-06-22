@@ -30,7 +30,7 @@ defmodule Shem.Agent.ToolDispatchTest do
     test "built-in entries have :builtin source" do
       manifest = ToolDispatch.build_manifest(@config)
       builtins = Enum.filter(manifest, &(&1.source == :builtin))
-      assert length(builtins) == 12
+      assert length(builtins) == 13
     end
 
     test "includes graduated Lab tools with {:lab, id} source" do
@@ -732,6 +732,39 @@ defmodule Shem.Agent.ToolDispatchTest do
       manifest = [%{name: "read_file", description: "read", source: :builtin, trust: :builtin}]
       assert {:ok, "x"} =
                ToolDispatch.execute(%{name: "read_file", args: %{"path" => path}}, manifest)
+    end
+  end
+
+  describe "edit_file" do
+    setup do
+      path = Path.join(System.tmp_dir!(), "shem_edit_#{System.unique_integer([:positive])}.txt")
+      File.write!(path, "alpha\nbeta\nalpha\n")
+      on_exit(fn -> File.rm(path) end)
+      manifest = [%{name: "edit_file", source: :builtin, trust: :builtin}]
+      {:ok, path: path, manifest: manifest}
+    end
+
+    defp edit(manifest, args), do: ToolDispatch.execute(%{name: "edit_file", args: args}, manifest)
+
+    test "replaces a unique string", %{path: p, manifest: m} do
+      assert {:ok, _} = edit(m, %{"path" => p, "old_string" => "beta", "new_string" => "BETA"})
+      assert File.read!(p) == "alpha\nBETA\nalpha\n"
+    end
+
+    test "rejects ambiguous match without replace_all", %{path: p, manifest: m} do
+      assert {:error, msg} = edit(m, %{"path" => p, "old_string" => "alpha", "new_string" => "X"})
+      assert msg =~ "more than once"
+    end
+
+    test "replace_all rewrites every match", %{path: p, manifest: m} do
+      assert {:ok, _} =
+               edit(m, %{"path" => p, "old_string" => "alpha", "new_string" => "X", "replace_all" => true})
+      assert File.read!(p) == "X\nbeta\nX\n"
+    end
+
+    test "errors when old_string is absent", %{path: p, manifest: m} do
+      assert {:error, msg} = edit(m, %{"path" => p, "old_string" => "nope", "new_string" => "x"})
+      assert msg =~ "not found"
     end
   end
 end

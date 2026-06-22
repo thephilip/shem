@@ -71,6 +71,24 @@ defmodule Shem.Agent.ToolDispatch do
       }
     },
     %{
+      name: "edit_file",
+      description:
+        "Replace an exact string in a file with another. old_string must occur exactly once " <>
+          "unless replace_all is true. Cheaper than rewriting the whole file with write_file.",
+      source: :builtin,
+      trust: :builtin,
+      schema: %{
+        type: "object",
+        properties: %{
+          "path"        => %{"type" => "string"},
+          "old_string"  => %{"type" => "string"},
+          "new_string"  => %{"type" => "string"},
+          "replace_all" => %{"type" => "boolean"}
+        },
+        required: ["path", "old_string", "new_string"]
+      }
+    },
+    %{
       name: "list_dir",
       description: "List entries in a directory.",
       source: :builtin,
@@ -307,6 +325,23 @@ defmodule Shem.Agent.ToolDispatch do
     end
   end
 
+  defp dispatch_builtin("edit_file", args) do
+    path = args["path"] || ""
+    old = args["old_string"] || ""
+    new = args["new_string"] || ""
+    replace_all = args["replace_all"] || false
+
+    with {:ok, contents} <- File.read(path),
+         {:ok, updated} <- replace_once(contents, old, new, replace_all),
+         :ok <- File.write(path, updated) do
+      {:ok, "edited #{path}"}
+    else
+      {:error, :not_found} -> {:error, "edit_file failed: old_string not found in #{path}"}
+      {:error, :ambiguous} -> {:error, "edit_file failed: old_string occurs more than once; pass replace_all or add context"}
+      {:error, reason} -> {:error, "edit_file failed: #{:file.format_error(reason)}"}
+    end
+  end
+
   defp dispatch_builtin("list_dir", args) do
     path = args["path"] || ""
 
@@ -411,6 +446,16 @@ defmodule Shem.Agent.ToolDispatch do
   end
 
   defp dispatch_builtin(name, _args), do: {:error, "unknown built-in: #{name}"}
+
+  defp replace_once(contents, old, new, true), do: {:ok, String.replace(contents, old, new)}
+
+  defp replace_once(contents, old, new, false) do
+    case String.split(contents, old) do
+      [_] -> {:error, :not_found}
+      [before, rest] -> {:ok, before <> new <> rest}
+      _ -> {:error, :ambiguous}
+    end
+  end
 
   defp dispatch_lab(id, args) do
     case Lab.Registry.lookup(id) do
