@@ -14,10 +14,14 @@
 /tmp/
 
 # Mnesia data directories (created per node name)
-Mnesia*/
+Mnesia*
+MnesiaCore*
 
 # If the VM crashes, it generates a dump, let's ignore it too.
 erl_crash.dump
+
+# Stale demo run logs
+demo-failure.out
 
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez

@@ -142,6 +142,9 @@ defmodule Mix.Tasks.Demo do
         {:ok, _} = Shem.NodeRegistry.start_link([])
         {:ok, _} = Shem.EventLog.start_link([])
         {:ok, _} = Shem.Lab.Registry.start_link([])
+        # per-node DETS path: peers share a machine, can't share one trust.dets file
+        Application.put_env(:shem, :trust_store_path, "/tmp/shem_trust_" <> to_string(node()) <> ".dets")
+        {:ok, _} = Shem.Trust.Store.start_link([])
         {:ok, _} = :pg.start_link(:shem_streams)
         {:ok, _} = Shem.LLM.BudgetServer.start_link([])
         {:ok, _} = Shem.LLM.StubTransport.Server.start_link(name: Shem.LLM.StubTransport.Server)
