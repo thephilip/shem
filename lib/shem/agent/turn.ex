@@ -48,7 +48,9 @@ defmodule Shem.Agent.Turn do
   def build_prompt(system_prompt, tools_manifest, history) do
     tool_lines =
       tools_manifest
-      |> Enum.map(fn %{name: name, description: desc} -> "- #{name}: #{desc}" end)
+      |> Enum.map(fn %{name: name, description: desc} = t ->
+        "- #{name} [trust: #{t[:trust] || :unrated}]: #{desc}"
+      end)
       |> Enum.join("\n")
 
     history_lines =
@@ -70,7 +72,7 @@ defmodule Shem.Agent.Turn do
 
     When your task is complete, respond with plain text only — no JSON tool call.
 
-    Available tools:
+    Available tools (prefer higher trust; low-trust tools may be blocked):
     #{tool_lines}
 
     ---
