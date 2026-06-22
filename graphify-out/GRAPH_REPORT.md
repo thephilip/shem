@@ -1,35 +1,35 @@
-# Graph Report - .  (2026-06-14)
+# Graph Report - .  (2026-06-22)
 
 ## Corpus Check
-- 45 files · ~83,220 words
+- 33 files · ~91,359 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1103 nodes · 1210 edges · 198 communities (74 shown, 124 thin omitted)
+- 1206 nodes · 1392 edges · 215 communities (86 shown, 129 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Adversarial Hardening & Tests|Adversarial Hardening & Tests]]
-- [[_COMMUNITY_MCP Handler Tests|MCP Handler Tests]]
+- [[_COMMUNITY_Tool Hardening & Graduation|Tool Hardening & Graduation]]
 - [[_COMMUNITY_TUI App Shell|TUI App Shell]]
-- [[_COMMUNITY_Agent Turn Execution|Agent Turn Execution]]
-- [[_COMMUNITY_EventLog Core|EventLog Core]]
+- [[_COMMUNITY_Agent Turn Loop|Agent Turn Loop]]
+- [[_COMMUNITY_Event Log|Event Log]]
+- [[_COMMUNITY_Launch Demo|Launch Demo]]
 - [[_COMMUNITY_TUI Interactive View|TUI Interactive View]]
-- [[_COMMUNITY_Hardening Job Loop|Hardening Job Loop]]
-- [[_COMMUNITY_Agent Public API|Agent Public API]]
+- [[_COMMUNITY_Adversarial Hardening Job|Adversarial Hardening Job]]
+- [[_COMMUNITY_Agent API|Agent API]]
 - [[_COMMUNITY_Trust Store|Trust Store]]
 - [[_COMMUNITY_CLI Setup|CLI Setup]]
+- [[_COMMUNITY_Application Supervision|Application Supervision]]
+- [[_COMMUNITY_Lab Registry|Lab Registry]]
 - [[_COMMUNITY_Anthropic Transport|Anthropic Transport]]
-- [[_COMMUNITY_LlamaCpp Transport|LlamaCpp Transport]]
-- [[_COMMUNITY_OpenAI Transport|OpenAI Transport]]
-- [[_COMMUNITY_Application & Executor|Application & Executor]]
-- [[_COMMUNITY_Agent Preset Store|Agent Preset Store]]
-- [[_COMMUNITY_MCP Router|MCP Router]]
-- [[_COMMUNITY_Memory Store|Memory Store]]
-- [[_COMMUNITY_Ollama Transport|Ollama Transport]]
-- [[_COMMUNITY_Shadow Agent|Shadow Agent]]
-- [[_COMMUNITY_Cluster Coordinator|Cluster Coordinator]]
+- [[_COMMUNITY_llama.cpp Transport|llama.cpp Transport]]
+- [[_COMMUNITY_Community 14|Community 14]]
+- [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
+- [[_COMMUNITY_Community 17|Community 17]]
+- [[_COMMUNITY_Community 18|Community 18]]
+- [[_COMMUNITY_Community 19|Community 19]]
 - [[_COMMUNITY_Community 20|Community 20]]
 - [[_COMMUNITY_Community 21|Community 21]]
 - [[_COMMUNITY_Community 22|Community 22]]
@@ -197,18 +197,34 @@
 - [[_COMMUNITY_Community 184|Community 184]]
 - [[_COMMUNITY_Community 185|Community 185]]
 - [[_COMMUNITY_Community 186|Community 186]]
+- [[_COMMUNITY_Community 187|Community 187]]
+- [[_COMMUNITY_Community 188|Community 188]]
+- [[_COMMUNITY_Community 189|Community 189]]
+- [[_COMMUNITY_Community 190|Community 190]]
+- [[_COMMUNITY_Community 191|Community 191]]
+- [[_COMMUNITY_Community 192|Community 192]]
+- [[_COMMUNITY_Community 193|Community 193]]
+- [[_COMMUNITY_Community 194|Community 194]]
+- [[_COMMUNITY_Community 195|Community 195]]
+- [[_COMMUNITY_Community 196|Community 196]]
+- [[_COMMUNITY_Community 197|Community 197]]
+- [[_COMMUNITY_Community 198|Community 198]]
+- [[_COMMUNITY_Community 199|Community 199]]
+- [[_COMMUNITY_Community 200|Community 200]]
+- [[_COMMUNITY_Community 201|Community 201]]
+- [[_COMMUNITY_Community 202|Community 202]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Shem.TUI.App` - 33 edges
-2. `update()` - 24 edges
-3. `Shem.EventLog` - 20 edges
-4. `Shem.TUI.Views.Interactive` - 17 edges
-5. `Shem.Adversarial.HardeningJob` - 15 edges
-6. `Shem.Agent` - 15 edges
-7. `Shem.Trust.Store` - 14 edges
-8. `Shem.CLI.Setup` - 13 edges
-9. `Shem.LLM.Middleware.AnthropicTransport` - 12 edges
-10. `Shem.LLM.Middleware.LlamaCppTransport` - 12 edges
+1. `Shem.TUI.App` - 34 edges
+2. `update()` - 25 edges
+3. `Mix.Tasks.Demo` - 22 edges
+4. `Shem.EventLog` - 21 edges
+5. `Shem.TUI.Views.Interactive` - 17 edges
+6. `Shem.Adversarial.HardeningJob` - 15 edges
+7. `Shem.Agent` - 15 edges
+8. `Shem.Trust.Store` - 14 edges
+9. `Shem.CLI.Setup` - 13 edges
+10. `Shem.Lab.Registry` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
@@ -216,37 +232,37 @@
 ## Import Cycles
 - None detected.
 
-## Communities (198 total, 124 thin omitted)
+## Communities (215 total, 129 thin omitted)
 
-### Community 0 - "Adversarial Hardening & Tests"
-Cohesion: 0.05
-Nodes (19): Shem.Agent.ConversationalTest, Shem.Agent.ServerTest, Shem.Agent.TurnTest, Shem.Distributed.FailoverTest, assert_eventually(), setup_mnesia_on_peer(), setup_peer_full(), setup_stub_on_peer() (+11 more)
-
-### Community 1 - "MCP Handler Tests"
+### Community 0 - "Tool Hardening & Graduation"
 Cohesion: 0.07
-Nodes (23): Shem.MCP.Handlers.InvokeToolTest, Shem.MCP.Handlers.ListToolsTest, Shem.Lab.GraduationGate, extract_module(), property_tested?(), run(), seed_trust(), unique_id() (+15 more)
+Nodes (22): Shem.Lab.GraduationGate.HardeningTest, Shem.Lab.GraduationGate.Python, build_and_register(), extract_name(), hardening_score(), run(), seed_trust(), unique_id() (+14 more)
 
-### Community 2 - "TUI App Shell"
+### Community 1 - "TUI App Shell"
 Cohesion: 0.11
-Nodes (31): Shem.TUI.App, current_suggestions(), cycle_focus(), focused_paused?(), format_presets(), format_routes(), format_tools(), format_trust() (+23 more)
+Nodes (32): Shem.TUI.App, current_suggestions(), cycle_focus(), focused_paused?(), format_presets(), format_routes(), format_tools(), format_trust() (+24 more)
 
-### Community 3 - "Agent Turn Execution"
-Cohesion: 0.12
-Nodes (16): Shem.Agent.Turn, build_messages(), build_prompt(), build_request(), parse_response(), step(), stream_step(), strip_thinking() (+8 more)
+### Community 2 - "Agent Turn Loop"
+Cohesion: 0.09
+Nodes (23): Shem.Agent.Turn, build_messages(), build_prompt(), build_request(), parse_response(), step(), stream_step(), strip_thinking() (+15 more)
 
-### Community 4 - "EventLog Core"
+### Community 3 - "Event Log"
 Cohesion: 0.13
-Nodes (11): Shem.EventLog, append(), event_log_path(), get_active_handle(), handle_call(), init(), read_dets_file(), read_session_events() (+3 more)
+Nodes (12): Shem.EventLog, append(), event_log_path(), get_active_handle(), handle_call(), init(), read_dets_file(), read_session_events() (+4 more)
+
+### Community 4 - "Launch Demo"
+Cohesion: 0.27
+Nodes (22): Mix.Tasks.Demo, assert_eventually(), await_agent(), banner(), buggy_tool(), configure_app(), ensure_local_stub(), fail!() (+14 more)
 
 ### Community 5 - "TUI Interactive View"
 Cohesion: 0.22
 Nodes (17): Shem.TUI.Views.Interactive, agent_status_color(), agent_status_dot(), autocomplete_rows(), content_row(), prompt_color(), prompt_lines(), prompt_row() (+9 more)
 
-### Community 6 - "Hardening Job Loop"
+### Community 6 - "Adversarial Hardening Job"
 Cohesion: 0.25
 Nodes (12): Shem.Adversarial.HardeningJob, agent_timeout(), await(), do_await(), finish(), get_red_team_answer(), handle_info(), parse_red_team_result() (+4 more)
 
-### Community 7 - "Agent Public API"
+### Community 7 - "Agent API"
 Cohesion: 0.16
 Nodes (6): Shem.Agent, await(), await_result(), session_id(), start(), start_with_preset()
 
@@ -258,237 +274,281 @@ Nodes (7): Shem.Trust.Store, blend(), compute_outcome_score(), default_path(), h
 Cohesion: 0.31
 Nodes (13): Shem.CLI.Setup, backend_label(), default_path(), green(), line(), loop_prompt(), prompt(), run() (+5 more)
 
-### Community 10 - "Anthropic Transport"
+### Community 10 - "Application Supervision"
+Cohesion: 0.23
+Nodes (11): Shem.ApplicationExecutorTest, Shem.Application, adversarial_children(), cluster_children(), llm_stub_children(), mcp_children(), port_pool_children(), resolve_executor_backend() (+3 more)
+
+### Community 11 - "Lab Registry"
+Cohesion: 0.23
+Nodes (8): Shem.Lab.Registry, build_tool_from_manifest(), extract_module(), handle_call(), init(), lookup(), parse_dt(), scan_graduated()
+
+### Community 12 - "Anthropic Transport"
 Cohesion: 0.27
 Nodes (11): Shem.LLM.Middleware.AnthropicTransport, apply_anthropic_chunk(), assemble_anthropic_response(), call(), do_anthropic_sse(), format_messages(), parse_response(), process_anthropic_data() (+3 more)
 
-### Community 11 - "LlamaCpp Transport"
+### Community 13 - "llama.cpp Transport"
 Cohesion: 0.27
 Nodes (11): Shem.LLM.Middleware.LlamaCppTransport, apply_llama_chunk(), assemble_llama_response(), call(), do_sse_stream_llama(), parse_response(), process_llama_event(), process_llama_sse_data() (+3 more)
 
-### Community 12 - "OpenAI Transport"
+### Community 14 - "Community 14"
 Cohesion: 0.27
 Nodes (11): Shem.LLM.Middleware.OpenAITransport, apply_openai_chunk(), assemble_openai_response(), build_messages(), call(), do_sse_stream_openai(), parse_response(), process_openai_data() (+3 more)
 
-### Community 13 - "Application & Executor"
-Cohesion: 0.24
-Nodes (10): Shem.ApplicationExecutorTest, Shem.Application, adversarial_children(), cluster_children(), llm_stub_children(), mcp_children(), resolve_executor_backend(), shadow_children() (+2 more)
+### Community 15 - "Community 15"
+Cohesion: 0.21
+Nodes (9): Shem.Telemetry, group_suffix(), handle_call(), handle_event(), init(), percentile(), prometheus_text(), stats() (+1 more)
 
-### Community 14 - "Agent Preset Store"
+### Community 16 - "Community 16"
 Cohesion: 0.23
 Nodes (7): Shem.Agent.PresetStore, default_path(), delete(), get(), handle_call(), init(), put()
 
-### Community 15 - "MCP Router"
+### Community 17 - "Community 17"
 Cohesion: 0.27
 Nodes (10): Shem.MCP.Router, build_response(), builtin_tool_descriptors(), call_tool(), dispatch_method(), error_code(), handle_rpc(), send_or_sse() (+2 more)
 
-### Community 16 - "Memory Store"
+### Community 18 - "Community 18"
 Cohesion: 0.21
 Nodes (6): Shem.Memory.Store, default_path(), delete(), get(), handle_call(), init()
 
-### Community 17 - "Ollama Transport"
+### Community 19 - "Community 19"
 Cohesion: 0.29
 Nodes (10): Shem.LLM.Middleware.OllamaTransport, assemble_ollama_response(), call(), do_ollama_stream(), parse_response(), process_ollama_data(), process_ollama_line(), resolve_model() (+2 more)
 
-### Community 18 - "Shadow Agent"
+### Community 20 - "Community 20"
 Cohesion: 0.24
 Nodes (7): Shem.Shadow.Agent, find_task(), handle_info(), maybe_analyze(), parse_result(), run_analysis(), score_to_band()
 
-### Community 19 - "Cluster Coordinator"
+### Community 21 - "Community 21"
 Cohesion: 0.21
 Nodes (5): Shem.Cluster, emit(), handle_info(), onboard_mnesia(), sync_horde()
 
-### Community 20 - "Community 20"
+### Community 23 - "Community 23"
+Cohesion: 0.27
+Nodes (8): Shem.Agent.Server, broadcast_stream_done(), emit_thinking(), execute_tool_calls(), finish(), handle_info(), init(), prepend_project_context()
+
+### Community 24 - "Community 24"
 Cohesion: 0.25
 Nodes (6): Shem.MCP.Client.ServerConn, handle_call(), handle_info(), handle_message(), init(), send_to_port()
 
-### Community 21 - "Community 21"
+### Community 25 - "Community 25"
+Cohesion: 0.24
+Nodes (6): Shem.Lab.PortPool, handle_call(), init(), maybe_dequeue(), open_port(), send_to_port()
+
+### Community 26 - "Community 26"
 Cohesion: 0.20
 Nodes (3): Shem.MCP.SessionRegistry, drop_session(), handle_info()
 
-### Community 22 - "Community 22"
+### Community 27 - "Community 27"
 Cohesion: 0.33
 Nodes (9): Shem.AgentSupervisor, evacuate_agent(), evacuate_all(), generate_session_id(), maybe_start_shadow(), resolve_placement(), start_agent(), start_agent_with_placement() (+1 more)
 
-### Community 23 - "Community 23"
+### Community 28 - "Community 28"
 Cohesion: 0.22
 Nodes (4): Shem.NodeRegistry, do_sync_node(), handle_cast(), init()
 
-### Community 24 - "Community 24"
+### Community 29 - "Community 29"
 Cohesion: 0.20
 Nodes (3): Shem.LLM.StubTransport.Server, drain_agents(), reset()
 
-### Community 25 - "Community 25"
-Cohesion: 0.29
-Nodes (7): Shem.Agent.Server, broadcast_stream_done(), execute_tool_calls(), finish(), handle_info(), init(), prepend_project_context()
+### Community 31 - "Community 31"
+Cohesion: 0.40
+Nodes (10): Shem.Agent.ToolDispatch, build_manifest(), dispatch_builtin(), dispatch_lab(), dispatch_mcp(), ensure_loaded(), execute(), gate_blocks?() (+2 more)
 
-### Community 26 - "Community 26"
+### Community 32 - "Community 32"
 Cohesion: 0.44
 Nodes (9): Shem.CLI.ConfigFile, default_path(), format(), format_value(), get(), put_in_nested(), read(), set() (+1 more)
 
-### Community 27 - "Community 27"
+### Community 33 - "Community 33"
+Cohesion: 0.22
+Nodes (3): Shem.EventLog.MnesiaStore, read_all(), scrub()
+
+### Community 34 - "Community 34"
 Cohesion: 0.29
 Nodes (5): Shem.MCP.Handlers.AgentCommon, agent_name?(), extract_session_id(), find_by_session(), live_agents()
 
-### Community 28 - "Community 28"
+### Community 35 - "Community 35"
 Cohesion: 0.22
 Nodes (3): Shem.REST.Handlers.Sessions, format_event(), sanitize_payload()
 
-### Community 29 - "Community 29"
+### Community 36 - "Community 36"
 Cohesion: 0.22
 Nodes (3): Shem.LLM.Router, build_transport(), handle_call()
 
-### Community 30 - "Community 30"
+### Community 37 - "Community 37"
+Cohesion: 0.36
+Nodes (9): Shem.TUI.Views.Dashboard, agents_line(), fmt(), render(), status_bar_color(), status_bar_content(), status_bar_title(), telemetry_lines() (+1 more)
+
+### Community 38 - "Community 38"
 Cohesion: 0.38
 Nodes (9): Shem.TUI.Views.History, format_ago(), render(), render_session_detail(), render_session_list(), status_abbrev(), status_color(), transcript_labels() (+1 more)
 
-### Community 31 - "Community 31"
-Cohesion: 0.39
-Nodes (9): Shem.Agent.ToolDispatch, build_manifest(), dispatch_builtin(), dispatch_lab(), dispatch_mcp(), ensure_loaded(), execute(), gate_blocks?() (+1 more)
-
-### Community 32 - "Community 32"
+### Community 39 - "Community 39"
 Cohesion: 0.39
 Nodes (8): Shem.EventLog.HistoryScanner, active_session_ids(), build_summary(), event_log_path(), extract_started_at(), extract_task(), infer_status(), scan()
 
-### Community 35 - "Community 35"
+### Community 42 - "Community 42"
 Cohesion: 0.39
 Nodes (7): Shem.Context.Project, detect(), detect_type(), format_contents(), list_entries(), to_prompt(), type_label()
 
-### Community 36 - "Community 36"
+### Community 43 - "Community 43"
+Cohesion: 0.29
+Nodes (3): Shem.EventLog.DETSStore, read_all(), scrub()
+
+### Community 44 - "Community 44"
+Cohesion: 0.29
+Nodes (3): Shem.EventLog.FakeStore, read_all(), scrub()
+
+### Community 45 - "Community 45"
 Cohesion: 0.46
 Nodes (7): install.sh script, _bold(), _err(), _green(), _line(), _ok(), _step()
 
-### Community 37 - "Community 37"
+### Community 46 - "Community 46"
 Cohesion: 0.39
 Nodes (6): Shem.Lab.Executor, compile(), execute(), run(), run_local(), run_remote()
 
-### Community 38 - "Community 38"
+### Community 47 - "Community 47"
+Cohesion: 0.61
+Nodes (8): Shem.Lab.GraduationGate, extract_module(), hardening_score(), property_tested?(), run(), run_elixir(), seed_trust(), unique_id()
+
+### Community 48 - "Community 48"
 Cohesion: 0.36
 Nodes (5): Shem.MixProject, aliases(), deps(), project(), releases()
 
-### Community 40 - "Community 40"
+### Community 49 - "Community 49"
 Cohesion: 0.43
-Nodes (7): Shem.TUI.Views.Dashboard, agents_line(), render(), status_bar_color(), status_bar_content(), status_bar_title(), trust_summary()
+Nodes (5): Shem.Distributed.FailoverTest, assert_eventually(), setup_mnesia_on_peer(), setup_peer_full(), setup_stub_on_peer()
 
-### Community 41 - "Community 41"
+### Community 50 - "Community 50"
 Cohesion: 0.43
 Nodes (6): Shem.EventLog.Chain, canonical(), genesis(), next(), verify(), walk()
 
-### Community 45 - "Community 45"
+### Community 52 - "Community 52"
 Cohesion: 0.29
 Nodes (3): EchoBackend, FailBackend, Shem.LLM.Middleware.RouterTransportTest
 
-### Community 47 - "Community 47"
+### Community 54 - "Community 54"
 Cohesion: 0.38
 Nodes (5): Shem.TUI.AgentView, build(), from_events(), transcript(), truncate_line()
 
-### Community 48 - "Community 48"
+### Community 55 - "Community 55"
 Cohesion: 0.38
 Nodes (4): Shem.TUI.SystemStats, collect(), cpu_percent(), put_memory()
 
-### Community 49 - "Community 49"
+### Community 56 - "Community 56"
 Cohesion: 0.40
 Nodes (3): Shem.Adversarial.HardeningJobTest, do_wait(), wait_done()
 
-### Community 50 - "Community 50"
+### Community 57 - "Community 57"
 Cohesion: 0.40
 Nodes (3): Shem.CLI.Config, flatten_keys(), list()
 
-### Community 51 - "Community 51"
+### Community 58 - "Community 58"
 Cohesion: 0.53
 Nodes (5): Shem.CLI.Status, current_version(), detect_port(), format_llm(), run()
 
-### Community 52 - "Community 52"
+### Community 59 - "Community 59"
+Cohesion: 0.47
+Nodes (4): Shem.Distributed.StreamingTest, assert_eventually(), setup_peer_full(), setup_stub_on_peer()
+
+### Community 60 - "Community 60"
 Cohesion: 0.40
 Nodes (3): Shem.EventLog.Replay, build_chain(), causal_chain()
 
-### Community 53 - "Community 53"
+### Community 61 - "Community 61"
 Cohesion: 0.40
 Nodes (3): Shem.EventLog.Session, generate_id(), new()
 
-### Community 56 - "Community 56"
+### Community 64 - "Community 64"
 Cohesion: 0.47
 Nodes (4): Shem.LLM.Replay, compare_calls(), diff(), extract_call_summaries()
 
-### Community 57 - "Community 57"
+### Community 65 - "Community 65"
 Cohesion: 0.60
 Nodes (5): Shem.MCP.Client, call(), connected_servers(), list_tools(), lookup_conn()
 
-### Community 61 - "Community 61"
+### Community 66 - "Community 66"
+Cohesion: 0.40
+Nodes (3): Shem.Lab.PortPool.Supervisor, ensure_started(), pool_name()
+
+### Community 70 - "Community 70"
 Cohesion: 0.40
 Nodes (3): Shem.ProcessRegistry, lookup(), lookup_meta()
 
-### Community 62 - "Community 62"
+### Community 71 - "Community 71"
 Cohesion: 0.50
 Nodes (3): Shem.Agent.Preset, find_in_static(), resolve()
 
-### Community 63 - "Community 63"
+### Community 72 - "Community 72"
 Cohesion: 0.60
 Nodes (4): Shem.Lab.Executor.Backend.Container, build_args(), default_run(), run_shell()
 
-### Community 64 - "Community 64"
+### Community 73 - "Community 73"
 Cohesion: 0.60
 Nodes (4): Shem.CLI.Banner, print(), truecolor?(), tty?()
 
-### Community 65 - "Community 65"
+### Community 74 - "Community 74"
 Cohesion: 0.60
 Nodes (4): Shem.MCP.Client.Config, load(), validate(), validate_all()
 
-### Community 68 - "Community 68"
+### Community 77 - "Community 77"
+Cohesion: 0.50
+Nodes (3): Shem.MCP.Handlers.AgentCommonTest, start_done_agent(), stub()
+
+### Community 78 - "Community 78"
 Cohesion: 0.70
 Nodes (4): Shem.MCP.Handlers.AgentStatus, call(), live_status(), tombstone()
 
-### Community 71 - "Community 71"
+### Community 81 - "Community 81"
 Cohesion: 0.60
 Nodes (4): Shem.MCP.RouterTest, call_tool_rpc(), decode_response(), post_rpc()
 
-### Community 82 - "Community 82"
+### Community 94 - "Community 94"
 Cohesion: 0.50
 Nodes (3): Shem.TUI.CommandDispatch, parse(), parse_route_pair()
 
-### Community 83 - "Community 83"
+### Community 95 - "Community 95"
 Cohesion: 0.50
 Nodes (3): Shem.TUI.Welcome, mark_welcomed(), marker_path()
 
-### Community 90 - "Community 90"
+### Community 102 - "Community 102"
 Cohesion: 0.67
 Nodes (3): Shem.EventLog.Event, generate_id(), new()
 
-### Community 91 - "Community 91"
+### Community 104 - "Community 104"
 Cohesion: 0.67
 Nodes (3): Shem.MCP.Handlers.InvokeTool, call(), ensure_loaded()
 
-### Community 92 - "Community 92"
+### Community 106 - "Community 106"
 Cohesion: 0.67
 Nodes (3): Shem.MCP.Handlers.SpawnAgent, call(), parse_placement()
 
-### Community 94 - "Community 94"
+### Community 108 - "Community 108"
 Cohesion: 0.67
 Nodes (3): Shem.LLM.StubTransport, call(), stream()
 
-### Community 97 - "Community 97"
+### Community 111 - "Community 111"
 Cohesion: 0.67
 Nodes (3): Shem.MCP.Schema, valid_type?(), validate()
 
 ## Knowledge Gaps
-- **64 isolated node(s):** `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend`, `Shem.LLM.Middleware`, `Shem.LLM.Request` (+59 more)
+- **66 isolated node(s):** `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend`, `Shem.LLM.Middleware`, `Shem.LLM.Request` (+61 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **124 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **129 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Config` connect `Adversarial Hardening & Tests` to `Agent Turn Execution`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **Why does `Shem.Agent` connect `Agent Public API` to `Adversarial Hardening & Tests`?**
+- **Why does `Config` connect `Community 22` to `Community 49`, `Agent Turn Loop`, `Community 59`, `Community 124`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `Shem.Agent` connect `Agent API` to `Community 22`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `Shem.AgentSupervisor` connect `Community 22` to `Adversarial Hardening & Tests`?**
+- **Why does `Shem.AgentSupervisor` connect `Community 27` to `Community 22`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend` to the rest of the system?**
-  _64 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Adversarial Hardening & Tests` be split into smaller, more focused modules?**
-  _Cohesion score 0.047619047619047616 - nodes in this community are weakly interconnected._
-- **Should `MCP Handler Tests` be split into smaller, more focused modules?**
-  _Cohesion score 0.06543385490753911 - nodes in this community are weakly interconnected._
+  _66 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Tool Hardening & Graduation` be split into smaller, more focused modules?**
+  _Cohesion score 0.07207207207207207 - nodes in this community are weakly interconnected._
 - **Should `TUI App Shell` be split into smaller, more focused modules?**
-  _Cohesion score 0.1140819964349376 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11092436974789915 - nodes in this community are weakly interconnected._
+- **Should `Agent Turn Loop` be split into smaller, more focused modules?**
+  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
