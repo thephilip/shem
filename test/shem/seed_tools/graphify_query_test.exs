@@ -33,4 +33,20 @@ defmodule Shem.SeedTools.GraphifyQueryTest do
     Application.put_env(:shem, :graphify_dir, "test/support/fixtures/nope")
     assert GraphifyQuery.run(%{"op" => "find", "q" => "x"}) == %{"error" => "no graph; run /graphify ."}
   end
+
+  test "god_nodes with non-integer n defaults to 5 and does not crash" do
+    assert GraphifyQuery.run(%{"op" => "god_nodes", "n" => "five"})["god_nodes"] |> is_list()
+  end
+
+  test "find without q returns an error" do
+    assert GraphifyQuery.run(%{"op" => "find"}) == %{"error" => "find requires 'q'"}
+  end
+
+  test "neighbors without id returns an error" do
+    assert GraphifyQuery.run(%{"op" => "neighbors"}) == %{"error" => "neighbors requires 'id'"}
+  end
+
+  test "path without both from and to returns an error" do
+    assert GraphifyQuery.run(%{"op" => "path", "from" => "a"}) == %{"error" => "path requires 'from' and 'to'"}
+  end
 end

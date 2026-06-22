@@ -32,6 +32,9 @@ defmodule Shem.SeedTools.GraphifyQuery do
     %{"ids" => ids}
   end
 
+  defp dispatch("find", %{"q" => _q}, _graph), do: %{"error" => "graph has no nodes"}
+  defp dispatch("find", _args, _graph), do: %{"error" => "find requires 'q'"}
+
   defp dispatch("neighbors", %{"id" => id}, graph) do
     labels = label_map(graph)
 
@@ -44,12 +47,20 @@ defmodule Shem.SeedTools.GraphifyQuery do
     %{"neighbors" => neighbors}
   end
 
+  defp dispatch("neighbors", _args, _graph), do: %{"error" => "neighbors requires 'id'"}
+
   defp dispatch("path", %{"from" => from, "to" => to}, graph) do
     %{"path" => bfs(from, to, graph)}
   end
 
+  defp dispatch("path", _args, _graph), do: %{"error" => "path requires 'from' and 'to'"}
+
   defp dispatch("god_nodes", args, graph) do
-    n = Map.get(args, "n", 5)
+    n =
+      case Map.get(args, "n", 5) do
+        i when is_integer(i) -> i
+        _ -> 5
+      end
     labels = label_map(graph)
 
     god =

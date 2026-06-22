@@ -5,7 +5,7 @@ defmodule Shem.SeedTools.DiffText do
 
   def run(%{"a" => a, "b" => b}) when is_binary(a) and is_binary(b) do
     diff =
-      List.myers_difference(String.split(a, "\n"), String.split(b, "\n"))
+      List.myers_difference(to_lines(a), to_lines(b))
       |> Enum.flat_map(fn
         {:eq, lines} -> Enum.map(lines, &(" " <> &1))
         {:del, lines} -> Enum.map(lines, &("-" <> &1))
@@ -15,6 +15,9 @@ defmodule Shem.SeedTools.DiffText do
 
     %{"diff" => diff}
   end
+
+  defp to_lines(""), do: []
+  defp to_lines(s), do: s |> String.replace_suffix("\n", "") |> String.split("\n")
 
   def tool do
     %Shem.Tool{
