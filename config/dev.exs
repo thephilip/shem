@@ -13,11 +13,11 @@ config :shem,
     {Shem.LLM.Middleware.RouterTransport, []}
   ],
   llm_routes: %{
-    # Requires ANTHROPIC_API_KEY in the env. Swap to "claude-opus-4-8" for max capability.
-    default: {:anthropic, "claude-sonnet-4-6"}
-    # Local fallback (LM Studio on :1234): default: {:openai, "qwen"}
+    # Local, keyless: LM Studio / OpenAI-compatible server on :1234.
+    default: {:openai, "qwen"}
+    # Cloud (needs ANTHROPIC_API_KEY): default: {:anthropic, "claude-sonnet-4-6"}
   },
-  llm_models: %{default: "claude-sonnet-4-6"},
+  llm_models: %{default: "qwen"},
   llm_openai_base_url: "http://localhost:1234",
   llm_openai_api_key: "lm-studio",
   llm_max_tokens: 4096,
