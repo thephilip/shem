@@ -20,7 +20,6 @@ ARCH=$(uname -m)
 
 case "${OS}-${ARCH}" in
   Linux-x86_64)  TARGET="shem-linux-x86_64.tar.gz"  ;;
-  Darwin-x86_64) TARGET="shem-macos-x86_64.tar.gz"  ;;
   Darwin-arm64)  TARGET="shem-macos-arm64.tar.gz"   ;;
   *)
     _err "Unsupported platform: ${OS}-${ARCH}"

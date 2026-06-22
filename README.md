@@ -33,7 +33,7 @@ Or skip the LLM entirely and use Shem as a tool server for Claude Code.
 curl -fsSL https://raw.githubusercontent.com/thephilip/shem/master/install.sh | bash
 ```
 
-Supports Linux x86_64, macOS Intel, and macOS Apple Silicon. No Elixir or Erlang installation required — the runtime is bundled.
+Supports Linux x86_64 and macOS Apple Silicon. No Elixir or Erlang installation required — the runtime is bundled.
 
 Or with Docker:
 
