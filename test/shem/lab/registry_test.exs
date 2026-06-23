@@ -34,7 +34,7 @@ defmodule Shem.Lab.RegistryTest do
   test "all/0 returns only seed tools when no graduated tools are registered" do
     {:ok, pid} = start_supervised({Registry, [name: :test_registry_3]})
     ids = GenServer.call(pid, :all) |> Enum.map(& &1.id) |> Enum.sort()
-    assert ids == ["diff_text", "graphify_query", "json_query"]
+    assert ids == ["diff_text", "extract_signatures", "graphify_query", "json_query"]
   end
 
   test "all/0 returns all registered tools" do

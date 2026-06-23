@@ -7,7 +7,8 @@ defmodule Shem.SeedTools do
   @modules [
     Shem.SeedTools.DiffText,
     Shem.SeedTools.JsonQuery,
-    Shem.SeedTools.GraphifyQuery
+    Shem.SeedTools.GraphifyQuery,
+    Shem.SeedTools.ExtractSignatures
   ]
 
   def modules, do: @modules
