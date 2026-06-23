@@ -46,8 +46,8 @@ defmodule Shem.Lab.Pack do
   defp install_tool(pack_dir, pack_name, id) do
     with {:ok, manifest} <- read_manifest(pack_dir, id),
          {:ok, source} <- read_source(pack_dir, id, manifest),
-         {:ok, tool} <- gate(source, manifest) do
-      tag_manifest(tool.id, pack_name, source)
+         {:ok, tool} <- gate(source, manifest),
+         :ok <- tag_manifest(tool.id, pack_name, source) do
       {:ok, tool.id}
     else
       {:error, reason} -> {:error, id, reason}
@@ -89,15 +89,20 @@ defmodule Shem.Lab.Pack do
   # The gate already wrote the manifest via Workspace.graduate/1. Merge the
   # provenance tags into it so uninstall can find this tool later.
   defp tag_manifest(tool_id, pack_name, source) do
-    path = Workspace.manifest_path(tool_id)
-    json = File.read!(path)
-    hash = :crypto.hash(:sha256, source <> json) |> Base.encode16(case: :lower)
+    try do
+      path = Workspace.manifest_path(tool_id)
+      json = File.read!(path)
+      hash = :crypto.hash(:sha256, source <> json) |> Base.encode16(case: :lower)
 
-    merged =
-      json
-      |> Jason.decode!()
-      |> Map.merge(%{"pack" => pack_name, "sha256" => hash})
+      merged =
+        json
+        |> Jason.decode!()
+        |> Map.merge(%{"pack" => pack_name, "sha256" => hash})
 
-    File.write!(path, Jason.encode!(merged, pretty: true))
+      File.write!(path, Jason.encode!(merged, pretty: true))
+      :ok
+    rescue
+      e -> {:error, {:tag_failed, Exception.message(e)}}
+    end
   end
 end
