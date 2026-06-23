@@ -89,4 +89,11 @@ defmodule Shem.Lab.RegistryTest do
       assert {:error, :not_found} = Shem.Lab.Registry.lookup_by_name("no_such_tool")
     end
   end
+
+  test "rescan/0 rebuilds the table and keeps the always-on seed floor" do
+    assert :ok = Shem.Lab.Registry.rescan()
+    ids = Shem.Lab.Registry.all() |> Enum.map(& &1.id)
+    assert "graphify_query" in ids
+    assert "diff_text" in ids
+  end
 end

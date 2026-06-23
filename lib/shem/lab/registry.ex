@@ -27,6 +27,9 @@ defmodule Shem.Lab.Registry do
   @spec flush() :: :ok
   def flush, do: GenServer.call(__MODULE__, :flush)
 
+  @doc "Rebuild the registry table from disk: seeds + every graduated manifest."
+  def rescan, do: GenServer.call(__MODULE__, :rescan)
+
   # ── Server callbacks ────────────────────────────────────────────────────────
 
   @impl true
@@ -35,9 +38,7 @@ defmodule Shem.Lab.Registry do
     # Seed modules are compiled into the release but lazy-loaded; force-load so
     # dispatch's ensure_loaded/1 (:code.is_loaded) is a true no-op, not a recompile.
     Enum.each(Shem.SeedTools.modules(), &Code.ensure_loaded!/1)
-    # Seeds first, graduated last: a user-graduated tool overrides a seed on id collision.
-    tools = Shem.SeedTools.all() ++ scan_graduated()
-    Enum.each(tools, fn tool -> :ets.insert(table, {tool.id, tool}) end)
+    Enum.each(load_all(), fn tool -> :ets.insert(table, {tool.id, tool}) end)
     {:ok, %{table: table}}
   end
 
@@ -84,7 +85,17 @@ defmodule Shem.Lab.Registry do
     {:reply, :ok, state}
   end
 
+  @impl true
+  def handle_call(:rescan, _from, state) do
+    :ets.delete_all_objects(state.table)
+    Enum.each(load_all(), fn tool -> :ets.insert(state.table, {tool.id, tool}) end)
+    {:reply, :ok, state}
+  end
+
   # ── Helpers ─────────────────────────────────────────────────────────────────
+
+  # Seeds first, graduated last: a user-graduated tool overrides a seed on id collision.
+  defp load_all, do: Shem.SeedTools.all() ++ scan_graduated()
 
   defp scan_graduated do
     Workspace.list_graduated()
