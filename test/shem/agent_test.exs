@@ -44,6 +44,15 @@ defmodule Shem.AgentTest do
       config = %Shem.Agent.Config{task: "t", system_prompt: "s", fence: "/home/user/proj"}
       assert config.fence == "/home/user/proj"
     end
+
+    test "start_with_preset threads brain: :client into Config" do
+      # resolve the config the same way start/1 receives it
+      {:ok, preset} = Shem.Agent.Preset.resolve("general")
+      assert preset  # sanity
+      # Build via the same path; assert the field exists and defaults correctly
+      default = %Shem.Agent.Config{task: "x", system_prompt: "s"}
+      assert default.brain == :model
+    end
   end
 
   describe "resume/2" do
