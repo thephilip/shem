@@ -5,5 +5,8 @@ if [ -z "$1" ]; then
   echo "usage: shem-uninstall <pack-name>" >&2
   exit 2
 fi
+case "$1" in
+  *[!A-Za-z0-9._-]*) echo "shem-uninstall: illegal characters in pack name" >&2; exit 2 ;;
+esac
 DIR="$(cd "$(dirname "$0")" && pwd)"
 exec "$DIR/shem" rpc "Elixir.Shem.Lab.Pack.uninstall(\"$1\") |> IO.inspect()"

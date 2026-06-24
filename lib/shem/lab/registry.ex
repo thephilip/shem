@@ -27,6 +27,7 @@ defmodule Shem.Lab.Registry do
   @spec flush() :: :ok
   def flush, do: GenServer.call(__MODULE__, :flush)
 
+  @spec rescan() :: :ok
   @doc "Rebuild the registry table from disk: seeds + every graduated manifest."
   def rescan, do: GenServer.call(__MODULE__, :rescan)
 

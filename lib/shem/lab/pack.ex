@@ -10,6 +10,14 @@ defmodule Shem.Lab.Pack do
           {:ok, %{name: String.t(), installed: [String.t()], rejected: [map()]}}
           | {:error, term()}
   def install(repo, path \\ ".") do
+    if allowed_scheme?(repo) do
+      do_install(repo, path)
+    else
+      {:error, :unsupported_scheme}
+    end
+  end
+
+  defp do_install(repo, path) do
     tmp = Path.join(System.tmp_dir!(), "shem-pack-#{System.unique_integer([:positive])}")
 
     try do
@@ -27,10 +35,20 @@ defmodule Shem.Lab.Pack do
   end
 
   defp clone(repo, tmp) do
-    case System.cmd("git", ["clone", "--depth", "1", repo, tmp], stderr_to_stdout: true) do
+    case System.cmd(
+           "git",
+           ["-c", "protocol.ext.allow=never", "-c", "protocol.fd.allow=never",
+            "-c", "protocol.file.allow=always",
+            "clone", "--depth", "1", "--", repo, tmp],
+           stderr_to_stdout: true
+         ) do
       {_, 0} -> {:ok, tmp}
       {out, _} -> {:error, {:clone_failed, String.trim(out)}}
     end
+  end
+
+  defp allowed_scheme?(repo) do
+    String.starts_with?(repo, ["https://", "git://", "ssh://", "git@", "file://"])
   end
 
   defp read_pack(dir) do
@@ -46,9 +64,18 @@ defmodule Shem.Lab.Pack do
   defp install_tool(pack_dir, pack_name, id) do
     with {:ok, manifest} <- read_manifest(pack_dir, id),
          {:ok, source} <- read_source(pack_dir, id, manifest),
-         {:ok, tool} <- gate(source, manifest),
-         :ok <- tag_manifest(tool.id, pack_name, source) do
-      {:ok, tool.id}
+         {:ok, tool} <- gate(source, manifest) do
+      case tag_manifest(tool.id, pack_name, source) do
+        :ok ->
+          {:ok, tool.id}
+
+        {:error, reason} ->
+          # the gate already wrote + registered this tool; a failed tag would
+          # leave it on disk untagged (and thus un-uninstallable), so remove it
+          remove_files(tool.id)
+          Registry.rescan()
+          {:error, id, reason}
+      end
     else
       {:error, reason} -> {:error, id, reason}
     end
@@ -126,7 +153,8 @@ defmodule Shem.Lab.Pack do
     try do
       path = Workspace.manifest_path(tool_id)
       json = File.read!(path)
-      hash = :crypto.hash(:sha256, source <> json) |> Base.encode16(case: :lower)
+      # provenance of the installed source bytes (not a verified tamper check)
+      hash = :crypto.hash(:sha256, source) |> Base.encode16(case: :lower)
 
       merged =
         json

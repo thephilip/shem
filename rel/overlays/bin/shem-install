@@ -9,5 +9,15 @@ if [ -z "$1" ]; then
 fi
 REPO="$1"
 PATH_ARG="${2:-.}"
+case "$REPO" in
+  https://*|git://*|ssh://*|git@*|file://*) ;;
+  *) echo "shem-install: repo must be an https/git/ssh/git@/file URL" >&2; exit 2 ;;
+esac
+case "$REPO" in
+  *[!A-Za-z0-9._:/~@+-]*) echo "shem-install: illegal characters in repo URL" >&2; exit 2 ;;
+esac
+case "$PATH_ARG" in
+  *[!A-Za-z0-9._/-]*) echo "shem-install: illegal characters in subpath" >&2; exit 2 ;;
+esac
 DIR="$(cd "$(dirname "$0")" && pwd)"
 exec "$DIR/shem" rpc "Elixir.Shem.Lab.Pack.install(\"$REPO\", \"$PATH_ARG\") |> IO.inspect()"
