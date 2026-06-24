@@ -103,7 +103,7 @@ shem start --headless
 claude mcp add --transport sse shem http://127.0.0.1:4000/mcp/sse
 ```
 
-Claude Code then gets eight tools:
+Claude Code then gets these tools:
 
 | Tool | What it does |
 |------|-------------|
@@ -113,6 +113,7 @@ Claude Code then gets eight tools:
 | `spawn_agent` | Start a Shem agent with a goal — returns immediately |
 | `agent_status` | Poll an agent; works even after it finished |
 | `list_agents` / `stop_agent` | See and stop what's running |
+| `install_pack` / `uninstall_pack` / `list_packs` | Manage git-distributed tool packs (see below) |
 
 The self-extending pattern: Claude Code graduates a new tool once, then invokes
 it in every future session. The parallel pattern: spawn several Shem agents for
@@ -130,6 +131,64 @@ independent subtasks and poll them concurrently.
 | `explorer` | Codebase and filesystem exploration. Read-only. |
 
 Switch mid-conversation: `/preset coder` · Create your own: `/hire <name> <role description>`
+
+## Tool packs
+
+Share graduated tools as a git repo. Installing **re-runs every tool through the
+graduation gate** before trusting it — third-party tools clear the same compile +
+test bar as agent-authored ones, and anything that fails is reported, not
+installed. Reinstalling a pack replaces the existing copy (no version churn).
+
+Install, list, and remove from any of three surfaces:
+
+| | Install | Remove | List |
+|--|---------|--------|------|
+| CLI | `shem-install <git-url> [subpath]` | `shem-uninstall <name>` | — |
+| MCP | `install_pack {repo, path?}` | `uninstall_pack {name}` | `list_packs` |
+| REST | `POST /api/packs {"repo":…,"path":…}` | `DELETE /api/packs/:name` | `GET /api/packs` |
+
+```bash
+shem-install https://github.com/you/my-shem-pack
+shem-install file:///path/to/local/pack                          # local repo
+shem-install https://github.com/you/monorepo packs/text-tools    # subdirectory
+```
+
+**Authoring a pack.** A pack is a git repo with a `pack.json` and a `tools/`
+directory. Each tool is a manifest + source pair — the same shape Shem writes to
+its own `graduated/` dir, so a pack is just a copy of those files:
+
+```
+pack.json
+tools/
+  mytool.json     # manifest
+  mytool.ex       # source (.py for Python tools)
+```
+
+```jsonc
+// pack.json
+{ "name": "text-tools", "version": "0.1.0", "tools": ["mytool"] }
+```
+```jsonc
+// tools/mytool.json
+{
+  "id": "mytool",
+  "language": "elixir",
+  "description": "increment x",
+  "schema": {},
+  "test_source": "defmodule MytoolTest do\n  def run do\n    %{\"y\" => 2} = Mytool.run(%{\"x\" => 1})\n    :ok\n  end\nend\n"
+}
+```
+```elixir
+# tools/mytool.ex
+defmodule Mytool do
+  def run(%{"x" => x}), do: %{"y" => x + 1}
+end
+```
+
+`test_source` runs at install time — a tool whose test fails never lands. A
+per-tool `sha256` of the installed source is recorded as provenance. Namespace
+your module names per pack (e.g. `TextTools.MyTool`) to avoid cross-pack
+collisions.
 
 ## Interfaces
 
