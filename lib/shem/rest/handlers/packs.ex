@@ -20,8 +20,10 @@ defmodule Shem.REST.Handlers.Packs do
   end
 
   delete "/:name" do
-    {:ok, result} = Shem.Lab.Pack.uninstall(name)
-    send_json(conn, 200, result)
+    case Shem.Lab.Pack.uninstall(name) do
+      {:ok, result}    -> send_json(conn, 200, result)
+      {:error, reason} -> send_json(conn, 422, %{error: inspect(reason)})
+    end
   end
 
   match _ do
