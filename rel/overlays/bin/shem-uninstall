@@ -1,0 +1,9 @@
+#!/bin/sh
+# shem-uninstall <pack-name>
+set -e
+if [ -z "$1" ]; then
+  echo "usage: shem-uninstall <pack-name>" >&2
+  exit 2
+fi
+DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$DIR/shem" rpc "Elixir.Shem.Lab.Pack.uninstall(\"$1\") |> IO.inspect()"

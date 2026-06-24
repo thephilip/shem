@@ -1,0 +1,13 @@
+#!/bin/sh
+# shem-install <git-url> [subpath]
+# Installs a tool pack into the running shem node (start it with `mix shem.serve`
+# or `bin/shem daemon`). Each tool is re-verified through the graduation gate.
+set -e
+if [ -z "$1" ]; then
+  echo "usage: shem-install <git-url> [subpath]" >&2
+  exit 2
+fi
+REPO="$1"
+PATH_ARG="${2:-.}"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$DIR/shem" rpc "Elixir.Shem.Lab.Pack.install(\"$REPO\", \"$PATH_ARG\") |> IO.inspect()"
