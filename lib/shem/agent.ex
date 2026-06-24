@@ -107,6 +107,18 @@ defmodule Shem.Agent do
     end
   end
 
+  @spec info(String.t()) :: {:ok, map()} | {:error, :not_found}
+  def info(name) do
+    case agent_call(name, :info) do
+      {:error, _} = err -> err
+      map when is_map(map) -> {:ok, map}
+    end
+  end
+
+  @spec provide_turn(String.t(), term(), String.t()) ::
+          {:ok, map()} | {:error, :stale_turn | :not_found}
+  def provide_turn(name, token, content), do: agent_call(name, {:provide_turn, token, content})
+
   @spec pause(String.t()) :: :ok | {:error, :not_found | :not_running}
   def pause(name), do: agent_call(name, :pause)
 

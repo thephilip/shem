@@ -29,7 +29,8 @@ defmodule Shem.Agent.Server do
 
   def handle_call(:info, _from, state) do
     {:reply,
-     %{status: state.status, turn_count: state.turn_count, session_id: state.session_id}, state}
+     %{status: state.status, turn_count: state.turn_count, session_id: state.session_id,
+       awaiting_prompt: state.awaiting_prompt, turn_token: state.turn_token}, state}
   end
 
   def handle_call({:message, _text}, _from, %{status: s} = state) when s != :waiting do
@@ -83,6 +84,41 @@ defmodule Shem.Agent.Server do
     {:reply, {state.name, state.config, state.session_id}, state}
   end
 
+  def handle_call({:provide_turn, token, content}, _from, %{status: :awaiting_turn, turn_token: token} = state) do
+    manifest = ToolDispatch.build_manifest(state.config)
+    response = %Shem.LLM.Response{content: content, tokens_used: 0, model: state.config.model, latency_ms: 0}
+    pipeline = [{Shem.LLM.Middleware.EventLogger, []},
+                {Shem.LLM.Middleware.OneShot, response: response}]
+    Process.put(:shem_replay_pipeline, pipeline)
+    turn_result =
+      try do
+        Turn.step(state.config, state.session_id, state.history, manifest)
+      after
+        Process.delete(:shem_replay_pipeline)
+      end
+
+    {:noreply, new_state} = apply_turn_result(turn_result, state, manifest)
+    {:reply, {:ok, reply_for(new_state)}, new_state}
+  end
+
+  def handle_call({:provide_turn, _token, _content}, _from, state),
+    do: {:reply, {:error, :stale_turn}, state}
+
+  defp reply_for(%{status: :awaiting_turn} = s),
+    do: %{status: :awaiting_turn, prompt: s.awaiting_prompt, turn_token: s.turn_token}
+  defp reply_for(%{status: :done} = s), do: %{status: :done, output: final_output(s)}
+  defp reply_for(%{status: :error} = s), do: %{status: :error, reason: inspect(s.done_reason)}
+
+  defp final_output(state) do
+    state.history
+    |> Enum.filter(&(&1.role == :assistant))
+    |> List.last()
+    |> case do
+      %{content: c} when is_binary(c) -> c
+      _ -> ""
+    end
+  end
+
   # ── Init ────────────────────────────────────────────────────────────────────
 
   @impl true
@@ -119,7 +155,9 @@ defmodule Shem.Agent.Server do
       turn_count: turn_count,
       status: :running,
       done_reason: nil,
-      awaiting: []
+      awaiting: [],
+      awaiting_prompt: nil,
+      turn_token: nil
     }
 
     send(self(), :run_turn)
@@ -152,46 +190,19 @@ defmodule Shem.Agent.Server do
         EventLog.append(state.session_id, :agent_turn_started, %{turn: state.turn_count + 1})
         manifest = ToolDispatch.build_manifest(state.config)
 
-        turn_meta = %{session_id: state.session_id, node: node()}
+        if state.config.brain == :client do
+          {:noreply, park(state, manifest)}
+        else
+          turn_meta = %{session_id: state.session_id, node: node()}
 
-        turn_result =
-          :telemetry.span(
-            [:shem, :agent, :turn],
-            turn_meta,
-            fn -> {Turn.stream_step(state.config, state.session_id, state.history, manifest), turn_meta} end
-          )
+          turn_result =
+            :telemetry.span(
+              [:shem, :agent, :turn],
+              turn_meta,
+              fn -> {Turn.stream_step(state.config, state.session_id, state.history, manifest), turn_meta} end
+            )
 
-        case turn_result do
-          {:done, answer, rc} ->
-            emit_thinking(state.session_id, state.turn_count + 1, rc)
-            history = state.history ++ [%{role: :assistant, content: answer}]
-            EventLog.append(state.session_id, :agent_turn_completed, %{
-              turn: state.turn_count + 1,
-              outcome: :done
-            })
-            {:noreply,
-             finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
-
-          {:tool_calls, calls, raw, rc} ->
-            emit_thinking(state.session_id, state.turn_count + 1, rc)
-            assistant_entry = %{
-              role: :assistant,
-              content: (if raw == "", do: nil, else: raw),
-              tool_calls: calls
-            }
-            history = state.history ++ [assistant_entry]
-            history = execute_tool_calls(calls, manifest, history, state.session_id, state.config)
-            EventLog.append(state.session_id, :agent_turn_completed, %{
-              turn: state.turn_count + 1,
-              outcome: :tool_calls
-            })
-            new_state = %{state | history: history, turn_count: state.turn_count + 1}
-            send(self(), :run_turn)
-            {:noreply, new_state}
-
-          {:error, reason} ->
-            EventLog.append(state.session_id, :agent_error, %{reason: inspect(reason)})
-            {:noreply, finish(state, :error, reason)}
+          apply_turn_result(turn_result, state, manifest)
         end
     end
   end
@@ -199,6 +210,42 @@ defmodule Shem.Agent.Server do
   def handle_info(_msg, state), do: {:noreply, state}
 
   # ── Helpers ─────────────────────────────────────────────────────────────────
+
+  defp park(state, manifest) do
+    prompt = Turn.build_prompt(state.config.system_prompt, manifest, state.history)
+    token = {state.turn_count + 1, System.unique_integer([:positive])}
+    EventLog.append(state.session_id, :agent_awaiting_turn, %{turn: state.turn_count + 1, prompt: prompt})
+    Enum.each(:pg.get_members(:shem_streams, state.session_id), fn pid ->
+      send(pid, {:stream_chunk, state.session_id, prompt})
+    end)
+    %{state | status: :awaiting_turn, awaiting_prompt: prompt, turn_token: token}
+  end
+
+  defp apply_turn_result(turn_result, state, manifest) do
+    case turn_result do
+      {:done, answer, rc} ->
+        emit_thinking(state.session_id, state.turn_count + 1, rc)
+        history = state.history ++ [%{role: :assistant, content: answer}]
+        EventLog.append(state.session_id, :agent_turn_completed, %{turn: state.turn_count + 1, outcome: :done})
+        {:noreply, finish(%{state | history: history, turn_count: state.turn_count + 1}, :done, :answer)}
+
+      {:tool_calls, calls, raw, rc} ->
+        emit_thinking(state.session_id, state.turn_count + 1, rc)
+        assistant_entry = %{role: :assistant, content: (if raw == "", do: nil, else: raw), tool_calls: calls}
+        history = state.history ++ [assistant_entry]
+        history = execute_tool_calls(calls, manifest, history, state.session_id, state.config)
+        EventLog.append(state.session_id, :agent_turn_completed, %{turn: state.turn_count + 1, outcome: :tool_calls})
+        new_state = %{state | history: history, turn_count: state.turn_count + 1}
+        case new_state.config.brain do
+          :client -> {:noreply, park(new_state, manifest)}
+          _ -> send(self(), :run_turn); {:noreply, new_state}
+        end
+
+      {:error, reason} ->
+        EventLog.append(state.session_id, :agent_error, %{reason: inspect(reason)})
+        {:noreply, finish(state, :error, reason)}
+    end
+  end
 
   defp execute_tool_calls(calls, manifest, history, session_id, config) do
     backend = Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
