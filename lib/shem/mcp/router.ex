@@ -5,11 +5,13 @@ defmodule Shem.MCP.Router do
     AgentStatus,
     ExecuteCode,
     GraduateTool,
+    InstallPack,
     InvokeTool,
     ListAgents,
     ListTools,
     SpawnAgent,
-    StopAgent
+    StopAgent,
+    UninstallPack
   }
 
   plug(Plug.Parsers,
@@ -124,6 +126,8 @@ defmodule Shem.MCP.Router do
   defp call_tool("agent_status", args), do: AgentStatus.call(args)
   defp call_tool("list_agents", args), do: ListAgents.call(args)
   defp call_tool("stop_agent", args), do: StopAgent.call(args)
+  defp call_tool("install_pack", args), do: InstallPack.call(args)
+  defp call_tool("uninstall_pack", args), do: UninstallPack.call(args)
   defp call_tool(_, _), do: {:error, :not_found}
 
   defp build_response(id, {:ok, result}),
@@ -278,6 +282,30 @@ defmodule Shem.MCP.Router do
             "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"}
           },
           "required" => ["agent_id"]
+        }
+      },
+      %{
+        "name" => "install_pack",
+        "description" =>
+          "Install a git-distributed tool pack. Clones the repo and re-runs each tool through the graduation gate before trusting it; rejected tools are reported, not installed.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "repo" => %{"type" => "string", "description" => "Git URL of the pack repo"},
+            "path" => %{"type" => "string", "description" => "Subdirectory containing pack.json (default repo root)"}
+          },
+          "required" => ["repo"]
+        }
+      },
+      %{
+        "name" => "uninstall_pack",
+        "description" => "Remove all tools installed from a named pack.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "name" => %{"type" => "string", "description" => "Pack name"}
+          },
+          "required" => ["name"]
         }
       }
     ]
