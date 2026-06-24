@@ -1,0 +1,8 @@
+{
+  "name": "text-tools",
+  "tools": [
+    "slugify",
+    "word_count"
+  ],
+  "version": "0.1.0"
+}

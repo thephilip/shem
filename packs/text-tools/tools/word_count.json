@@ -1,0 +1,17 @@
+{
+  "description": "Count words, characters (graphemes), and lines in a block of text.",
+  "id": "word_count",
+  "language": "elixir",
+  "schema": {
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "test_source": "defmodule TextTools.WordCountTest do\n  def run do\n    StreamData.string(:printable, max_length: 60)\n    |> Enum.take(200)\n    |> Enum.each(fn s ->\n      %{\"words\" => w, \"chars\" => c, \"lines\" => l} = TextTools.WordCount.run(%{\"text\" => s})\n      true = c == String.length(s)\n      true = l >= 1\n      true = w >= 0 and w <= c + 1\n    end)\n\n    %{\"words\" => 2, \"chars\" => 11, \"lines\" => 1} = TextTools.WordCount.run(%{\"text\" => \"hello world\"})\n    %{\"lines\" => 3} = TextTools.WordCount.run(%{\"text\" => \"a\\nb\\nc\"})\n    :ok\n  end\nend\n"
+}

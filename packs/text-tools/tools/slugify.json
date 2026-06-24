@@ -1,0 +1,17 @@
+{
+  "description": "Convert arbitrary text into a URL-safe slug (lowercase, hyphen-separated).",
+  "id": "slugify",
+  "language": "elixir",
+  "schema": {
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "test_source": "defmodule TextTools.SlugifyTest do\n  def run do\n    StreamData.string(:printable, max_length: 40)\n    |> Enum.take(200)\n    |> Enum.each(fn s ->\n      %{\"slug\" => slug} = TextTools.Slugify.run(%{\"text\" => s})\n      true = slug == \"\" or Regex.match?(~r/\\A[a-z0-9]+(-[a-z0-9]+)*\\z/, slug)\n      # idempotent: slugging an existing slug changes nothing\n      %{\"slug\" => ^slug} = TextTools.Slugify.run(%{\"text\" => slug})\n    end)\n\n    %{\"slug\" => \"hello-world\"} = TextTools.Slugify.run(%{\"text\" => \"  Hello, World!  \"})\n    :ok\n  end\nend\n"
+}

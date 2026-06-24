@@ -153,6 +153,13 @@ shem-install file:///path/to/local/pack                          # local repo
 shem-install https://github.com/you/monorepo packs/text-tools    # subdirectory
 ```
 
+Shem ships a starter pack at [`packs/text-tools`](packs/text-tools) (`slugify` +
+`word_count`, both property-tested) — install it straight from this repo:
+
+```bash
+shem-install file:///path/to/shem packs/text-tools
+```
+
 **Authoring a pack.** A pack is a git repo with a `pack.json` and a `tools/`
 directory. Each tool is a manifest + source pair — the same shape Shem writes to
 its own `graduated/` dir, so a pack is just a copy of those files:
