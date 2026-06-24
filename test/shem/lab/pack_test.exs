@@ -13,6 +13,8 @@ defmodule Shem.Lab.PackTest do
 
   defp make_pack_repo do
     repo = Path.join(System.tmp_dir!(), "shem-packrepo-#{System.unique_integer([:positive])}")
+    File.rm_rf!(repo)
+    on_exit(fn -> File.rm_rf(repo) end)
     File.mkdir_p!(Path.join(repo, "tools"))
 
     good_src = """
@@ -43,6 +45,8 @@ defmodule Shem.Lab.PackTest do
 
   defp make_pack_repo_with_bad do
     repo = Path.join(System.tmp_dir!(), "shem-packrepo-#{System.unique_integer([:positive])}")
+    File.rm_rf!(repo)
+    on_exit(fn -> File.rm_rf(repo) end)
     File.mkdir_p!(Path.join(repo, "tools"))
 
     bad_src = "defmodule PackBad do\n  def run(_), do: :wrong\nend\n"
@@ -87,6 +91,21 @@ defmodule Shem.Lab.PackTest do
   end
 
   test "uninstall removes a pack's tools and leaves others alone" do
+    other_src = """
+    defmodule PackOther do
+      def run(%{"x" => x}), do: %{"y" => x * 2}
+    end
+    """
+    other_test = """
+    defmodule PackOtherTest do
+      def run do
+        %{"y" => 4} = PackOther.run(%{"x" => 2})
+        :ok
+      end
+    end
+    """
+    {:ok, other} = Shem.Lab.GraduationGate.run(other_src, other_test, language: "elixir")
+
     repo = make_pack_repo()
     {:ok, %{installed: [id]}} = Pack.install("file://" <> repo)
     assert File.exists?(Workspace.manifest_path(id))
@@ -94,5 +113,6 @@ defmodule Shem.Lab.PackTest do
     assert {:ok, %{removed: removed}} = Pack.uninstall("demo")
     assert id in removed
     refute File.exists?(Workspace.manifest_path(id))
+    assert File.exists?(Workspace.manifest_path(other.id))
   end
 end
