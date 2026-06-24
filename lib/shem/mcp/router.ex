@@ -10,6 +10,7 @@ defmodule Shem.MCP.Router do
     ListAgents,
     ListPacks,
     ListTools,
+    ProvideTurn,
     SpawnAgent,
     StopAgent,
     UninstallPack
@@ -127,6 +128,7 @@ defmodule Shem.MCP.Router do
   defp call_tool("agent_status", args), do: AgentStatus.call(args)
   defp call_tool("list_agents", args), do: ListAgents.call(args)
   defp call_tool("stop_agent", args), do: StopAgent.call(args)
+  defp call_tool("provide_turn", args), do: ProvideTurn.call(args)
   defp call_tool("install_pack", args), do: InstallPack.call(args)
   defp call_tool("uninstall_pack", args), do: UninstallPack.call(args)
   defp call_tool("list_packs", args), do: ListPacks.call(args)
@@ -253,6 +255,11 @@ defmodule Shem.MCP.Router do
               "type" => "string",
               "description" =>
                 "Agent preset (general, coder, researcher, writer, security, explorer). Default: general"
+            },
+            "brain" => %{
+              "type" => "string",
+              "description" =>
+                "Brain mode: 'client' to drive turns from MCP (use provide_turn), 'model' for autonomous LLM-driven loop (default)"
             }
           },
           "required" => ["goal"]
@@ -284,6 +291,23 @@ defmodule Shem.MCP.Router do
             "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"}
           },
           "required" => ["agent_id"]
+        }
+      },
+      %{
+        "name" => "provide_turn",
+        "description" =>
+          "Supply the next turn for a client-brained agent; content is plain text — embed a {\"tool\":…,\"args\":…} JSON object to call a tool, or plain text to finish.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"},
+            "turn_token" => %{
+              "type" => "string",
+              "description" => "Turn token from agent_status (format: turn:nonce)"
+            },
+            "content" => %{"type" => "string", "description" => "Turn content or tool call JSON"}
+          },
+          "required" => ["agent_id", "turn_token", "content"]
         }
       },
       %{

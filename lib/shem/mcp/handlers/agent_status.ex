@@ -1,5 +1,5 @@
 defmodule Shem.MCP.Handlers.AgentStatus do
-  alias Shem.MCP.Handlers.AgentCommon
+  alias Shem.MCP.Handlers.{AgentCommon, ProvideTurn}
   alias Shem.MCP.Schema
 
   @schema %{"agent_id" => %{"type" => "string"}}
@@ -17,8 +17,10 @@ defmodule Shem.MCP.Handlers.AgentStatus do
   end
 
   defp live_status(name, session_id) do
-    case Shem.Agent.status(name) do
-      {:ok, status} ->
+    case Shem.Agent.info(name) do
+      {:ok, info} ->
+        status = info.status
+
         {events, count} =
           case AgentCommon.session_events(session_id) do
             {:ok, events} -> {events, length(events)}
@@ -27,15 +29,25 @@ defmodule Shem.MCP.Handlers.AgentStatus do
 
         output = if status == :running, do: "", else: AgentCommon.final_output(events)
 
-        {:ok,
-         %{
-           "agent_id" => session_id,
-           "status" => Atom.to_string(status),
-           "output" => output,
-           "events" => count
-         }}
+        base = %{
+          "agent_id" => session_id,
+          "status" => Atom.to_string(status),
+          "output" => output,
+          "events" => count
+        }
 
-      # agent died between registry lookup and the status call
+        base =
+          if status == :awaiting_turn do
+            base
+            |> Map.put("prompt", Map.get(info, :awaiting_prompt, ""))
+            |> Map.put("turn_token", ProvideTurn.encode_token(info.turn_token))
+          else
+            base
+          end
+
+        {:ok, base}
+
+      # agent died between registry lookup and the info call
       {:error, :not_found} ->
         tombstone(session_id)
     end
