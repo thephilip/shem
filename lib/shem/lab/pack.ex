@@ -4,7 +4,7 @@ defmodule Shem.Lab.Pack do
   through the local graduation gate before it is trusted — installing a pack
   runs third-party code through the same gate that agent-authored tools pass.
   """
-  alias Shem.Lab.{GraduationGate, Workspace}
+  alias Shem.Lab.{GraduationGate, Registry, Workspace}
 
   @spec install(String.t(), String.t()) ::
           {:ok, %{name: String.t(), installed: [String.t()], rejected: [map()]}}
@@ -88,6 +88,40 @@ defmodule Shem.Lab.Pack do
 
   # The gate already wrote the manifest via Workspace.graduate/1. Merge the
   # provenance tags into it so uninstall can find this tool later.
+  @spec uninstall(String.t()) :: {:ok, %{name: String.t(), removed: [String.t()]}}
+  def uninstall(pack_name) do
+    ids =
+      Workspace.list_graduated()
+      |> Enum.flat_map(fn
+        {id, path} ->
+          case File.read(path) do
+            {:ok, json} ->
+              case Jason.decode(json) do
+                {:ok, %{"pack" => ^pack_name}} -> [id]
+                _ -> []
+              end
+
+            _ ->
+              []
+          end
+
+        _ ->
+          []
+      end)
+
+    Enum.each(ids, &remove_files/1)
+    Registry.rescan()
+    {:ok, %{name: pack_name, removed: ids}}
+  end
+
+  # Manifest (.json), source (.ex/.py) and any :port wrapper share the same base path.
+  defp remove_files(id) do
+    base = Path.rootname(Workspace.manifest_path(id))
+    Enum.each([".json", ".ex", ".py", "_runtime.py"], fn suffix ->
+      File.rm(base <> suffix)
+    end)
+  end
+
   defp tag_manifest(tool_id, pack_name, source) do
     try do
       path = Workspace.manifest_path(tool_id)
