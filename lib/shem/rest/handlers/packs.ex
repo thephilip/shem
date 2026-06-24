@@ -5,6 +5,10 @@ defmodule Shem.REST.Handlers.Packs do
   plug :match
   plug :dispatch
 
+  get "/" do
+    send_json(conn, 200, %{packs: Shem.Lab.Pack.list_packs()})
+  end
+
   post "/" do
     repo = String.trim(conn.body_params["repo"] || "")
     path = conn.body_params["path"] || "."

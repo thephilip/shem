@@ -7,7 +7,7 @@ defmodule Shem.Lab.Pack do
   alias Shem.Lab.{GraduationGate, Registry, Workspace}
 
   @spec install(String.t(), String.t()) ::
-          {:ok, %{name: String.t(), installed: [String.t()], rejected: [map()]}}
+          {:ok, %{name: String.t(), installed: [String.t()], replaced: [String.t()], rejected: [map()]}}
           | {:error, term()}
   def install(repo, path \\ ".") do
     if allowed_scheme?(repo) do
@@ -24,10 +24,11 @@ defmodule Shem.Lab.Pack do
       with {:ok, _} <- clone(repo, tmp),
            pack_dir = Path.join(tmp, path),
            {:ok, pack} <- read_pack(pack_dir) do
-        results = Enum.map(pack["tools"], &install_tool(pack_dir, pack["name"], &1))
+        {:ok, %{removed: replaced}} = uninstall(pack["name"])
+        results = Enum.map(pack["tools"], &install_tool(pack_dir, pack["name"], pack["version"], &1))
         installed = for {:ok, id} <- results, do: id
         rejected = for {:error, id, reason} <- results, do: %{id: id, reason: inspect(reason)}
-        {:ok, %{name: pack["name"], installed: installed, rejected: rejected}}
+        {:ok, %{name: pack["name"], installed: installed, replaced: replaced, rejected: rejected}}
       end
     after
       File.rm_rf(tmp)
@@ -61,11 +62,11 @@ defmodule Shem.Lab.Pack do
     end
   end
 
-  defp install_tool(pack_dir, pack_name, id) do
+  defp install_tool(pack_dir, pack_name, pack_version, id) do
     with {:ok, manifest} <- read_manifest(pack_dir, id),
          {:ok, source} <- read_source(pack_dir, id, manifest),
          {:ok, tool} <- gate(source, manifest) do
-      case tag_manifest(tool.id, pack_name, source) do
+      case tag_manifest(tool.id, pack_name, pack_version, source) do
         :ok ->
           {:ok, tool.id}
 
@@ -149,7 +150,7 @@ defmodule Shem.Lab.Pack do
     end)
   end
 
-  defp tag_manifest(tool_id, pack_name, source) do
+  defp tag_manifest(tool_id, pack_name, pack_version, source) do
     try do
       path = Workspace.manifest_path(tool_id)
       json = File.read!(path)
@@ -159,12 +160,39 @@ defmodule Shem.Lab.Pack do
       merged =
         json
         |> Jason.decode!()
-        |> Map.merge(%{"pack" => pack_name, "sha256" => hash})
+        |> Map.merge(%{"pack" => pack_name, "version" => pack_version, "sha256" => hash})
 
       File.write!(path, Jason.encode!(merged, pretty: true))
       :ok
     rescue
       e -> {:error, {:tag_failed, Exception.message(e)}}
     end
+  end
+
+  @spec list_packs() :: [%{name: String.t(), version: String.t() | nil, tools: [String.t()]}]
+  def list_packs do
+    Workspace.list_graduated()
+    |> Enum.flat_map(fn
+      {id, path} ->
+        case File.read(path) do
+          {:ok, json} ->
+            case Jason.decode(json) do
+              {:ok, %{"pack" => name} = m} -> [{name, m["version"], id}]
+              _ -> []
+            end
+
+          _ ->
+            []
+        end
+
+      _ ->
+        []
+    end)
+    |> Enum.group_by(fn {name, _v, _id} -> name end)
+    |> Enum.map(fn {name, entries} ->
+      version = entries |> Enum.map(fn {_n, v, _i} -> v end) |> Enum.find(& &1)
+      tools = Enum.map(entries, fn {_n, _v, id} -> id end)
+      %{name: name, version: version, tools: tools}
+    end)
   end
 end

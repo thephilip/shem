@@ -8,6 +8,7 @@ defmodule Shem.MCP.Router do
     InstallPack,
     InvokeTool,
     ListAgents,
+    ListPacks,
     ListTools,
     SpawnAgent,
     StopAgent,
@@ -128,6 +129,7 @@ defmodule Shem.MCP.Router do
   defp call_tool("stop_agent", args), do: StopAgent.call(args)
   defp call_tool("install_pack", args), do: InstallPack.call(args)
   defp call_tool("uninstall_pack", args), do: UninstallPack.call(args)
+  defp call_tool("list_packs", args), do: ListPacks.call(args)
   defp call_tool(_, _), do: {:error, :not_found}
 
   defp build_response(id, {:ok, result}),
@@ -307,6 +309,11 @@ defmodule Shem.MCP.Router do
           },
           "required" => ["name"]
         }
+      },
+      %{
+        "name" => "list_packs",
+        "description" => "List installed tool packs (name, version, tool ids).",
+        "inputSchema" => %{"type" => "object", "properties" => %{}}
       }
     ]
   end

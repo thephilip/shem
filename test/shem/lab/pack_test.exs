@@ -90,6 +90,44 @@ defmodule Shem.Lab.PackTest do
     assert tagged == []
   end
 
+  test "reinstalling a pack replaces its tools instead of duplicating" do
+    repo = make_pack_repo()
+    {:ok, first} = Pack.install("file://" <> repo)
+    assert first.replaced == []
+
+    {:ok, second} = Pack.install("file://" <> repo)
+    assert second.replaced != []
+
+    tagged =
+      Workspace.list_graduated()
+      |> Enum.flat_map(fn
+        {id, p} ->
+          case Jason.decode!(File.read!(p)) do
+            %{"pack" => "demo"} -> [id]
+            _ -> []
+          end
+
+        _ ->
+          []
+      end)
+
+    assert length(tagged) == 1
+  end
+
+  test "installed manifest carries the pack version" do
+    repo = make_pack_repo()
+    {:ok, %{installed: [id]}} = Pack.install("file://" <> repo)
+    manifest = Workspace.manifest_path(id) |> File.read!() |> Jason.decode!()
+    assert manifest["version"] == "0.1.0"
+  end
+
+  test "list_packs returns installed packs grouped by name" do
+    repo = make_pack_repo()
+    {:ok, _} = Pack.install("file://" <> repo)
+    packs = Pack.list_packs()
+    assert [%{name: "demo", version: "0.1.0", tools: [_]}] = packs
+  end
+
   test "uninstall removes a pack's tools and leaves others alone" do
     other_src = """
     defmodule PackOther do

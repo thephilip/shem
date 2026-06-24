@@ -16,4 +16,11 @@ defmodule Shem.REST.PacksTest do
     assert conn.status == 200
     assert %{"removed" => []} = Jason.decode!(conn.resp_body)
   end
+
+  test "GET / returns 200 with packs list" do
+    conn = conn(:get, "/") |> Packs.call(@opts)
+    assert conn.status == 200
+    assert %{"packs" => packs} = Jason.decode!(conn.resp_body)
+    assert is_list(packs)
+  end
 end
