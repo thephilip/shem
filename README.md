@@ -114,10 +114,33 @@ Claude Code then gets these tools:
 | `agent_status` | Poll an agent; works even after it finished |
 | `list_agents` / `stop_agent` | See and stop what's running |
 | `install_pack` / `uninstall_pack` / `list_packs` | Manage git-distributed tool packs (see below) |
+| `provide_turn` | Resume a client-brained agent with an action or response |
 
 The self-extending pattern: Claude Code graduates a new tool once, then invokes
 it in every future session. The parallel pattern: spawn several Shem agents for
 independent subtasks and poll them concurrently.
+
+### Client-brain agent loop (no local LLM)
+
+Spawn an agent with `brain: "client"` to drive its turns from Claude Code:
+
+```
+spawn_agent({goal: "find bugs in auth.rs", brain: "client"})
+→ agent_id (e.g., "sess_abc123")
+
+agent_status(agent_id)
+→ {status: "awaiting_turn", prompt: "Claude, please…", turn_token: "1:4782"}
+
+provide_turn(agent_id, turn_token, "<Claude's action>")
+→ {status: "awaiting_turn", prompt: "Next prompt…", turn_token: "2:9351"}
+  (or {status: "done", output: "…"} when finished)
+
+(repeat agent_status / provide_turn until done)
+```
+
+The loop is keyless (no LLM credentials), and the agent is forkable, replayable,
+and crash-surviving like any Shem agent — the event log persists independent of
+the brain.
 
 ## Presets
 
