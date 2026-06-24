@@ -108,6 +108,7 @@ defmodule Shem.Agent.Server do
     do: %{status: :awaiting_turn, prompt: s.awaiting_prompt, turn_token: s.turn_token}
   defp reply_for(%{status: :done} = s), do: %{status: :done, output: final_output(s)}
   defp reply_for(%{status: :error} = s), do: %{status: :error, reason: inspect(s.done_reason)}
+  defp reply_for(%{status: :waiting} = s), do: %{status: :waiting, output: final_output(s)}
 
   defp final_output(state) do
     state.history

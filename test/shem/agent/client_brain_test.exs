@@ -33,6 +33,17 @@ defmodule Shem.Agent.ClientBrainTest do
     assert done.output =~ "8"
   end
 
+  test "conversational client agent: a finishing turn reports :waiting, does not crash" do
+    {:ok, _name, sid} =
+      Agent.start_with_preset("general", "say hi", brain: :client, conversational: true)
+
+    name = wait_for_awaiting(sid)
+    {:ok, info} = Agent.info(name)
+    {:ok, res} = Agent.provide_turn(name, info.turn_token, "Hello there.")
+    assert res.status == :waiting
+    assert res.output =~ "Hello"
+  end
+
   defp wait_for_awaiting(sid, tries \\ 50)
   defp wait_for_awaiting(_sid, 0), do: flunk("agent never parked")
   defp wait_for_awaiting(sid, n) do
