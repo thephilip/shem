@@ -15,6 +15,7 @@ defmodule Shem.REST.Router do
   forward "/sessions", to: Shem.REST.Handlers.Sessions
   forward "/health", to: Shem.REST.Handlers.Health
   forward "/cluster", to: Shem.REST.Handlers.Cluster
+  forward "/packs", to: Shem.REST.Handlers.Packs
 
   match _ do
     conn
