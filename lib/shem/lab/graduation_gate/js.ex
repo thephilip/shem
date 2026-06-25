@@ -41,12 +41,24 @@ defmodule Shem.Lab.GraduationGate.JS do
     |> String.slice(0, 12)
   end
 
+  # Derive a readable, UNIQUE tool name. The tool's function is always `run`, so the
+  # name comes from an optional `// name: ToolName` comment (taught by js_toolsmith).
+  # Without it, fall back to an id-suffixed name — never a bare constant, because the
+  # model path resolves tool calls by NAME (Enum.find on the manifest), so duplicate
+  # names would shadow each other and make the second tool unreachable.
+  def extract_name(source, id) do
+    case Regex.run(~r/^\s*\/\/\s*name:\s*(\S+)/m, source) do
+      [_, name] -> name
+      _ -> "js_tool_#{id}"
+    end
+  end
+
   defp build_and_register(source, test_source, id, opts) do
     rt = Workspace.runtime_path(id, "javascript")
 
     tool = %Tool{
       id: id,
-      name: Keyword.get(opts, :name, "js_tool"),
+      name: Keyword.get(opts, :name) || extract_name(source, id),
       runtime: {:port, rt},
       source: source,
       test_source: test_source,
@@ -61,8 +73,17 @@ defmodule Shem.Lab.GraduationGate.JS do
 
     :ok = Workspace.graduate(tool)
     :ok = Registry.register(tool)
-    seed_trust(tool.id, 0.5)
+    # Same single-turn hardening review the Python gate runs (:skip → 0.5 when no LLM),
+    # so trust parity holds across runtimes.
+    seed_trust(tool.id, hardening_score(tool))
     {:ok, tool}
+  end
+
+  defp hardening_score(tool) do
+    case Shem.Lab.GraduationGate.Hardening.check(tool) do
+      {:ok, score} -> score
+      :skip -> 0.5
+    end
   end
 
   defp seed_trust(tool_id, score) do

@@ -237,11 +237,15 @@ defmodule Shem.Agent.Preset do
       A single top-level `run` function taking a plain object and returning any
       JSON-serializable value:
 
+          // name: ReverseString
           export function run(args) {
             // implementation
             return result;
           }
 
+      - Start the source with a `// name: ToolName` comment (CamelCase, unique). This
+        is how the tool is named and later invoked — omit it and tools get generic
+        auto-names that can collide.
       - Deno + TypeScript. `run` may be sync or async.
       - SELF-CONTAINED: no imports, no third-party modules, no network, no file I/O.
         The tool runs deny-all sandboxed — any import will fail. Standard JS/TS only.

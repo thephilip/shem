@@ -15,6 +15,20 @@ defmodule Shem.Lab.GraduationGateJSTest do
     :ok
   end
 
+  test "extract_name uses // name: comment, else a unique id-suffixed fallback" do
+    # Readable name when the source declares one.
+    assert Shem.Lab.GraduationGate.JS.extract_name(
+             "// name: ReverseString\nexport function run(a){}",
+             "abc123"
+           ) == "ReverseString"
+
+    # Guards the model-path collision: without a name comment, two distinct tools must
+    # get DISTINCT names (dispatch resolves by name; duplicates would shadow each other).
+    n1 = Shem.Lab.GraduationGate.JS.extract_name("export function run(a){ return 1 }", "id0001")
+    n2 = Shem.Lab.GraduationGate.JS.extract_name("export function run(a){ return 2 }", "id0002")
+    refute n1 == n2
+  end
+
   @tag :deno_container
   test "graduates a Deno tool that passes deno test" do
     source = "export function run(a){ return { up: String(a.s).toUpperCase() } }"
