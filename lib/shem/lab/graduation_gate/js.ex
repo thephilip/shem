@@ -12,6 +12,13 @@ defmodule Shem.Lab.GraduationGate.JS do
     image   = Application.get_env(:shem, :executor_image_js, "docker.io/denoland/deno:alpine")
     timeout = Application.get_env(:shem, :executor_timeout_ms, 30_000)
 
+    # --no-check: this gate accepts plain JS (`export function run(a)` trips Deno's
+    #   default TS implicit-any check); we test runtime behaviour, not TS strictness.
+    #   A failing assertion still exits non-zero → {:error, :gate, _}, so the gate's
+    #   reject path is unaffected.
+    # --allow-net/--allow-read: the TEST may import jsr:@std/assert (net) and read
+    #   ./tool.ts. This is the throwaway-container test sandbox ONLY — graduated tools
+    #   run deny-all via PortPool (no --allow-* on the runtime path).
     result =
       Executor.run_shell(
         "cd /workspace && deno test --no-check --allow-net --allow-read tool_test.ts",

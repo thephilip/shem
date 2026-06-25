@@ -33,4 +33,18 @@ defmodule Shem.Lab.GraduationGateJSTest do
 
     assert tool.metadata["language"] == "javascript"
   end
+
+  @tag :deno_container
+  test "rejects a Deno tool whose test fails (trust boundary holds)" do
+    source = "export function run(_a){ return { up: \"wrong\" } }"
+
+    test_source = """
+    import { run } from "./tool.ts";
+    import { assertEquals } from "jsr:@std/assert";
+    Deno.test("upcases", () => assertEquals(run({ s: "hi" }), { up: "HI" }));
+    """
+
+    assert {:error, :gate, _reason} =
+             Shem.Lab.GraduationGate.run(source, test_source, language: "javascript")
+  end
 end
