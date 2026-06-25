@@ -54,7 +54,7 @@ defmodule Shem.Lab.RegistryTest do
     assert "greeter_v1" in ids
   end
 
-  test "boot scan skips a graduated tool with unloadable source instead of crashing" do
+  test "boot scan quarantines a graduated tool with unloadable source instead of crashing" do
     Workspace.graduate(@tool)
     # corrupt the source so extract_module fails — must not bring down the registry
     File.write!(Workspace.graduated_path(@tool.id), "not elixir at all")
@@ -66,6 +66,14 @@ defmodule Shem.Lab.RegistryTest do
     assert "diff_text" in ids
     assert "json_query" in ids
     assert "graphify_query" in ids
+
+    # the broken tool is moved aside (preserved, not deleted) so it stops
+    # re-warning every boot and is no longer in the active graduated/ scan path
+    broken_dir = Path.join(Path.dirname(Workspace.manifest_path(@tool.id)), ".broken")
+    assert File.exists?(Path.join(broken_dir, "greeter_v1.json"))
+    assert File.exists?(Path.join(broken_dir, "greeter_v1.ex"))
+    refute File.exists?(Workspace.manifest_path(@tool.id))
+    refute File.exists?(Workspace.graduated_path(@tool.id))
   end
 
   describe "lookup_by_name/1" do

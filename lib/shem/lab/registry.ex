@@ -104,12 +104,14 @@ defmodule Shem.Lab.Registry do
       {id, manifest_path} ->
         with {:ok, json} <- File.read(manifest_path),
              {:ok, m} <- Jason.decode(json) do
-          # a single broken graduated tool must not crash boot — skip and log it
+          # a single broken graduated tool must not crash boot — quarantine it
+          # (move aside) so it loads no further AND stops re-warning every boot
           try do
             [build_tool_from_manifest(id, m)]
           rescue
             e ->
-              Logger.warning("skipping unloadable graduated tool #{id}: #{Exception.message(e)}")
+              quarantine(id, manifest_path)
+              Logger.warning("quarantined unloadable graduated tool #{id} -> .broken/: #{Exception.message(e)}")
               []
           end
         else
@@ -131,6 +133,21 @@ defmodule Shem.Lab.Registry do
         else
           _ -> []
         end
+    end)
+  end
+
+  # Move a broken tool's files into graduated/.broken/ so the boot scan stops
+  # re-warning on every start and the source is preserved for inspection (not
+  # deleted). Best-effort: File.* here are non-bang, so this never crashes the scan.
+  # .broken/ is a subdir, so list_graduated/0 (top-level ls) never re-scans it.
+  defp quarantine(id, manifest_path) do
+    dir = Path.join(Path.dirname(manifest_path), ".broken")
+    File.mkdir_p(dir)
+    base = Path.rootname(manifest_path)
+
+    Enum.each([".json", ".ex", ".py", "_runtime.py"], fn suffix ->
+      src = base <> suffix
+      if File.exists?(src), do: File.rename(src, Path.join(dir, "#{id}#{suffix}"))
     end)
   end
 
