@@ -6,7 +6,8 @@ defmodule Shem.Lab.GraduationGate do
 
   @builtin_languages %{
     "elixir" => :elixir,
-    "python" => :python
+    "python" => :python,
+    "javascript" => :javascript
   }
 
   @spec run(String.t(), String.t(), keyword()) ::
@@ -20,9 +21,10 @@ defmodule Shem.Lab.GraduationGate do
     languages = Application.get_env(:shem, :graduation_languages, @builtin_languages)
 
     case Map.get(languages, lang) do
-      :elixir -> run_elixir(source, test_source, opts)
-      :python -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
-      nil     -> {:error, :language_not_configured, lang}
+      :elixir     -> run_elixir(source, test_source, opts)
+      :python     -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
+      :javascript -> Shem.Lab.GraduationGate.JS.run(source, test_source, opts)
+      nil         -> {:error, :language_not_configured, lang}
     end
   end
 
