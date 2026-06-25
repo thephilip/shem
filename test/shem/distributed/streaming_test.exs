@@ -120,6 +120,10 @@ defmodule Shem.Distributed.StreamingTest do
           {:ok, %Shem.LLM.Response{content: "done", tokens_used: 1, model: :default, latency_ms: 1}}
         )
         {:ok, _budget_pid} = Shem.LLM.BudgetServer.start_link(name: Shem.LLM.BudgetServer)
+        # Trust.Store is needed on the peer: building a turn's tool manifest scores
+        # seed tools (e.g. diff_text). Without it, agents crash on the peer and Horde
+        # restarts them locally — making these tests pass for the wrong reason (flaky).
+        {:ok, _trust_pid} = Shem.Trust.Store.start_link()
         Process.sleep(:infinity)
       end)
       Application.put_env(:shem, :llm_pipeline, [
@@ -135,6 +139,17 @@ defmodule Shem.Distributed.StreamingTest do
     assert_eventually(
       fn ->
         case :rpc.call(peer_node, Process, :whereis, [Shem.LLM.StubTransport.Server]) do
+          pid when is_pid(pid) -> true
+          _ -> false
+        end
+      end,
+      3_000
+    )
+
+    # Poll until Trust.Store is up on peer (manifest scoring needs it).
+    assert_eventually(
+      fn ->
+        case :rpc.call(peer_node, Process, :whereis, [Shem.Trust.Store]) do
           pid when is_pid(pid) -> true
           _ -> false
         end
