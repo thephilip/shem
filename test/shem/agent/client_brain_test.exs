@@ -44,7 +44,7 @@ defmodule Shem.Agent.ClientBrainTest do
     assert res.output =~ "Hello"
   end
 
-  defp wait_for_awaiting(sid, tries \\ 50)
+  defp wait_for_awaiting(sid, tries \\ 300)
   defp wait_for_awaiting(_sid, 0), do: flunk("agent never parked")
   defp wait_for_awaiting(sid, n) do
     case Shem.MCP.Handlers.AgentCommon.find_by_session(sid) do

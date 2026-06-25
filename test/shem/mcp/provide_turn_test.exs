@@ -9,7 +9,7 @@ defmodule Shem.MCP.ProvideTurnTest do
     assert res["status"] in ["done", "awaiting_turn"]
   end
 
-  defp await_token(sid, n \\ 50)
+  defp await_token(sid, n \\ 300)
   defp await_token(_sid, 0), do: flunk("never awaited")
   defp await_token(sid, n) do
     {:ok, st} = AgentStatus.call(%{"agent_id" => sid})

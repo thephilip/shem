@@ -184,7 +184,10 @@ defmodule Shem.Agent.Server do
       not state.config.conversational and state.turn_count >= state.config.max_turns ->
         {:noreply, finish(state, :done, :max_turns_reached)}
 
-      LLM.BudgetServer.check() == {:error, :budget_exhausted} ->
+      # Client-brained agents make no paid LLM calls (the brain is the MCP client;
+      # OneShot returns canned content with tokens_used: 0), so they consume no LLM
+      # budget and must not be preempted by other agents' usage exhausting it.
+      state.config.brain != :client and LLM.BudgetServer.check() == {:error, :budget_exhausted} ->
         {:noreply, finish(state, :done, :budget_exhausted)}
 
       true ->
