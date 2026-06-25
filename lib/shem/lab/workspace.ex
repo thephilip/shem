@@ -4,7 +4,9 @@ defmodule Shem.Lab.Workspace do
   def messy_path(id), do: Path.join([lab_dir(), "messy", "#{id}.ex"])
   def graduated_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.ex"])
   def manifest_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.json"])
-  def runtime_path(id), do: Path.join([lab_dir(), "graduated", "#{id}_runtime.py"]) |> Path.expand()
+  def runtime_path(id, language) do
+    Path.join([lab_dir(), "graduated", "#{id}_runtime.#{Shem.Lab.Languages.ext(language)}"]) |> Path.expand()
+  end
 
   @spec graduate(Tool.t()) :: :ok
   def graduate(%Tool{} = tool) do
@@ -16,8 +18,10 @@ defmodule Shem.Lab.Workspace do
         File.write!(graduated_path(tool.id), tool.source)
 
       {:port, runtime_path} ->
-        File.write!(Path.join(dir, "#{tool.id}.py"), tool.source)
-        File.write!(runtime_path, build_stdio_wrapper(tool.source))
+        language = Map.get(tool.metadata, "language", "python")
+        ext = Shem.Lab.Languages.ext(language)
+        File.write!(Path.join(dir, "#{tool.id}.#{ext}"), tool.source)
+        File.write!(runtime_path, Shem.Lab.Languages.wrapper(language, tool.source))
     end
 
     File.write!(manifest_path(tool.id), build_manifest(tool))
@@ -81,26 +85,6 @@ defmodule Shem.Lab.Workspace do
       "graduated_at" => DateTime.to_iso8601(tool.graduated_at)
     }
     |> Jason.encode!(pretty: true)
-  end
-
-  defp build_stdio_wrapper(source) do
-    """
-    import sys
-    import json
-
-    #{source}
-
-    if __name__ == "__main__":
-        for line in sys.stdin:
-            line = line.strip()
-            if line:
-                try:
-                    args = json.loads(line)
-                    result = run(args)
-                    print(json.dumps(result), flush=True)
-                except Exception as e:
-                    print(json.dumps({"__error__": str(e)}), flush=True)
-    """
   end
 
   defp lab_dir do

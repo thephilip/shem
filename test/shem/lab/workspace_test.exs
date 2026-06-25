@@ -75,9 +75,29 @@ defmodule Shem.Lab.WorkspaceTest do
     assert manifest["test_source"] == "test source here"
   end
 
-  test "runtime_path/1 returns absolute path to _runtime.py in lab graduated dir" do
-    path = Workspace.runtime_path("my_tool")
-    assert String.ends_with?(path, "graduated/my_tool_runtime.py")
-    assert Path.type(path) == :absolute
+  test "runtime_path/2 returns absolute path with correct extension for the language" do
+    py_path = Workspace.runtime_path("my_tool", "python")
+    assert String.ends_with?(py_path, "graduated/my_tool_runtime.py")
+    assert Path.type(py_path) == :absolute
+
+    js_path = Workspace.runtime_path("my_tool", "javascript")
+    assert String.ends_with?(js_path, "graduated/my_tool_runtime.ts")
+    assert Path.type(js_path) == :absolute
+  end
+
+  test "graduate writes a Deno runtime wrapper for a javascript :port tool" do
+    id = "js_demo_#{System.unique_integer([:positive])}"
+    rt = Shem.Lab.Workspace.runtime_path(id, "javascript")
+    assert String.ends_with?(rt, "_runtime.ts")
+
+    tool = %Shem.Tool{
+      id: id, name: "JsDemo", runtime: {:port, rt},
+      source: "function run(a){ return a }", test_source: "",
+      graduated_at: DateTime.utc_now(),
+      metadata: %{"language" => "javascript"}
+    }
+
+    :ok = Shem.Lab.Workspace.graduate(tool)
+    assert File.read!(rt) =~ "Deno.stdin.readable"
   end
 end

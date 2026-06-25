@@ -60,7 +60,7 @@ defmodule Shem.Lab.GraduationGate.Python do
     schema       = Keyword.get(opts, :schema, %{})
     constraints  = Keyword.get(opts, :constraints, [])
     name         = Keyword.get(opts, :name, extract_name(source))
-    runtime_path = Workspace.runtime_path(id)
+    runtime_path = Workspace.runtime_path(id, "python")
 
     tool = %Tool{
       id: id,
