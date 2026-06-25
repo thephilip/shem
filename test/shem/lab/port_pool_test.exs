@@ -60,4 +60,18 @@ defmodule Shem.Lab.PortPoolTest do
 
     File.rm(error_script)
   end
+
+  @tag :deno
+  test "Deno tool round-trips JSON through the pool" do
+    {:ok, _sup} = start_supervised(Shem.Lab.PortPool.Supervisor)
+
+    dir = Path.join(System.tmp_dir!(), "ppjs_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(dir)
+    rt = Path.join(dir, "up_runtime.ts")
+    File.write!(rt, Shem.Lab.Languages.wrapper("javascript",
+      "function run(a){ return { up: String(a.s).toUpperCase() } }"))
+
+    {:ok, pool} = Shem.Lab.PortPool.Supervisor.ensure_started("up_js", rt, "javascript")
+    assert {:ok, %{"up" => "HI"}} = Shem.Lab.PortPool.call(pool, %{"s" => "hi"})
+  end
 end

@@ -480,7 +480,8 @@ defmodule Shem.Agent.ToolDispatch do
             if gate_blocks?(trust_band) do
               {:error, "tool blocked (trust: #{trust_band})"}
             else
-              with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path) do
+              language = Map.get(tool.metadata, "language", "python")
+              with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
                 Lab.PortPool.call(pool, args)
               end
             end

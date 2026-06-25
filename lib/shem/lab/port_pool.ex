@@ -34,14 +34,16 @@ defmodule Shem.Lab.PortPool do
     tool_id      = Keyword.fetch!(opts, :tool_id)
     runtime_path = Keyword.fetch!(opts, :runtime_path)
     pool_size    = Keyword.get(opts, :pool_size, 2)
-    executable   = Keyword.get(opts, :executable, "python3")
+    language     = Keyword.get(opts, :language, "python")
+    executable   = Keyword.get(opts, :executable, Shem.Lab.Languages.exe(language))
 
-    workers = for _ <- 1..pool_size, do: open_port(runtime_path, executable)
+    workers = for _ <- 1..pool_size, do: open_port(runtime_path, executable, language)
 
     {:ok, %{
       tool_id: tool_id,
       runtime_path: runtime_path,
       executable: executable,
+      language: language,
       idle: workers,
       busy: %{},
       queue: :queue.new()
@@ -87,7 +89,7 @@ defmodule Shem.Lab.PortPool do
 
   def handle_info({port, {:exit_status, code}}, state) when is_port(port) do
     Logger.warning("PortPool: worker exited with code #{code}, restarting")
-    new_port = open_port(state.runtime_path, state.executable)
+    new_port = open_port(state.runtime_path, state.executable, state.language)
 
     {new_state, idle} =
       case Map.pop(state.busy, port) do
@@ -106,10 +108,11 @@ defmodule Shem.Lab.PortPool do
 
   # ── Helpers ──────────────────────────────────────────────────────────────────
 
-  defp open_port(runtime_path, executable) do
+  defp open_port(runtime_path, executable, language) do
     Port.open(
       {:spawn_executable, System.find_executable(executable)},
-      [:binary, :use_stdio, :line, :exit_status, args: [runtime_path]]
+      [:binary, :use_stdio, :line, :exit_status,
+       args: Shem.Lab.Languages.argv(language, runtime_path)]
     )
   end
 
