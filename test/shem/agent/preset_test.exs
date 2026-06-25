@@ -204,6 +204,15 @@ defmodule Shem.Agent.PresetTest do
     end
   end
 
+  describe "js_toolsmith preset" do
+    test "js_toolsmith preset resolves and teaches self-contained Deno tools" do
+      assert {:ok, p} = Shem.Agent.Preset.resolve("js_toolsmith")
+      assert p.system_prompt =~ "Deno"
+      assert p.system_prompt =~ "no imports" or p.system_prompt =~ "self-contained"
+      assert "write_tool" in p.tools
+    end
+  end
+
   describe "resolve/1 — max_turns and cross-preset mentions" do
     test "general preset system prompt mentions elixir_toolsmith" do
       assert {:ok, preset} = Preset.resolve("general")
