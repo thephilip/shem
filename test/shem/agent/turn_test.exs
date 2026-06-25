@@ -51,13 +51,56 @@ defmodule Shem.Agent.TurnTest do
       assert {:tool_calls, [%{id: nil, name: "foo", args: %{}}], ^content} = Turn.parse_response(content)
     end
 
-    # The regex ~r/\{(?:[^{}]|\{[^{}]*\})*\}/ only handles 1 level of {} nesting.
-    # For args with 2-level nesting (e.g. {"meta": {"k": "v"}}), the outer object
-    # is not captured — only the innermost nested object is matched, which has no
-    # "tool" key, so the result is {:done, content}. This test documents that limitation.
-    test "returns :done for tool call with 2-level nested args — regex limitation" do
+    # The scanner now handles arbitrary nesting — 2-level nested args work correctly.
+    test "parses tool call with 2-level nested args — previously a regex limitation" do
       content = ~s({"tool": "foo", "args": {"meta": {"k": "v"}}})
-      assert {:done, ^content} = Turn.parse_response(content)
+      assert {:tool_calls, [%{name: "foo", args: %{"meta" => %{"k" => "v"}}}], ^content} =
+               Turn.parse_response(content)
+    end
+
+    test "backward-compat: 2-level tool call still parses" do
+      assert {:tool_calls, [%{name: "x", args: %{"k" => "v"}}], _} =
+               Turn.parse_response(~s({"tool":"x","args":{"k":"v"}}))
+    end
+
+    test "plain prose with no JSON is :done" do
+      assert {:done, "just talking"} = Turn.parse_response("just talking")
+    end
+
+    test "3-level nesting: write_tool carrying Elixir source with %{} map literals" do
+      call = ~s[{"tool":"write_tool","args":{"source":"defmodule D do\\n def run(%{\\"n\\" => n}), do: %{\\"out\\" => n*2}\\nend","description":"doubles"}}]
+      assert {:tool_calls, [%{name: "write_tool", args: args}], _} = Turn.parse_response(call)
+      assert args["source"] =~ "n*2"
+      assert args["description"] == "doubles"
+    end
+
+    test "braces inside a JSON string do not break depth tracking" do
+      assert {:tool_calls, [%{name: "emit", args: %{"s" => "a } b { c"}}], _} =
+               Turn.parse_response(~s({"tool":"emit","args":{"s":"a } b { c"}}))
+    end
+
+    test "escaped quotes inside a string are handled" do
+      assert {:tool_calls, [%{name: "t", args: %{"s" => ~s(she said "hi" {x})}}], _} =
+               Turn.parse_response(~s({"tool":"t","args":{"s":"she said \\"hi\\" {x}"}}))
+    end
+
+    test "two tool calls in one response" do
+      s = ~s(first {"tool":"a","args":{}} then {"tool":"b","args":{"x":1}})
+      assert {:tool_calls, [%{name: "a"}, %{name: "b", args: %{"x" => 1}}], _} = Turn.parse_response(s)
+    end
+
+    test "tool call embedded in surrounding prose" do
+      assert {:tool_calls, [%{name: "t", args: %{}}], _} =
+               Turn.parse_response(~s(Sure, I'll call {"tool":"t","args":{}} now.))
+    end
+
+    test "unbalanced brace yields no crash and no call" do
+      assert {:done, _} = Turn.parse_response(~s(broken {"tool":"t","args":{ ))
+    end
+
+    test "unbalanced brace before a valid call — resume-after-unbalanced finds the valid call" do
+      assert {:tool_calls, [%{name: "y"}], _} =
+               Turn.parse_response(~s({ {"tool":"y","args":{}}))
     end
   end
 
