@@ -119,19 +119,32 @@ defmodule Shem.Lab.Registry do
         end
 
       {:legacy, id, source_path} ->
-        with {:ok, source} <- File.read(source_path),
-             {:ok, module} <- extract_module(source) do
-          [%Tool{
-            id: id,
-            name: module |> Atom.to_string() |> String.split(".") |> List.last(),
-            runtime: {:beam, module},
-            source: source,
-            test_source: "",
-            graduated_at: DateTime.utc_now(),
-            metadata: %{}
-          }]
-        else
-          _ -> []
+        # A manifestless broken tool takes THIS branch, not the rescue above, so
+        # quarantine here too — but only when the source is present yet unloadable
+        # (extract_module :error). A transiently-missing file (File.read error)
+        # has nothing to move; leave it.
+        case File.read(source_path) do
+          {:ok, source} ->
+            case extract_module(source) do
+              {:ok, module} ->
+                [%Tool{
+                  id: id,
+                  name: module |> Atom.to_string() |> String.split(".") |> List.last(),
+                  runtime: {:beam, module},
+                  source: source,
+                  test_source: "",
+                  graduated_at: DateTime.utc_now(),
+                  metadata: %{}
+                }]
+
+              :error ->
+                quarantine(id, source_path)
+                Logger.warning("quarantined unloadable legacy graduated tool #{id} -> .broken/")
+                []
+            end
+
+          _ ->
+            []
         end
     end)
   end

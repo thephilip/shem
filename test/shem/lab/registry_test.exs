@@ -76,6 +76,22 @@ defmodule Shem.Lab.RegistryTest do
     refute File.exists?(Workspace.graduated_path(@tool.id))
   end
 
+  test "boot scan quarantines an unloadable legacy (manifestless) graduated tool" do
+    # a .ex with NO .json manifest + unloadable source -> the :legacy scan branch
+    File.mkdir_p!(Path.dirname(Workspace.graduated_path("legacy_broken")))
+    File.write!(Workspace.graduated_path("legacy_broken"), "not elixir at all")
+    refute File.exists?(Workspace.manifest_path("legacy_broken"))
+
+    assert {:ok, pid} = start_supervised({Registry, [name: :test_registry_legacy_broken]})
+    ids = GenServer.call(pid, :all) |> Enum.map(& &1.id)
+    refute "legacy_broken" in ids
+    assert "diff_text" in ids
+
+    broken_dir = Path.join(Path.dirname(Workspace.graduated_path("legacy_broken")), ".broken")
+    assert File.exists?(Path.join(broken_dir, "legacy_broken.ex"))
+    refute File.exists?(Workspace.graduated_path("legacy_broken"))
+  end
+
   describe "lookup_by_name/1" do
     test "returns {:ok, tool} when a tool with that name exists" do
       source = """
