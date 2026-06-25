@@ -61,6 +61,13 @@ defmodule Shem.Lab.PortPoolTest do
     File.rm(error_script)
   end
 
+  test "pool_name includes language so one tool_id maps to distinct pools per runtime" do
+    # Guards the tool-pack replace path: re-registering a tool_id under a different
+    # runtime must get a fresh pool, not the stale interpreter's pool.
+    refute Shem.Lab.PortPool.Supervisor.pool_name("t", "python") ==
+             Shem.Lab.PortPool.Supervisor.pool_name("t", "javascript")
+  end
+
   @tag :deno
   test "Deno tool round-trips JSON through the pool" do
     {:ok, _sup} = start_supervised(Shem.Lab.PortPool.Supervisor)

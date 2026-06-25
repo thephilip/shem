@@ -109,11 +109,19 @@ defmodule Shem.Lab.PortPool do
   # ── Helpers ──────────────────────────────────────────────────────────────────
 
   defp open_port(runtime_path, executable, language) do
-    Port.open(
-      {:spawn_executable, System.find_executable(executable)},
-      [:binary, :use_stdio, :line, :exit_status,
-       args: Shem.Lab.Languages.argv(language, runtime_path)]
-    )
+    case System.find_executable(executable) do
+      nil ->
+        # Readable failure instead of an opaque Port.open :badarg — likely when the
+        # interpreter (e.g. deno) is installed but not on the BEAM process's PATH.
+        raise "PortPool: executable not found on PATH: #{executable}"
+
+      path ->
+        Port.open(
+          {:spawn_executable, path},
+          [:binary, :use_stdio, :line, :exit_status,
+           args: Shem.Lab.Languages.argv(language, runtime_path)]
+        )
+    end
   end
 
   defp send_to_port(port, args) do

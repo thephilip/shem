@@ -12,7 +12,10 @@ defmodule Shem.Lab.PortPool.Supervisor do
 
   @spec ensure_started(String.t(), String.t(), String.t()) :: {:ok, pid()} | {:error, any()}
   def ensure_started(tool_id, runtime_path, language \\ "python") do
-    pool_name = pool_name(tool_id)
+    # Pool name includes language so a tool re-registered under a different runtime
+    # (e.g. a tool-pack replace that swaps Python for JS) gets a fresh pool with the
+    # right interpreter, instead of silently reusing the stale one.
+    pool_name = pool_name(tool_id, language)
     pool_size = Application.get_env(:shem, :port_pool_size, 2)
 
     case DynamicSupervisor.start_child(__MODULE__,
@@ -26,5 +29,5 @@ defmodule Shem.Lab.PortPool.Supervisor do
     end
   end
 
-  def pool_name(tool_id), do: :"shem_port_pool_#{tool_id}"
+  def pool_name(tool_id, language \\ "python"), do: :"shem_port_pool_#{tool_id}_#{language}"
 end
