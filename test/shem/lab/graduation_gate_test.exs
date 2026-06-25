@@ -207,6 +207,36 @@ defmodule Shem.Lab.GraduationGateTest do
 
       assert {:error, _, _} = GraduationGate.run(source, test_src)
     end
+
+    test "the elixir_toolsmith preset's documented test format graduates with property trust" do
+      # Pins preset.ex's elixir_toolsmith docs to the gate's actual contract: a plain
+      # `def run/0` (no ExUnit) with an imperative StreamData.check_all. If someone
+      # reverts the preset to an ExUnit format, this fails.
+      source = """
+      defmodule Doubler do
+        def run(%{"key" => k}), do: %{"out" => k * 2}
+      end
+      """
+
+      test_src = """
+      defmodule DoublerTest do
+        def run do
+          %{"out" => 4} = Doubler.run(%{"key" => 2})
+
+          {:ok, _} =
+            StreamData.check_all(StreamData.integer(), [initial_seed: {42, 0, 0}], fn i ->
+              result = Doubler.run(%{"key" => i})
+              if is_integer(result["out"]), do: {:ok, i}, else: {:error, i}
+            end)
+
+          :ok
+        end
+      end
+      """
+
+      assert {:ok, tool} = GraduationGate.run(source, test_src, language: "elixir")
+      assert tool.metadata.property_tested == true
+    end
   end
 
   describe "language dispatch" do

@@ -111,27 +111,34 @@ defmodule Shem.Agent.Preset do
 
       ## Test format
 
-      Tests use ExUnit + StreamData property testing:
+      The test is a plain module named `<ToolModule>Test` with a `run/0` function. The
+      gate calls `run/0` directly — there is NO ExUnit (it is not available where tools
+      graduate). `run/0` must return `:ok`; any raised exception (e.g. a failed `=`
+      match) fails graduation. Earn a high trust score with at least one
+      `StreamData.check_all/3` property:
 
           defmodule MyToolTest do
-            use ExUnit.Case
-            use ExUnitProperties
+            def run do
+              # concrete example: a failed match raises, which fails the gate
+              %{"out" => 4} = MyTool.run(%{"key" => 2})
 
-            property "describes the invariant" do
-              check all input <- StreamData.string(:alphanumeric, min_length: 1) do
-                result = MyTool.run(%{"key" => input})
-                assert <invariant>
-              end
-            end
+              # property: a failing case makes check_all return {:error, _}, so the
+              # match below raises and the gate fails.
+              {:ok, _} =
+                StreamData.check_all(StreamData.integer(), [initial_seed: {42, 0, 0}], fn i ->
+                  result = MyTool.run(%{"key" => i})
+                  if is_integer(result["out"]), do: {:ok, i}, else: {:error, i}
+                end)
 
-            test "concrete example" do
-              assert MyTool.run(%{"key" => "value"}) == expected
+              :ok
             end
           end
 
-      - Always include at least one StreamData `property` block. This earns the tool a high trust score.
-      - Include at least one concrete `test` block with a known input/output pair.
-      - The test module must be named `<ToolModule>Test`.
+      - Do NOT use `use ExUnit.Case`, `test`, `property`, or `check all` — they need
+        ExUnit and will fail to compile at graduation. Use plain code in `run/0`.
+      - Include at least one concrete example (a hard-coded input/output match).
+      - Include at least one `StreamData.check_all(...)` property — this earns a high
+        trust score.
 
       ## Graduating the tool
 
