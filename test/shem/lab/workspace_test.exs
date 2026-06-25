@@ -85,6 +85,25 @@ defmodule Shem.Lab.WorkspaceTest do
     assert Path.type(js_path) == :absolute
   end
 
+  test "graduate writes a Go directory artifact (tool.go + main.go + go.mod)" do
+    id = "go_demo_#{System.unique_integer([:positive])}"
+    rt = Shem.Lab.Workspace.runtime_path(id, "go")
+    refute String.ends_with?(rt, ".go")   # it's a directory, not a file
+
+    tool = %Shem.Tool{
+      id: id, name: "GoDemo", runtime: {:port, rt},
+      source: "package main\nfunc run(a map[string]any) any { return a }",
+      test_source: "", graduated_at: DateTime.utc_now(),
+      metadata: %{"language" => "go"}
+    }
+
+    :ok = Shem.Lab.Workspace.graduate(tool)
+    assert File.dir?(rt)
+    assert File.read!(Path.join(rt, "tool.go")) =~ "func run"
+    assert File.read!(Path.join(rt, "main.go")) =~ "bufio"
+    assert File.read!(Path.join(rt, "go.mod")) =~ "module shemtool"
+  end
+
   test "graduate writes a Deno runtime wrapper for a javascript :port tool" do
     id = "js_demo_#{System.unique_integer([:positive])}"
     rt = Shem.Lab.Workspace.runtime_path(id, "javascript")

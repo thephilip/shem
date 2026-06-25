@@ -5,7 +5,12 @@ defmodule Shem.Lab.Workspace do
   def graduated_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.ex"])
   def manifest_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.json"])
   def runtime_path(id, language) do
-    Path.join([lab_dir(), "graduated", "#{id}_runtime.#{Shem.Lab.Languages.ext(language)}"]) |> Path.expand()
+    base = Path.join([lab_dir(), "graduated", "#{id}_runtime"])
+
+    case Shem.Lab.Languages.layout(language) do
+      :file -> "#{base}.#{Shem.Lab.Languages.ext(language)}" |> Path.expand()
+      :dir  -> Path.expand(base)
+    end
   end
 
   @spec graduate(Tool.t()) :: :ok
@@ -19,9 +24,19 @@ defmodule Shem.Lab.Workspace do
 
       {:port, runtime_path} ->
         language = Map.get(tool.metadata, "language", "python")
-        ext = Shem.Lab.Languages.ext(language)
-        File.write!(Path.join(dir, "#{tool.id}.#{ext}"), tool.source)
-        File.write!(runtime_path, Shem.Lab.Languages.wrapper(language, tool.source))
+
+        case Shem.Lab.Languages.layout(language) do
+          :file ->
+            ext = Shem.Lab.Languages.ext(language)
+            File.write!(Path.join(dir, "#{tool.id}.#{ext}"), tool.source)
+            File.write!(runtime_path, Shem.Lab.Languages.wrapper(language, tool.source))
+
+          :dir ->
+            File.mkdir_p!(runtime_path)
+            for {name, content} <- Shem.Lab.Languages.dir_files(language, tool.source) do
+              File.write!(Path.join(runtime_path, name), content)
+            end
+        end
     end
 
     File.write!(manifest_path(tool.id), build_manifest(tool))
