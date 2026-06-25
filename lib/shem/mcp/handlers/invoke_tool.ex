@@ -25,7 +25,10 @@ defmodule Shem.MCP.Handlers.InvokeTool do
           end
 
         {:port, runtime_path} ->
-          with {:ok, pool} <- Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path) do
+          language = Map.get(tool.metadata, "language", "python")
+
+          with {:ok, pool} <-
+                 Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
             PortPool.call(pool, args)
           end
       end
