@@ -105,6 +105,39 @@ defmodule Shem.Lab.RegistryTest do
     refute File.exists?(Workspace.manifest_path(id))
   end
 
+  test "quarantine does not sweep a sibling tool whose name starts with <id>_" do
+    # Quarantining `parse` must not grab `parse_json`'s files. Real for tool-pack /
+    # human-named ids (not sha256-shaped). Force `parse` to quarantine via an unknown
+    # language (ext/1 raises); `parse_json` is a healthy sibling that must stay put.
+    gdir = Path.dirname(Workspace.manifest_path("parse"))
+    File.mkdir_p!(Path.join(gdir, "parse_runtime"))
+    File.write!(
+      Workspace.manifest_path("parse"),
+      Jason.encode!(%{
+        "name" => "parse",
+        "language" => "rustlang",
+        "runtime_path" => Path.join(gdir, "parse_runtime")
+      })
+    )
+
+    Workspace.graduate(%Tool{
+      id: "parse_json",
+      name: "ParseJson",
+      runtime: {:beam, ParseJson},
+      source: "defmodule ParseJson do\n  def run(_), do: :ok\nend",
+      test_source: "",
+      graduated_at: ~U[2026-06-03 00:00:00Z]
+    })
+
+    assert {:ok, _pid} = start_supervised({Registry, [name: :test_registry_sibling]})
+
+    broken = Path.join(gdir, ".broken")
+    assert File.exists?(Path.join(broken, "parse.json"))
+    # the sibling must NOT have been swept into .broken/
+    refute File.exists?(Path.join(broken, "parse_json.json"))
+    assert File.exists?(Workspace.manifest_path("parse_json"))
+  end
+
   test "boot scan quarantines an unloadable legacy (manifestless) graduated tool" do
     # a .ex with NO .json manifest + unloadable source -> the :legacy scan branch
     File.mkdir_p!(Path.dirname(Workspace.graduated_path("legacy_broken")))

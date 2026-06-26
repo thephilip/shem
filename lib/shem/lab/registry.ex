@@ -163,7 +163,13 @@ defmodule Shem.Lab.Registry do
       {:ok, names} ->
         names
         |> Enum.filter(fn name ->
-          name == id or String.starts_with?(name, "#{id}.") or String.starts_with?(name, "#{id}_")
+          # Match this tool's own files only. The bare `#{id}_` prefix would also sweep
+          # in a SIBLING tool whose name starts with "#{id}_" (e.g. quarantining `parse`
+          # must not grab `parse_json`'s files) — real for tool-pack/human-named ids.
+          name == id or
+            String.starts_with?(name, "#{id}.") or
+            name == "#{id}_runtime" or
+            String.starts_with?(name, "#{id}_runtime.")
         end)
         |> Enum.each(fn name -> File.rename(Path.join(gdir, name), Path.join(bdir, name)) end)
 
