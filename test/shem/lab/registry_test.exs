@@ -76,6 +76,35 @@ defmodule Shem.Lab.RegistryTest do
     refute File.exists?(Workspace.graduated_path(@tool.id))
   end
 
+  test "boot scan quarantines a :port tool by moving its _runtime DIRECTORY wholesale" do
+    # Healthy :port tools rarely fail to build, so force the quarantine path with an
+    # unknown language (Languages.ext/1 has no clause for it → raises). The point is
+    # verifying a Go-style _runtime DIRECTORY is moved into .broken/ intact (the new
+    # layout-agnostic File.rename-on-a-dir branch).
+    id = "go_broken_v1"
+    gdir = Path.dirname(Workspace.manifest_path(id))
+    File.mkdir_p!(Path.join([gdir, "#{id}_runtime"]))
+    File.write!(Path.join([gdir, "#{id}_runtime", "tool.go"]), "package main\n")
+
+    File.write!(
+      Workspace.manifest_path(id),
+      Jason.encode!(%{
+        "name" => id,
+        "language" => "rustlang",
+        "runtime_path" => Path.join(gdir, "#{id}_runtime")
+      })
+    )
+
+    assert {:ok, pid} = start_supervised({Registry, [name: :test_registry_go_quar]})
+    refute id in (GenServer.call(pid, :all) |> Enum.map(& &1.id))
+
+    broken = Path.join(gdir, ".broken")
+    assert File.dir?(Path.join(broken, "#{id}_runtime"))
+    assert File.exists?(Path.join([broken, "#{id}_runtime", "tool.go"]))
+    assert File.exists?(Path.join(broken, "#{id}.json"))
+    refute File.exists?(Workspace.manifest_path(id))
+  end
+
   test "boot scan quarantines an unloadable legacy (manifestless) graduated tool" do
     # a .ex with NO .json manifest + unloadable source -> the :legacy scan branch
     File.mkdir_p!(Path.dirname(Workspace.graduated_path("legacy_broken")))

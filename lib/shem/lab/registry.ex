@@ -158,12 +158,18 @@ defmodule Shem.Lab.Registry do
     bdir = Path.join(gdir, ".broken")
     File.mkdir_p(bdir)
 
-    gdir
-    |> File.ls!()
-    |> Enum.filter(fn name ->
-      name == id or String.starts_with?(name, "#{id}.") or String.starts_with?(name, "#{id}_")
-    end)
-    |> Enum.each(fn name -> File.rename(Path.join(gdir, name), Path.join(bdir, name)) end)
+    # Best-effort (non-bang): an unreadable graduated/ must not crash the boot scan.
+    case File.ls(gdir) do
+      {:ok, names} ->
+        names
+        |> Enum.filter(fn name ->
+          name == id or String.starts_with?(name, "#{id}.") or String.starts_with?(name, "#{id}_")
+        end)
+        |> Enum.each(fn name -> File.rename(Path.join(gdir, name), Path.join(bdir, name)) end)
+
+      _ ->
+        :ok
+    end
   end
 
   def build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
