@@ -4,6 +4,27 @@ Prioritized backlog surfaced by the JS + Go runtime work and its validation pass
 P1 = correctness bug in shipped code; P2 = strategic direction; P3 = deeper gap;
 P4 = hygiene.
 
+## P1 (front door) — CLI startup is broken/confusing (`shem start`, `--headless`, TUI gone)
+
+The `shem` launcher (`~/.local/bin/shem`, installed by `install.sh`) dispatches to the OTP
+release binary. Traced 2026-06-25 — a cluster of real bugs in the **first-run experience**,
+which gates adoption ("useful AND used" dies at a broken start). Symptoms → root causes:
+
+| Symptom | Root cause |
+|---|---|
+| `shem start` "just starts the webui", no TUI | The launcher runs the release **`start`** verb (`exec $BIN start`) = **detached daemon** (`run_erl`, no TTY). The app's supervision tree boots the HTTP/MCP server on :4000, but a TUI can't attach to a daemon. |
+| **TUI is gone entirely** | TWO causes, either alone is fatal: (1) **releases run `prod` config → `start_tui: false`** (`config/prod.exs:3`), so `application.ex:85` `tui_children()` returns `[]` — the TUI process is never started unless the user's YAML has a `tui` key. (2) Even if started, a detached daemon has no TTY → `Ratatouille.Window.init` fails `{:error, -2}` (seen in `mix run` under a pipe). |
+| `shem start --headless` "does almost nothing" | `SHEM_NO_TUI=1 … $BIN start` → server runs **in the background, detached, with no output** — no "serving on :4000" banner, terminal returns immediately. It IS running; it just gives zero feedback. Contrast `mix shem.serve`, which runs **foreground** and prints the endpoints. |
+| `shem --headless` (no `start`) does nothing | Not matched by the `start)` case → falls to `*)` → prints "unknown command '--headless'" + help, exits 1. `--headless` only works as `shem start --headless`. |
+| Can't cleanly stop it | The launcher has **no `shem stop`** — once daemonized there's no CLI way to stop the node. |
+
+**Fix direction (a brainstorm/spec, not a one-liner — it's the front door):**
+- `shem start` (TUI) → run the release **`foreground`** verb (TUI owns the terminal; `console` would fight it for stdin), AND make `start_tui` default **true** for an interactive/TTY start (e.g. launcher sets a `SHEM_TUI=1`, or `runtime.exs` defaults `start_tui: true` when not `--headless` and `[ -t 1 ]`). Today prod's `false` silently wins.
+- `shem start --headless` → run **foreground** like `mix shem.serve` and print the endpoints banner; add an explicit `--daemon` for background use, and only daemonize when asked.
+- `shem --headless` → alias to `shem start --headless`.
+- Add **`shem stop`** (release `stop`) and make sure `shem status` reports the daemon.
+- First-run experience (North Star Phase 28) effectively regressed for the release/TUI path — verify end-to-end on an actual installed release, not `mix`.
+
 ## P1 — Tool packs are Python-hardcoded (CONFIRMED BUG, ships broken for JS/Go)
 
 Same bug class as the registry reload bug fixed during the Go work
