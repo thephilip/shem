@@ -10,6 +10,12 @@ defmodule Shem.Cluster do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  # Graceful shutdown (incl. `shem stop` → init:stop) runs terminate/2 → evacuate_all/0.
+  # Give it room to flush checkpoints + hand off agents before OTP brutal-kills it.
+  def child_spec(opts) do
+    %{id: __MODULE__, start: {__MODULE__, :start_link, [opts]}, shutdown: 30_000}
+  end
+
   @spec members() :: [node()]
   def members, do: [Node.self() | Node.list()]
 

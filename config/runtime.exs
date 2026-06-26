@@ -64,6 +64,10 @@ if System.get_env("RELEASE_NAME") do
     if host = Map.get(server, "host"), do: config(:shem, mcp_host: host)
   end
 
+  # CLI/env overrides win over the config file (`shem start --port N` exports SHEM_PORT).
+  if port = System.get_env("SHEM_PORT"), do: config(:shem, mcp_port: String.to_integer(port))
+  if host = System.get_env("SHEM_HOST"), do: config(:shem, mcp_host: host)
+
   # Apply tui config from YAML (only if not already set by --headless)
   if Map.has_key?(user_config, "tui") and
      not (System.get_env("SHEM_NO_TUI") == "1" or "--headless" in System.argv()) do

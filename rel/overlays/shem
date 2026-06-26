@@ -1,0 +1,120 @@
+#!/bin/sh
+# shem — friendly front door for the Shem release.
+#   start [--port N]   background, then print a verified status banner
+#   stop               graceful shutdown, narrated (flush checkpoints, evacuate agents)
+#   status             one-shot health
+# Dispatches to the release launcher (bin/shem) that sits next to this script.
+set -eu
+
+REL_DIR="$(cd "$(dirname "$0")" && pwd)"
+LAUNCHER="$REL_DIR/bin/shem"
+HOST="${SHEM_HOST:-127.0.0.1}"
+PORT="${SHEM_PORT:-4000}"
+RELEASE_TMP="${RELEASE_TMP:-$REL_DIR/tmp}"
+LOG_DIR="$RELEASE_TMP/log"
+PORT_FILE="$RELEASE_TMP/shem.port"
+# status/stop display the port a previous `start` chose (start re-derives its own below).
+[ -f "$PORT_FILE" ] && PORT="$(cat "$PORT_FILE" 2>/dev/null || printf %s "$PORT")"
+
+usage() { echo "usage: shem {start [--port N] | stop | status}"; }
+
+running() { "$LAUNCHER" pid >/dev/null 2>&1; }   # node up? dependency-free
+
+health() {  # rich JSON if curl is around
+  command -v curl >/dev/null 2>&1 && curl -fsS "http://$HOST:$PORT/api/health" 2>/dev/null
+}
+
+wait_up() {   # prefer the HTTP listener; fall back to node liveness. ~15s
+  i=0
+  while [ "$i" -lt 15 ]; do
+    if command -v curl >/dev/null 2>&1; then
+      if curl -fsS "http://$HOST:$PORT/api/health" >/dev/null 2>&1; then return 0; fi
+    fi
+    if running; then return 0; fi
+    i=$((i + 1)); sleep 1
+  done
+  return 1
+}
+
+wait_down() { # ~30s — stop does real work (evacuation), so allow more than start
+  i=0
+  while [ "$i" -lt 30 ]; do
+    running || return 0
+    i=$((i + 1)); sleep 1
+  done
+  return 1
+}
+
+banner() {
+  echo "Shem running  (pid $("$LAUNCHER" pid 2>/dev/null))"
+  echo "  MCP   http://$HOST:$PORT/mcp/sse"
+  echo "  REST  http://$HOST:$PORT/api"
+  echo "  Web   http://$HOST:$PORT/"
+  echo "  logs  $LOG_DIR/erlang.log.*"
+  echo "  stop  shem stop"
+}
+
+cmd_start() {
+  PORT="${SHEM_PORT:-4000}"   # start owns its default; ignore any stale port file
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --port)   PORT="$2"; shift 2 ;;
+      --port=*) PORT="${1#--port=}"; shift ;;
+      *) echo "shem start: unknown option '$1'" >&2; exit 2 ;;
+    esac
+  done
+  if running; then
+    echo "Shem is already running at http://$HOST:$PORT/  (use 'shem stop' first)"
+    exit 0
+  fi
+  echo "Starting Shem on :$PORT …"
+  SHEM_PORT="$PORT" SHEM_HOST="$HOST" RELEASE_TMP="$RELEASE_TMP" "$LAUNCHER" daemon
+  if wait_up; then
+    mkdir -p "$RELEASE_TMP" 2>/dev/null || true
+    printf '%s\n' "$PORT" > "$PORT_FILE" 2>/dev/null || true
+    banner
+  else
+    echo "Shem did not come up on :$PORT within 15s." >&2
+    echo "Check the log:  tail -n 50 $LOG_DIR/erlang.log.*" >&2
+    exit 1
+  fi
+}
+
+cmd_stop() {
+  if ! running; then
+    echo "Shem is not running."
+    exit 0
+  fi
+  echo "Stopping Shem (pid $("$LAUNCHER" pid 2>/dev/null)) …"
+  echo "  flushing checkpoints and evacuating agents (graceful) …"
+  "$LAUNCHER" stop
+  if wait_down; then
+    rm -f "$PORT_FILE" 2>/dev/null || true
+    echo "Shem stopped."
+  else
+    echo "Shem did not stop within 30s — it may still be evacuating. Re-check with 'shem status'." >&2
+    exit 1
+  fi
+}
+
+cmd_status() {
+  if ! running; then
+    echo "Shem is not running."
+    exit 1
+  fi
+  out="$(health || true)"
+  if [ -n "$out" ]; then
+    echo "Shem running at http://$HOST:$PORT/"
+    echo "$out"
+  else
+    echo "Shem running at http://$HOST:$PORT/  (install curl for detailed status)"
+  fi
+}
+
+case "${1:-}" in
+  start)  shift; cmd_start "$@" ;;
+  stop)   shift; cmd_stop ;;
+  status) shift; cmd_status ;;
+  ""|-h|--help|help) usage ;;
+  *) echo "shem: unknown command '$1'" >&2; usage >&2; exit 2 ;;
+esac
