@@ -68,6 +68,26 @@ defmodule Shem.Lab.PortPoolTest do
              Shem.Lab.PortPool.Supervisor.pool_name("t", "javascript")
   end
 
+  @tag :go
+  test "Go tool runs through the pool via go run <dir> (compile then serve)" do
+    {:ok, _sup} = start_supervised(Shem.Lab.PortPool.Supervisor)
+
+    id = "go_rt_#{System.unique_integer([:positive])}"
+    dir = Shem.Lab.Workspace.runtime_path(id, "go")
+    File.mkdir_p!(dir)
+    for {name, content} <-
+          Shem.Lab.Languages.dir_files("go",
+            "package main\nimport \"strings\"\nfunc run(a map[string]any) any { s, _ := a[\"s\"].(string); return map[string]any{\"up\": strings.ToUpper(s)} }") do
+      File.write!(Path.join(dir, name), content)
+    end
+
+    {:ok, pool} = Shem.Lab.PortPool.Supervisor.ensure_started(id, dir, "go")
+    # first call pays compile; allow generous timeout
+    assert {:ok, %{"up" => "HI"}} = Shem.Lab.PortPool.call(pool, %{"s" => "hi"}, 30_000)
+    # second call is warm
+    assert {:ok, %{"up" => "BYE"}} = Shem.Lab.PortPool.call(pool, %{"s" => "bye"}, 30_000)
+  end
+
   @tag :deno
   test "Deno tool round-trips JSON through the pool" do
     {:ok, _sup} = start_supervised(Shem.Lab.PortPool.Supervisor)

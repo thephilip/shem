@@ -116,11 +116,20 @@ defmodule Shem.Lab.PortPool do
         raise "PortPool: executable not found on PATH: #{executable}"
 
       path ->
-        Port.open(
-          {:spawn_executable, path},
-          [:binary, :use_stdio, :line, :exit_status,
-           args: Shem.Lab.Languages.argv(language, runtime_path)]
-        )
+        base = [
+          :binary, :use_stdio, :line, :exit_status,
+          args: Shem.Lab.Languages.argv(language, runtime_path)
+        ]
+
+        # :dir runtimes (Go) are a module package — `go run` resolves go.mod from the
+        # process CWD, not the dir arg, so the worker must run with the dir as cwd.
+        opts =
+          case Shem.Lab.Languages.layout(language) do
+            :dir  -> [{:cd, runtime_path} | base]
+            :file -> base
+          end
+
+        Port.open({:spawn_executable, path}, opts)
     end
   end
 
