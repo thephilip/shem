@@ -154,17 +154,19 @@ defmodule Shem.Lab.Registry do
   # deleted). Best-effort: File.* here are non-bang, so this never crashes the scan.
   # .broken/ is a subdir, so list_graduated/0 (top-level ls) never re-scans it.
   defp quarantine(id, manifest_path) do
-    dir = Path.join(Path.dirname(manifest_path), ".broken")
-    File.mkdir_p(dir)
-    base = Path.rootname(manifest_path)
+    gdir = Path.dirname(manifest_path)
+    bdir = Path.join(gdir, ".broken")
+    File.mkdir_p(bdir)
 
-    Enum.each([".json", ".ex", ".py", "_runtime.py"], fn suffix ->
-      src = base <> suffix
-      if File.exists?(src), do: File.rename(src, Path.join(dir, "#{id}#{suffix}"))
+    gdir
+    |> File.ls!()
+    |> Enum.filter(fn name ->
+      name == id or String.starts_with?(name, "#{id}.") or String.starts_with?(name, "#{id}_")
     end)
+    |> Enum.each(fn name -> File.rename(Path.join(gdir, name), Path.join(bdir, name)) end)
   end
 
-  defp build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
+  def build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
     source_path = Workspace.graduated_path(id)
     source = case File.read(source_path) do
       {:ok, s} -> s
@@ -187,8 +189,15 @@ defmodule Shem.Lab.Registry do
     }
   end
 
-  defp build_tool_from_manifest(id, %{"runtime_path" => runtime_path} = m) do
-    source_path = Path.join(Path.dirname(runtime_path), "#{id}.py")
+  def build_tool_from_manifest(id, %{"runtime_path" => runtime_path} = m) do
+    language = m["language"] || "python"
+
+    source_path =
+      case Shem.Lab.Languages.layout(language) do
+        :file -> Path.join(Path.dirname(runtime_path), "#{id}.#{Shem.Lab.Languages.ext(language)}")
+        :dir  -> Path.join(runtime_path, "tool.#{Shem.Lab.Languages.ext(language)}")
+      end
+
     source = case File.read(source_path) do
       {:ok, s} -> s
       _ -> ""

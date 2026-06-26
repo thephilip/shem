@@ -120,4 +120,30 @@ defmodule Shem.Lab.RegistryTest do
     assert "graphify_query" in ids
     assert "diff_text" in ids
   end
+
+  test "reload reads JS tool source by language (.ts), not hardcoded .py" do
+    id = "js_reload_#{System.unique_integer([:positive])}"
+    rt = Shem.Lab.Workspace.runtime_path(id, "javascript")
+    tool = %Shem.Tool{id: id, name: "JsReload", runtime: {:port, rt},
+      source: "export function run(a){ return a }", test_source: "",
+      graduated_at: DateTime.utc_now(), metadata: %{"language" => "javascript"}}
+    :ok = Shem.Lab.Workspace.graduate(tool)
+
+    manifest = Jason.decode!(File.read!(Shem.Lab.Workspace.manifest_path(id)))
+    reloaded = Shem.Lab.Registry.build_tool_from_manifest(id, manifest)
+    assert reloaded.source =~ "export function run"   # was "" before this fix
+  end
+
+  test "reload reads Go tool source from tool.go inside the dir" do
+    id = "go_reload_#{System.unique_integer([:positive])}"
+    rt = Shem.Lab.Workspace.runtime_path(id, "go")
+    tool = %Shem.Tool{id: id, name: "GoReload", runtime: {:port, rt},
+      source: "package main\nfunc run(a map[string]any) any { return a }",
+      test_source: "", graduated_at: DateTime.utc_now(), metadata: %{"language" => "go"}}
+    :ok = Shem.Lab.Workspace.graduate(tool)
+
+    manifest = Jason.decode!(File.read!(Shem.Lab.Workspace.manifest_path(id)))
+    reloaded = Shem.Lab.Registry.build_tool_from_manifest(id, manifest)
+    assert reloaded.source =~ "func run"
+  end
 end
