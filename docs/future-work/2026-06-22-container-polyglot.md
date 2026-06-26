@@ -70,3 +70,13 @@ real non-Elixir/non-Python bundled tool. Becomes a seed tool (see
 When the user wants agents to author tools in a third language, OR wants the
 tested-vs-run reproducibility gap closed. Until then: Elixir + Python on host is
 the working surface.
+
+## Update 2026-06-25 — this is now "Phase B" (P2), and the surface is wider
+The runtime surface grew to **four** languages: Elixir (BEAM), Python + JavaScript
+(Deno, deny-all sandboxed) + Go — both Python and Go run **on the host** (no runtime
+sandbox); only JS is sandboxed. This doc is now the agreed **Phase B**: run all `:port`
+runtimes (Python, JS, Go) in containers to close the host-execution gap uniformly. Decided
+during the Go-runtime brainstorm (Go shipped on-host as Phase A). Open sub-fork to brainstorm
+first: one-shot container per call (simple, no pooling) vs persistent container per tool
+(pooled, lifecycle mgmt). Priority/context: `docs/future-work/2026-06-25-runtime-followups.md`
+(note: the tool-packs polyglot bug is P1, ahead of this).
