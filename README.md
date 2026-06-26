@@ -72,7 +72,7 @@ quietly rewritten.
 
 **Steerable.** Pause a running agent at its next turn boundary (`Space`), inject a course-correction, resume. Kill it outright (`Ctrl+K`). Fence it to a directory (`/fence <path>`). The agent is a process you control, not a request you wait on.
 
-**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, or JavaScript** (Deno) — each tested before it's trusted (Python in a container with `pytest`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated JavaScript tools run **deny-all sandboxed** under Deno — no network, filesystem, or env access unless granted.
+**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated JavaScript tools run **deny-all sandboxed** under Deno — no network, filesystem, or env access unless granted. Go and Python tools run on the host (the deny-all sandbox is Deno-only this phase).
 
 ## Quick start
 
