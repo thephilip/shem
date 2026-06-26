@@ -7,7 +7,8 @@ defmodule Shem.Lab.GraduationGate do
   @builtin_languages %{
     "elixir" => :elixir,
     "python" => :python,
-    "javascript" => :javascript
+    "javascript" => :javascript,
+    "go" => :go
   }
 
   @spec run(String.t(), String.t(), keyword()) ::
@@ -24,6 +25,7 @@ defmodule Shem.Lab.GraduationGate do
       :elixir     -> run_elixir(source, test_source, opts)
       :python     -> Shem.Lab.GraduationGate.Python.run(source, test_source, opts)
       :javascript -> Shem.Lab.GraduationGate.JS.run(source, test_source, opts)
+      :go         -> Shem.Lab.GraduationGate.Go.run(source, test_source, opts)
       nil         -> {:error, :language_not_configured, lang}
     end
   end
