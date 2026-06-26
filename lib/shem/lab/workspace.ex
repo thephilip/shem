@@ -4,6 +4,16 @@ defmodule Shem.Lab.Workspace do
   def messy_path(id), do: Path.join([lab_dir(), "messy", "#{id}.ex"])
   def graduated_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.ex"])
   def manifest_path(id), do: Path.join([lab_dir(), "graduated", "#{id}.json"])
+  # Does `name` (a bare filename in graduated/) belong to tool `id`? Matches the
+  # manifest, source, and the `_runtime` file OR dir — without sweeping in a sibling
+  # whose id is a prefix (e.g. `parse` must not match `parse_json`'s files).
+  def own_file?(id, name) do
+    name == id or
+      String.starts_with?(name, "#{id}.") or
+      name == "#{id}_runtime" or
+      String.starts_with?(name, "#{id}_runtime.")
+  end
+
   def runtime_path(id, language) do
     base = Path.join([lab_dir(), "graduated", "#{id}_runtime"])
 

@@ -128,6 +128,31 @@ defmodule Shem.Lab.PackTest do
     assert [%{name: "demo", version: "0.1.0", tools: [_]}] = packs
   end
 
+  test "uninstall removes a port tool's _runtime dir, not just suffixed files" do
+    # Go tools graduate to a #{id}_runtime/ DIRECTORY. The old hardcoded suffix list
+    # ([".json",".ex",".py","_runtime.py"]) + File.rm can't touch it -> leftover dir.
+    tool = %Shem.Tool{
+      id: "packgo",
+      name: "packgo",
+      runtime: {:port, Workspace.runtime_path("packgo", "go")},
+      source: "func run(args map[string]any) map[string]any { return args }",
+      test_source: "",
+      graduated_at: DateTime.utc_now(),
+      metadata: %{"language" => "go"}
+    }
+
+    Workspace.graduate(tool)
+    # tag it as belonging to a pack so uninstall finds it
+    path = Workspace.manifest_path("packgo")
+    m = path |> File.read!() |> Jason.decode!() |> Map.put("pack", "demo")
+    File.write!(path, Jason.encode!(m))
+
+    assert File.dir?(Workspace.runtime_path("packgo", "go"))
+    assert {:ok, %{removed: ["packgo"]}} = Pack.uninstall("demo")
+    refute File.exists?(Workspace.runtime_path("packgo", "go"))
+    refute File.exists?(Workspace.manifest_path("packgo"))
+  end
+
   test "uninstall removes a pack's tools and leaves others alone" do
     other_src = """
     defmodule PackOther do

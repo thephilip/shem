@@ -92,7 +92,8 @@ defmodule Shem.Lab.Pack do
   end
 
   defp read_source(dir, id, manifest) do
-    ext = if (manifest["language"] || "elixir") == "elixir", do: "ex", else: "py"
+    language = manifest["language"] || "elixir"
+    ext = if language == "elixir", do: "ex", else: Shem.Lab.Languages.ext(language)
     case File.read(Path.join([dir, "tools", "#{id}.#{ext}"])) do
       {:ok, src} -> {:ok, src}
       _ -> {:error, :source_missing}
@@ -142,12 +143,20 @@ defmodule Shem.Lab.Pack do
     {:ok, %{name: pack_name, removed: ids}}
   end
 
-  # Manifest (.json), source (.ex/.py) and any :port wrapper share the same base path.
+  # Remove every on-disk file/dir for this tool: manifest, source, and the `_runtime`
+  # artifact (a file for python/js, a DIRECTORY for go — hence rm_rf, not rm).
   defp remove_files(id) do
-    base = Path.rootname(Workspace.manifest_path(id))
-    Enum.each([".json", ".ex", ".py", "_runtime.py"], fn suffix ->
-      File.rm(base <> suffix)
-    end)
+    gdir = Path.dirname(Workspace.manifest_path(id))
+
+    case File.ls(gdir) do
+      {:ok, names} ->
+        names
+        |> Enum.filter(&Workspace.own_file?(id, &1))
+        |> Enum.each(&File.rm_rf(Path.join(gdir, &1)))
+
+      _ ->
+        :ok
+    end
   end
 
   defp tag_manifest(tool_id, pack_name, pack_version, source) do
