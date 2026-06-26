@@ -30,7 +30,7 @@ defmodule Shem.Agent.ToolDispatch do
     },
     %{
       name: "write_tool",
-      description: "Graduate a new tool into the Lab. Supports language: \"elixir\" (default), \"python\", or \"javascript\".",
+      description: "Graduate a new tool into the Lab. Supports language: \"elixir\" (default), \"python\", \"javascript\", or \"go\".",
       source: :builtin,
       trust: :builtin,
       schema: %{

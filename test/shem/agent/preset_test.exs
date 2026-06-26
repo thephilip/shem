@@ -213,6 +213,16 @@ defmodule Shem.Agent.PresetTest do
     end
   end
 
+  describe "go_toolsmith preset" do
+    test "go_toolsmith preset resolves and teaches self-contained stdlib Go + float64 args" do
+      assert {:ok, p} = Shem.Agent.Preset.resolve("go_toolsmith")
+      assert p.system_prompt =~ "package main"
+      assert p.system_prompt =~ "float64"
+      assert p.system_prompt =~ "stdlib" or p.system_prompt =~ "standard library"
+      assert "write_tool" in p.tools
+    end
+  end
+
   describe "resolve/1 — max_turns and cross-preset mentions" do
     test "general preset system prompt mentions elixir_toolsmith" do
       assert {:ok, preset} = Preset.resolve("general")
