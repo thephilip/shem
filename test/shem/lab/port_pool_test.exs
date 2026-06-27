@@ -11,6 +11,18 @@ defmodule Shem.Lab.PortPoolTest do
   """
 
   setup do
+    # Ensure host execution for all tests in this module. Another test module
+    # (graduation_gate_go_test) sets container_runtime_bin without restoring it,
+    # which would otherwise cause PortPool to try containerizing sh scripts.
+    prev_bin     = Application.get_env(:shem, :container_runtime_bin)
+    prev_backend = Application.get_env(:shem, :executor_backend)
+    Application.put_env(:shem, :container_runtime_bin, nil)
+    Application.put_env(:shem, :executor_backend, :local)
+    on_exit(fn ->
+      Application.put_env(:shem, :container_runtime_bin, prev_bin)
+      Application.put_env(:shem, :executor_backend, prev_backend)
+    end)
+
     script = Path.join(System.tmp_dir!(), "shem_pool_test_#{:erlang.unique_integer([:positive])}.sh")
     File.write!(script, @echo_script)
     File.chmod!(script, 0o755)
@@ -86,6 +98,38 @@ defmodule Shem.Lab.PortPoolTest do
     assert {:ok, %{"up" => "HI"}} = Shem.Lab.PortPool.call(pool, %{"s" => "hi"}, 30_000)
     # second call is warm
     assert {:ok, %{"up" => "BYE"}} = Shem.Lab.PortPool.call(pool, %{"s" => "bye"}, 30_000)
+  end
+
+  test "warns when falling back to host execution (no container runtime, not :local)" do
+    import ExUnit.CaptureLog
+
+    prev_bin = Application.get_env(:shem, :container_runtime_bin)
+    prev_backend = Application.get_env(:shem, :executor_backend)
+    Application.put_env(:shem, :container_runtime_bin, nil)
+    Application.put_env(:shem, :executor_backend, :auto)
+    on_exit(fn ->
+      Application.put_env(:shem, :container_runtime_bin, prev_bin)
+      Application.put_env(:shem, :executor_backend, prev_backend)
+    end)
+
+    script = Path.join(System.tmp_dir!(), "echo_#{System.unique_integer([:positive])}.sh")
+    File.write!(script, "while read line; do echo \"$line\"; done\n")
+    on_exit(fn -> File.rm(script) end)
+
+    pool_name = :"warn_pool_#{System.unique_integer([:positive])}"
+
+    log =
+      capture_log(fn ->
+        start_supervised!(
+          {Shem.Lab.PortPool,
+           [tool_id: "warn_tool", runtime_path: script, language: "python",
+            pool_size: 1, name: pool_name, executable: "sh"]}
+        )
+        # round-trip still works on the host fallback path
+        assert {:ok, %{"n" => 1}} = Shem.Lab.PortPool.call(pool_name, %{"n" => 1})
+      end)
+
+    assert log =~ "UNSANDBOXED"
   end
 
   @tag :deno

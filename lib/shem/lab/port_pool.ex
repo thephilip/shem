@@ -37,7 +37,9 @@ defmodule Shem.Lab.PortPool do
     language     = Keyword.get(opts, :language, "python")
     executable   = Keyword.get(opts, :executable, Shem.Lab.Languages.exe(language))
 
-    workers = for _ <- 1..pool_size, do: open_port(runtime_path, executable, language)
+    maybe_warn_unsandboxed(tool_id, language)
+
+    workers = for _ <- 1..pool_size, do: open_port(runtime_path, executable, language, tool_id)
 
     {:ok, %{
       tool_id: tool_id,
@@ -48,6 +50,15 @@ defmodule Shem.Lab.PortPool do
       busy: %{},
       queue: :queue.new()
     }}
+  end
+
+  defp maybe_warn_unsandboxed(tool_id, language) do
+    if is_nil(Application.get_env(:shem, :container_runtime_bin)) and
+         Application.get_env(:shem, :executor_backend) != :local do
+      Logger.warning(
+        "PortPool: no container runtime — tool #{tool_id} (#{language}) runs UNSANDBOXED on host"
+      )
+    end
   end
 
   @impl true
@@ -89,7 +100,7 @@ defmodule Shem.Lab.PortPool do
 
   def handle_info({port, {:exit_status, code}}, state) when is_port(port) do
     Logger.warning("PortPool: worker exited with code #{code}, restarting")
-    new_port = open_port(state.runtime_path, state.executable, state.language)
+    new_port = open_port(state.runtime_path, state.executable, state.language, state.tool_id)
 
     {new_state, idle} =
       case Map.pop(state.busy, port) do
@@ -108,28 +119,24 @@ defmodule Shem.Lab.PortPool do
 
   # ── Helpers ──────────────────────────────────────────────────────────────────
 
-  defp open_port(runtime_path, executable, language) do
-    case System.find_executable(executable) do
+  defp open_port(runtime_path, host_exe, language, tool_id) do
+    runtime_bin = Application.get_env(:shem, :container_runtime_bin)
+
+    {exe, args, port_opts} =
+      Shem.Lab.Sandbox.spawn_spec(runtime_bin, %{
+        runtime_path: runtime_path,
+        language: language,
+        tool_id: tool_id,
+        host_exe: host_exe
+      })
+
+    case System.find_executable(exe) do
       nil ->
-        # Readable failure instead of an opaque Port.open :badarg — likely when the
-        # interpreter (e.g. deno) is installed but not on the BEAM process's PATH.
-        raise "PortPool: executable not found on PATH: #{executable}"
+        raise "PortPool: executable not found on PATH: #{exe}"
 
       path ->
-        base = [
-          :binary, :use_stdio, :line, :exit_status,
-          args: Shem.Lab.Languages.argv(language, runtime_path)
-        ]
-
-        # :dir runtimes (Go) are a module package — `go run` resolves go.mod from the
-        # process CWD, not the dir arg, so the worker must run with the dir as cwd.
-        opts =
-          case Shem.Lab.Languages.layout(language) do
-            :dir  -> [{:cd, runtime_path} | base]
-            :file -> base
-          end
-
-        Port.open({:spawn_executable, path}, opts)
+        base = [:binary, :use_stdio, :line, :exit_status, {:args, args}]
+        Port.open({:spawn_executable, path}, base ++ port_opts)
     end
   end
 
