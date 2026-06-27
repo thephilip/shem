@@ -96,4 +96,9 @@ defmodule Shem.Lab.SandboxTest do
     assert Sandbox.cleanup_tool(nil, "anything") == :ok
     assert Sandbox.sweep_orphans(nil) == :ok
   end
+
+  test "sweep_orphans with the default (env) arg does not raise" do
+    # In test, container_runtime_bin is nil → no-op. Exercises the 0-arity default head.
+    assert Sandbox.sweep_orphans() == :ok
+  end
 end
