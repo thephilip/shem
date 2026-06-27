@@ -9,78 +9,146 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Instrument design system (see DESIGN.md) ──────────────────────────── */
     :root {
-      --bg:      #0f0f1a;
-      --surface: #1a1a2e;
-      --border:  #2a2a4a;
-      --accent:  #7c6af7;
-      --text:    #e0e0f0;
-      --muted:   #666688;
-      --green:   #4ade80;
-      --red:     #f87171;
-      --blue:    #60a5fa;
-      --purple:  #818cf8;
-      --amber:   #f59e0b;
+      /* neutrals */
+      --bg:           oklch(0.16 0.012 240);
+      --surface:      oklch(0.20 0.013 240);
+      --surface-2:    oklch(0.245 0.015 240);
+      --border:       oklch(0.31 0.018 240);
+      --border-strong:oklch(0.40 0.02 240);
+      --ink:          oklch(0.95 0.008 240);
+      --ink-2:        oklch(0.76 0.012 240);
+      --ink-3:        oklch(0.60 0.012 240);
+
+      /* accent — action + selection only */
+      --accent:       oklch(0.74 0.13 200);
+      --accent-dim:   oklch(0.74 0.13 200 / 0.14);
+
+      /* semantic event coding (paired with glyph + label) */
+      --ev-llm:    oklch(0.74 0.13 200);
+      --ev-llm-dim:oklch(0.55 0.07 200);
+      --ev-tool:   oklch(0.78 0.14 70);
+      --ev-tool-dim:oklch(0.66 0.11 60);
+      --ev-think:  oklch(0.70 0.12 290);
+      --ev-grad:   oklch(0.75 0.13 160);
+      --ev-error:  oklch(0.68 0.17 25);
+      --ev-system: oklch(0.62 0.012 240);
+
+      /* trust / verify */
+      --ok:   oklch(0.75 0.13 160);
+      --warn: oklch(0.78 0.14 70);
+      --bad:  oklch(0.68 0.17 25);
+
+      /* type */
+      --font-ui:   'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+      /* spacing / radii */
+      --r-1: 2px; --r-2: 4px;
+
+      /* z-index scale */
+      --z-sticky: 200; --z-modal-backdrop: 300; --z-modal: 400;
     }
 
     html, body {
-      height: 100%; background: var(--bg); color: var(--text);
-      font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 13px;
+      height: 100%; background: var(--bg); color: var(--ink);
+      font-family: var(--font-ui); font-size: 13px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .layout { display: flex; height: 100vh; overflow: hidden; }
 
+    /* ── Sessions panel ────────────────────────────────────────────────────── */
     .sessions-panel {
-      width: 280px; min-width: 280px; flex-shrink: 0;
+      width: 260px; min-width: 260px; flex-shrink: 0;
       background: var(--surface); border-right: 1px solid var(--border);
       display: flex; flex-direction: column; overflow: hidden;
     }
 
     .panel-header {
-      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
     }
 
     .panel-title {
-      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-      color: var(--muted);
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-2); font-weight: 600;
     }
 
     .nav-link {
-      font-size: 11px; color: var(--accent); text-decoration: none;
-      letter-spacing: 0.5px;
+      font-size: 12px; color: var(--accent); text-decoration: none;
     }
     .nav-link:hover { text-decoration: underline; }
 
     .sessions-list { flex: 1; overflow-y: auto; }
 
-    .session-card {
-      padding: 10px 14px; border-bottom: 1px solid var(--border);
-      border-left: 2px solid transparent; cursor: pointer;
-      transition: background 0.1s;
+    .list-note { padding: 18px 16px; color: var(--ink-3); font-size: 12px; line-height: 1.5; }
+
+    .husk-toggle {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 14px; background: none; border: none;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-3);
+      cursor: pointer; transition: color 0.12s ease, background 0.12s ease;
     }
-    .session-card:hover { background: rgba(124,106,247,0.07); }
+    .husk-toggle:hover { color: var(--ink-2); background: var(--surface-2); }
+    .husk-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-    .session-status { font-size: 10px; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .session-task { color: var(--text); margin-bottom: 4px; line-height: 1.3; }
-    .session-meta { font-size: 10px; color: var(--muted); }
+    .session-card {
+      padding: 11px 14px 11px 13px; border-bottom: 1px solid var(--border);
+      border-left: 1px solid transparent; cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .session-card:hover { background: var(--surface-2); }
+    .session-card:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
+    .session-status {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .session-task { color: var(--ink); margin-bottom: 5px; line-height: 1.35; }
+    .session-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+
+    /* ── Timeline panel ────────────────────────────────────────────────────── */
     .timeline-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
     .timeline-header {
-      padding: 14px 20px; border-bottom: 1px solid var(--border);
-      font-size: 11px; color: var(--muted); letter-spacing: 1px;
-      text-transform: uppercase; flex-shrink: 0;
+      padding: 13px 22px; border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-2);
+      letter-spacing: 0.06em; flex-shrink: 0;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .timeline-header .hdr-label {
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3);
+      font-weight: 600;
     }
 
-    .timeline-body { flex: 1; overflow-y: auto; padding: 20px; }
+    .timeline-body { flex: 1; overflow-y: auto; padding: 22px 22px 40px; }
 
     .empty-state {
       display: flex; align-items: center; justify-content: center;
-      height: 100%; color: var(--muted); font-size: 12px;
+      height: 100%; color: var(--ink-3); font-size: 13px; text-align: center;
+      padding: 0 24px; line-height: 1.5;
     }
 
-    .event-row { display: flex; gap: 14px; margin-bottom: 4px; }
+    /* ── Event spine ───────────────────────────────────────────────────────── */
+    .event-row {
+      display: flex; gap: 14px; border-left: 1px solid transparent;
+      padding-left: 9px; margin-left: -10px; border-radius: 0 var(--r-2) var(--r-2) 0;
+      transition: background 0.12s ease;
+    }
+    .event-row:hover { background: color-mix(in oklch, var(--surface-2) 60%, transparent); }
+    .event-row.is-selected { background: var(--accent-dim); border-left-color: var(--accent); }
+
+    /* Minor (bookkeeping) events: compact + dim so signal events dominate. */
+    .event-row.is-minor .event-body { padding-bottom: 7px; }
+    .event-row.is-minor .event-time { display: none; }
+    .event-row.is-minor .event-glyph { display: none; }
+    .event-row.is-minor .event-dot { width: 5px; height: 5px; margin-top: 6px;
+      background: var(--ev-system) !important; }
+    .event-row.is-minor .event-label { color: var(--ink-3); font-size: 12px; }
+    .event-row.is-minor .event-header { gap: 7px; }
 
     .event-spine {
       display: flex; flex-direction: column; align-items: center;
@@ -88,113 +156,143 @@
     }
 
     .event-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      margin-top: 4px; flex-shrink: 0;
+      width: 9px; height: 9px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--bg) 80%, transparent);
     }
 
-    .event-line { width: 1px; flex: 1; background: var(--border); margin-top: 3px; }
+    .event-line { width: 1px; flex: 1; background: var(--border); margin-top: 3px; min-height: 6px; }
 
-    .event-body { flex: 1; padding-bottom: 14px; }
-    .event-time { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+    .event-body { flex: 1; padding-bottom: 16px; min-width: 0; }
+    .event-time {
+      font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+      margin-bottom: 3px; letter-spacing: 0.02em;
+    }
 
     .event-header {
-      display: flex; align-items: center; gap: 10px;
-      cursor: pointer; user-select: none;
+      display: flex; align-items: center; gap: 9px;
+      cursor: default; user-select: none;
     }
+    .event-header.can-expand { cursor: pointer; }
 
-    .event-label { flex: 1; }
-    .expand-toggle { color: var(--muted); font-size: 10px; }
+    .event-glyph {
+      font-family: var(--font-mono); font-size: 12px; width: 12px;
+      text-align: center; flex-shrink: 0;
+    }
+    .event-label { flex: 1; color: var(--ink); min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .expand-toggle { color: var(--ink-3); font-size: 10px; width: 9px; flex-shrink: 0; }
 
+    /* Fork is the primary time-travel action — always visible on forkable rows
+       (understated), brightening on hover/focus. Never hidden behind hover. */
     .fork-btn {
-      font-size: 10px; padding: 2px 10px;
-      background: rgba(124,106,247,0.12); border: 1px solid var(--accent);
-      color: var(--accent); border-radius: 3px; cursor: pointer; flex-shrink: 0;
+      font-family: var(--font-ui); font-size: 11px; padding: 3px 11px;
+      background: transparent; border: 1px solid var(--border-strong);
+      color: var(--ink-2); border-radius: var(--r-2); cursor: pointer;
+      flex-shrink: 0; transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
     }
-    .fork-btn:hover { background: rgba(124,106,247,0.25); }
+    .event-row:hover .fork-btn, .fork-btn:hover, .fork-btn:focus-visible {
+      background: var(--accent-dim); border-color: var(--accent); color: var(--accent);
+    }
+    .fork-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .event-detail {
-      margin-top: 8px; background: #0d0d18;
-      border: 1px solid var(--border); border-radius: 4px; padding: 10px;
-      font-size: 11px; line-height: 1.5;
+      margin-top: 9px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--r-2); padding: 11px 12px;
+      font-family: var(--font-mono); font-size: 11px; line-height: 1.55;
     }
 
     .detail-label {
-      font-size: 10px; letter-spacing: 1px; color: var(--muted);
-      text-transform: uppercase; margin-bottom: 4px; margin-top: 8px;
+      font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.1em;
+      color: var(--ink-3); text-transform: uppercase; margin-bottom: 4px; margin-top: 10px;
+      font-weight: 600;
     }
     .detail-label:first-child { margin-top: 0; }
-    .detail-value { color: var(--text); white-space: pre-wrap; word-break: break-all; }
+    .detail-value { color: var(--ink-2); white-space: pre-wrap; word-break: break-word; }
 
+    /* ── Fork modal ────────────────────────────────────────────────────────── */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-      display: flex; align-items: center; justify-content: center; z-index: 100;
+      position: fixed; inset: 0; background: oklch(0.10 0.01 240 / 0.72);
+      display: flex; align-items: center; justify-content: center;
+      z-index: var(--z-modal-backdrop); backdrop-filter: blur(1px);
     }
 
     .modal-panel {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 6px; width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-radius: var(--r-2); width: 600px; max-width: 95vw; max-height: 90vh;
+      overflow-y: auto; z-index: var(--z-modal);
+      box-shadow: 0 12px 40px oklch(0.05 0.01 240 / 0.5);
     }
 
     .modal-header {
       padding: 14px 18px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      font-size: 13px; font-weight: 600; color: var(--text);
+      font-size: 14px; font-weight: 600; color: var(--ink);
     }
 
     .modal-close {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 16px; line-height: 1;
+      background: none; border: none; color: var(--ink-3);
+      cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 4px;
     }
+    .modal-close:hover { color: var(--ink); }
 
-    .modal-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-body { padding: 18px; display: flex; flex-direction: column; gap: 15px; }
 
     .field-label {
-      font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 6px;
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 6px; font-weight: 600;
     }
 
     .readonly-box {
-      background: #0d0d18; border: 1px solid var(--border);
-      border-radius: 4px; padding: 8px 10px;
-      color: var(--muted); font-size: 11px; max-height: 80px;
-      overflow: hidden; line-height: 1.4;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-2); padding: 8px 10px; font-family: var(--font-mono);
+      color: var(--ink-2); font-size: 11px; max-height: 80px;
+      overflow: hidden; line-height: 1.5;
     }
 
     .edit-area {
-      width: 100%; background: #0d0d18; border: 1px solid var(--accent);
-      border-radius: 4px; padding: 10px; color: var(--text);
-      font-family: inherit; font-size: 12px; resize: vertical;
+      width: 100%; background: var(--bg); border: 1px solid var(--accent);
+      border-radius: var(--r-2); padding: 10px; color: var(--ink);
+      font-family: var(--font-mono); font-size: 12px; resize: vertical;
       min-height: 110px; outline: none; line-height: 1.5;
     }
+    .edit-area:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-    .edit-hint { font-size: 10px; color: var(--muted); }
+    .edit-hint { font-size: 11px; color: var(--ink-3); }
 
     .modal-actions { display: flex; gap: 10px; }
 
     .btn-fork {
-      flex: 1; padding: 10px; background: rgba(96,165,250,0.15);
-      border: 1px solid var(--blue); color: var(--blue);
-      border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px;
+      flex: 1; padding: 10px; background: var(--accent-dim);
+      border: 1px solid var(--accent); color: var(--accent);
+      border-radius: var(--r-2); cursor: pointer; font-family: var(--font-ui);
+      font-size: 13px; font-weight: 500; transition: background 0.12s ease;
     }
     .btn-fork:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-fork:not(:disabled):hover { background: rgba(96,165,250,0.3); }
+    .btn-fork:not(:disabled):hover { background: color-mix(in oklch, var(--accent) 28%, transparent); }
+    .btn-fork:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     .btn-cancel {
       padding: 10px 16px; background: transparent;
-      border: 1px solid var(--border); color: var(--muted);
-      border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px;
+      border: 1px solid var(--border-strong); color: var(--ink-2);
+      border-radius: var(--r-2); cursor: pointer; font-family: var(--font-ui); font-size: 13px;
     }
+    .btn-cancel:hover { background: var(--surface-2); color: var(--ink); }
 
     .alert-success {
-      padding: 10px; background: rgba(74,222,128,0.1);
-      border: 1px solid var(--green); border-radius: 4px;
-      color: var(--green); font-size: 12px;
+      padding: 10px 12px; background: color-mix(in oklch, var(--ok) 14%, transparent);
+      border: 1px solid var(--ok); border-radius: var(--r-2);
+      color: var(--ok); font-size: 12px;
     }
 
     .alert-error {
-      padding: 10px; background: rgba(248,113,113,0.1);
-      border: 1px solid var(--red); border-radius: 4px;
-      color: var(--red); font-size: 12px;
+      padding: 10px 12px; background: color-mix(in oklch, var(--bad) 14%, transparent);
+      border: 1px solid var(--bad); border-radius: var(--r-2);
+      color: var(--bad); font-size: 12px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: 0.01ms !important; }
     }
 
     [x-cloak] { display: none !important; }
@@ -211,15 +309,17 @@
       </div>
 
       <div class="sessions-list">
-        <template x-if="sessions.length === 0">
-          <div style="padding: 20px; color: var(--muted); font-size: 11px;">No sessions found.</div>
+        <template x-if="visibleSessions().length === 0">
+          <div class="list-note" x-text="sessions.length === 0 ? 'No sessions found.' : 'No active sessions.'"></div>
         </template>
 
-        <template x-for="s in sessions" :key="s.session_id">
+        <template x-for="s in visibleSessions()" :key="s.session_id">
           <div
             class="session-card"
+            tabindex="0"
             :style="`border-left-color: ${borderColor(s)}`"
-            @click="select(s.session_id)">
+            @click="select(s.session_id)"
+            @keydown.enter="select(s.session_id)">
             <div class="session-status" :style="`color: ${statusColor(s.status)}`" x-text="statusLabel(s)"></div>
             <div class="session-task" x-text="truncate(s.task, 36)"></div>
             <div class="session-meta">
@@ -227,6 +327,11 @@
               · <span x-text="timeAgo(s.started_at)"></span>
             </div>
           </div>
+        </template>
+
+        <template x-if="huskCount() > 0">
+          <button class="husk-toggle" @click="showAll = !showAll"
+            x-text="showAll ? '— hide ' + huskCount() + ' empty' : '+ show ' + huskCount() + ' empty'"></button>
         </template>
       </div>
     </aside>
@@ -252,7 +357,7 @@
         </template>
 
         <template x-for="(event, i) in events" :key="event.id">
-          <div class="event-row">
+          <div class="event-row" :class="{ 'is-minor': isMinor(event.type) }">
             <div class="event-spine">
               <div class="event-dot" :style="`background: ${dotColor(event.type)}`"></div>
               <template x-if="i < events.length - 1">
@@ -263,10 +368,12 @@
             <div class="event-body">
               <div class="event-time" x-text="formatTime(event.timestamp)"></div>
 
-              <div class="event-header" @click="canExpand(event.type) && toggle(event.id)">
+              <div class="event-header" :class="{ 'can-expand': canExpand(event.type) }" @click="canExpand(event.type) && toggle(event.id)">
                 <span class="expand-toggle" x-show="canExpand(event.type)" x-text="isExpanded(event.id) ? '▾' : '▸'"></span>
-                <span class="event-label" :style="`color: ${dotColor(event.type)}`" x-text="label(event)"></span>
-                <button x-show="canFork(event.type)" class="fork-btn" @click.stop="openFork(event)">Fork</button>
+                <span class="event-glyph" :style="`color: ${dotColor(event.type)}`" x-text="glyph(event.type)"></span>
+                <span class="event-label" x-text="label(event)"></span>
+                <button x-show="canFork(event.type)" class="fork-btn" @click.stop="openFork(event)"
+                  title="Fork the timeline from this LLM turn" aria-label="Fork from this turn">⑂ Fork</button>
               </div>
 
               <div class="event-detail" x-show="isExpanded(event.id)" x-cloak>

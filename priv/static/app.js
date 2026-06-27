@@ -261,6 +261,7 @@ document.addEventListener('alpine:init', () => {
 Alpine.data('sessionList', () => ({
   sessions: [],
   selectedId: null,
+  showAll: false,
   _pollTimer: null,
 
   async init() {
@@ -279,25 +280,40 @@ Alpine.data('sessionList', () => ({
     } catch (_) {}
   },
 
+  // A "husk" is an ended session with nothing to inspect: no task and no turns.
+  // These accumulate from partial/test runs; an instrument shouldn't lead with noise,
+  // but they stay one click away (showAll) rather than being silently dropped.
+  isHusk(s) {
+    return !s.active && !s.task && (s.turn_count || 0) === 0;
+  },
+
+  visibleSessions() {
+    return this.showAll ? this.sessions : this.sessions.filter((s) => !this.isHusk(s));
+  },
+
+  huskCount() {
+    return this.sessions.filter((s) => this.isHusk(s)).length;
+  },
+
   select(sessionId) {
     this.selectedId = sessionId;
     window.dispatchEvent(new CustomEvent('session-selected', { detail: { sessionId } }));
   },
 
   borderColor(s) {
-    if (s.session_id === this.selectedId) return '#60a5fa';
-    if (s.active) return '#4ade80';
+    if (s.session_id === this.selectedId) return 'var(--accent)';
+    if (s.active) return 'var(--ok)';
     return 'transparent';
   },
 
   statusLabel(s) {
-    const map = { running: '● LIVE', done: '✓ DONE', error: '✗ ERROR', unknown: '? UNKNOWN' };
+    const map = { running: '● LIVE', done: '✓ DONE', error: '✕ ERROR', unknown: '? UNKNOWN' };
     return map[s.status] || s.status.toUpperCase();
   },
 
   statusColor(status) {
-    const map = { running: '#4ade80', done: '#60a5fa', error: '#f87171', unknown: '#666' };
-    return map[status] || '#666';
+    const map = { running: 'var(--ok)', done: 'var(--ink-2)', error: 'var(--bad)', unknown: 'var(--ink-3)' };
+    return map[status] || 'var(--ink-3)';
   },
 
   timeAgo(isoStr) {
@@ -358,23 +374,46 @@ Alpine.data('eventTimeline', () => ({
 
   dotColor(type) {
     const map = {
-      llm_call_completed: '#818cf8',
-      llm_call_started:   '#4c4f8f',
-      tool_call:          '#f59e0b',
-      agent_tool_called:  '#f59e0b',
-      agent_tool_result:  '#d97706',
-      agent_done:         '#4ade80',
-      agent_error:        '#f87171',
-      branch_created:     '#60a5fa',
+      llm_call_completed: 'var(--ev-llm)',
+      llm_call_started:   'var(--ev-llm-dim)',
+      tool_call:          'var(--ev-tool)',
+      agent_tool_called:  'var(--ev-tool)',
+      agent_tool_result:  'var(--ev-tool-dim)',
+      agent_thinking:     'var(--ev-think)',
+      agent_done:         'var(--ev-grad)',
+      agent_error:        'var(--ev-error)',
+      error:              'var(--ev-error)',
+      branch_created:     'var(--accent)',
     };
-    return map[type] || '#6b7280';
+    return map[type] || 'var(--ev-system)';
+  },
+
+  // Colorblind-safe second channel: every semantic color is paired with a glyph
+  // (and the text label), so the encoding survives deuteranopia/protanopia.
+  glyph(type) {
+    const map = {
+      llm_call_completed: '◇',
+      llm_call_started:   '◇',
+      tool_call:          '▸',
+      agent_tool_called:  '▸',
+      agent_tool_result:  '◂',
+      agent_thinking:     '∿',
+      agent_done:         '✓',
+      agent_error:        '✕',
+      error:              '✕',
+      branch_created:     '⑂',
+      agent_started:      '▸',
+    };
+    return map[type] || '·';
   },
 
   label(event) {
     const p = event.payload || {};
     switch (event.type) {
-      case 'agent_started':        return `Agent started · ${p.preset || ''}`;
-      case 'llm_call_started':     return `LLM call → ${p.model || ''}`;
+      case 'agent_started':        return `Agent started${p.preset ? ' · ' + p.preset : ''}`;
+      case 'agent_checkpoint':     return 'Checkpoint';
+      case 'agent_turn_started':   return `Turn ${p.turn || ''} started`.trim();
+      case 'llm_call_started':     return `LLM call started${p.model ? ' → ' + p.model : ''}`;
       case 'llm_call_completed': {
         const lat = p.latency_ms ? `${(p.latency_ms / 1000).toFixed(1)}s` : '';
         const tok = p.tokens_used ? `${p.tokens_used} tok` : '';
@@ -393,9 +432,18 @@ Alpine.data('eventTimeline', () => ({
 
   canFork(type)   { return type === 'llm_call_completed'; },
 
+  // Only events that actually carry inspectable detail are expandable — no fake
+  // expand-arrows on empty rows.
   canExpand(type) {
-    return ['llm_call_completed','tool_call','agent_tool_called','agent_tool_result','agent_done','agent_error'].includes(type)
-      || !['agent_started','llm_call_started','agent_turn_completed','branch_created'].includes(type);
+    return ['llm_call_completed','tool_call','agent_tool_called','agent_tool_result',
+            'agent_thinking','agent_error','error'].includes(type);
+  },
+
+  // Bookkeeping events: real, but noise relative to the work. Render compact + dim
+  // so the signal (LLM calls, thinking, tool calls, errors) stands out.
+  isMinor(type) {
+    return ['agent_started','agent_checkpoint','agent_turn_started',
+            'agent_turn_completed','llm_call_started'].includes(type);
   },
 
   formatTime(iso) {
