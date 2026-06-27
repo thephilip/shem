@@ -45,14 +45,28 @@ tools (mirror the layout-aware `quarantine/2`). Needs a **validation pass** firs
 install/uninstall/export of a JS and a Go tool, round-tripped through a real git repo).
 This is the highest-value next task.
 
-## P2 — Phase B: run ALL `:port` runtimes in containers
+## P2 — Phase B: run ALL `:port` runtimes in containers — ✅ SHIPPED 2026-06-27
 
-See `docs/future-work/2026-06-22-container-polyglot.md`. Go and Python tools currently run
-**on the host** (no runtime sandbox); only JS/Deno is deny-all sandboxed. Phase B runs the
-runtimes (not just the graduation gate) in containers, closing the sandbox gap for
-Python + JS + Go uniformly — the user's container-first direction. Decided during Go
-brainstorming as the explicit next phase after Go-on-host. Has its own sub-fork
-(one-shot container per call vs persistent container per tool — needs a brainstorm).
+**DONE** (commits `fb3a12a..b50f96e`, suite 1159 + 2 `:container_integration` vs real podman).
+All `:port` runtimes (Python/JS/Go) now run inside a container at invocation, not just at
+the graduation gate. New `Shem.Lab.Sandbox` builds each PortPool worker's spawn: container
+(`podman run -i --rm --network=none -v <dir>:/workspace:ro -w /workspace <image> <interp>`)
+when `container_runtime_bin` is set, host fallback + loud warning otherwise. **Persistent
+pooled** containers (fork resolved: not one-shot). Cleanup is label-scoped in three layers —
+`--rm` on stdin-close, `terminate/2` removes by `shem.tool=<id>`, boot sweep removes
+`shem.managed=1` orphans (survives hard crash). No new config key; per-language images reuse
+`executor_image_{python,js,go}`. Spec/plan: `docs/superpowers/specs/2026-06-26-container-phase-b-design.md`,
+`docs/superpowers/plans/2026-06-27-container-phase-b.md`. **P3 is now next.**
+
+## P3 — Distributed `:port`-tool artifact locality
+
+A `:port` tool (JS/Go) writes its runtime file/dir to the **local** node's lab_dir, and the
+manifest persists an absolute path. After SIGTERM evacuation or on a peer node, that path
+doesn't exist → the tool can't run off its origin node. Affects all `:port` runtimes, not
+just Go. Deeper design question (how do port-tool artifacts replicate across the mesh —
+ship bytes in the checkpoint? re-graduate on demand? content-addressed store?). NOTE: Phase B
+did NOT moot this — containers still read the same on-host `runtime_path`, so the origin-node
+constraint persists. This is the next runtime task.
 
 ## P3 — Distributed `:port`-tool artifact locality
 
