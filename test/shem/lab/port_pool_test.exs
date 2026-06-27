@@ -132,6 +132,28 @@ defmodule Shem.Lab.PortPoolTest do
     assert log =~ "UNSANDBOXED"
   end
 
+  test "terminate cleans up by tool label and is a no-op without a runtime" do
+    # container_runtime_bin is nil in test (config/test.exs executor_backend: :local),
+    # so cleanup_tool is a no-op; this asserts terminate/2 exists and stops cleanly.
+    script = Path.join(System.tmp_dir!(), "echo_#{System.unique_integer([:positive])}.sh")
+    File.write!(script, "while read line; do echo \"$line\"; done\n")
+    on_exit(fn -> File.rm(script) end)
+
+    pool_name = :"term_pool_#{System.unique_integer([:positive])}"
+    {:ok, pid} =
+      start_supervised(
+        {Shem.Lab.PortPool,
+         [tool_id: "term_tool", runtime_path: script, language: "python",
+          pool_size: 1, name: pool_name, executable: "sh"]}
+      )
+
+    assert Process.info(pid, :trap_exit) == {:trap_exit, true}
+
+    ref = Process.monitor(pid)
+    :ok = GenServer.stop(pid)
+    assert_receive {:DOWN, ^ref, :process, ^pid, _}, 2000
+  end
+
   @tag :deno
   test "Deno tool round-trips JSON through the pool" do
     {:ok, _sup} = start_supervised(Shem.Lab.PortPool.Supervisor)

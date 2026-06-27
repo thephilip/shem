@@ -31,6 +31,7 @@ defmodule Shem.Lab.PortPool do
 
   @impl true
   def init(opts) do
+    Process.flag(:trap_exit, true)
     tool_id      = Keyword.fetch!(opts, :tool_id)
     runtime_path = Keyword.fetch!(opts, :runtime_path)
     pool_size    = Keyword.get(opts, :pool_size, 2)
@@ -116,6 +117,16 @@ defmodule Shem.Lab.PortPool do
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
+
+  @impl true
+  def terminate(_reason, state) do
+    Shem.Lab.Sandbox.cleanup_tool(
+      Application.get_env(:shem, :container_runtime_bin),
+      state.tool_id
+    )
+
+    :ok
+  end
 
   # ── Helpers ──────────────────────────────────────────────────────────────────
 
