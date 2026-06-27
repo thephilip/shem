@@ -5,7 +5,11 @@ defmodule Shem.Lab.GraduationGateGoTest do
     if context[:go_container] do
       runtime = System.find_executable("podman") || System.find_executable("docker")
       Process.put(:shem_executor_backend, Shem.Lab.Executor.Backend.Container)
+      # Restore container_runtime_bin on exit: PortPool now reads it at spawn time,
+      # so leaking it set here would make a later host-PortPool test try to containerize.
+      prev_bin = Application.get_env(:shem, :container_runtime_bin)
       Application.put_env(:shem, :container_runtime_bin, runtime)
+      on_exit(fn -> Application.put_env(:shem, :container_runtime_bin, prev_bin) end)
 
       prev_timeout = Application.get_env(:shem, :executor_timeout_ms)
       Application.put_env(:shem, :executor_timeout_ms, 120_000)
