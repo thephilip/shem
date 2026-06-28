@@ -338,6 +338,7 @@ Alpine.data('eventTimeline', () => ({
   events: [],
   expanded: {},
   loading: false,
+  asOf: 0,           // scrub position: index of the "as-of" event (playhead)
 
   init() {
     window.addEventListener('session-selected', (e) => {
@@ -354,7 +355,16 @@ Alpine.data('eventTimeline', () => ({
       const res = await fetch(`/api/sessions/${this.sessionId}/events`);
       if (res.ok) this.events = await res.json();
     } catch (_) {}
+    this.asOf = Math.max(0, this.events.length - 1);  // default playhead = latest
     this.loading = false;
+  },
+
+  // ── Scrub transport ─────────────────────────────────────────────────────
+  isFuture(i)  { return i > this.asOf; },
+  tickPct(i)   { return this.events.length <= 1 ? 0 : (i / (this.events.length - 1)) * 100; },
+  playheadTime() {
+    const e = this.events[this.asOf];
+    return e ? this.formatTime(e.timestamp) : '';
   },
 
   toggle(id) {
@@ -367,9 +377,25 @@ Alpine.data('eventTimeline', () => ({
   },
 
   openFork(event) {
+    const i = this.events.indexOf(event);
     window.dispatchEvent(new CustomEvent('fork-requested', {
-      detail: { event, sessionId: this.sessionId }
+      detail: { event, sessionId: this.sessionId, prompt: this.promptFor(i) }
     }));
+  },
+
+  // The prompt lives on the preceding llm_call_started, not on the completed
+  // event (which only carries content/tokens/latency). Walk back to find it.
+  promptFor(i) {
+    for (let j = i - 1; j >= 0; j--) {
+      const e = this.events[j];
+      if (e.type === 'llm_call_started') {
+        const p = (e.payload || {}).prompt;
+        if (!p) return '—';
+        return typeof p === 'string' ? p : this.prettyJson(p);
+      }
+      if (e.type === 'llm_call_completed') break; // don't cross into an earlier call
+    }
+    return '—';
   },
 
   dotColor(type) {
@@ -462,6 +488,7 @@ Alpine.data('forkModal', () => ({
   open: false,
   sessionId: null,
   event: null,
+  prompt: '',
   altResponse: '',
   forking: false,
   success: false,
@@ -471,6 +498,7 @@ Alpine.data('forkModal', () => ({
     window.addEventListener('fork-requested', (e) => {
       this.sessionId = e.detail.sessionId;
       this.event = e.detail.event;
+      this.prompt = e.detail.prompt || '';
       this.altResponse = (e.detail.event.payload || {}).content || '';
       this.forking = false;
       this.success = false;
@@ -505,9 +533,8 @@ Alpine.data('forkModal', () => ({
   },
 
   promptSnippet() {
-    const p = (this.event && this.event.payload) || {};
-    const prompt = p.prompt || p.messages || '';
-    return typeof prompt === 'string' ? prompt.slice(0, 200) : JSON.stringify(prompt).slice(0, 200);
+    const p = this.prompt || '';
+    return p.length > 200 ? p.slice(0, 200) + '…' : p;
   }
 }));
 

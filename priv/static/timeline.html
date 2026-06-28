@@ -124,6 +124,38 @@
       font-weight: 600;
     }
 
+    /* ── Transport / scrub axis ────────────────────────────────────────────── */
+    .transport {
+      padding: 13px 22px 11px; border-bottom: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+    }
+    .transport-track { position: relative; height: 22px; }
+    .tick {
+      position: absolute; top: 7px; width: 2px; height: 8px; border-radius: 1px;
+      transform: translateX(-1px); opacity: 0.55; pointer-events: none;
+    }
+    .tick-fork { height: 14px; top: 4px; width: 2px; opacity: 0.95; }
+    .scrub {
+      position: absolute; inset: 0; width: 100%; height: 22px; margin: 0;
+      background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer;
+    }
+    .scrub::-webkit-slider-runnable-track { height: 22px; background: transparent; }
+    .scrub::-moz-range-track { height: 22px; background: transparent; }
+    .scrub::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 3px; height: 22px;
+      background: var(--accent); border-radius: 1px; cursor: ew-resize;
+      box-shadow: 0 0 0 1px var(--bg), 0 0 7px color-mix(in oklch, var(--accent) 70%, transparent);
+    }
+    .scrub::-moz-range-thumb {
+      width: 3px; height: 22px; background: var(--accent); border: none; border-radius: 1px;
+    }
+    .scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+    .transport-readout {
+      display: flex; gap: 16px; margin-top: 8px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-3);
+    }
+    .transport-hint { margin-left: auto; color: var(--ink-3); opacity: 0.8; }
+
     .timeline-body { flex: 1; overflow-y: auto; padding: 22px 22px 40px; }
 
     .empty-state {
@@ -136,10 +168,15 @@
     .event-row {
       display: flex; gap: 14px; border-left: 1px solid transparent;
       padding-left: 9px; margin-left: -10px; border-radius: 0 var(--r-2) var(--r-2) 0;
-      transition: background 0.12s ease;
+      transition: background 0.12s ease, opacity 0.12s ease;
     }
     .event-row:hover { background: color-mix(in oklch, var(--surface-2) 60%, transparent); }
     .event-row.is-selected { background: var(--accent-dim); border-left-color: var(--accent); }
+
+    /* Scrub: events after the playhead are "future" (dimmed); the as-of event is marked. */
+    .event-row.is-future { opacity: 0.3; }
+    .event-row.is-asof { border-left-color: var(--accent); }
+    .event-row.is-asof .event-time { color: var(--accent); }
 
     /* Minor (bookkeeping) events: compact + dim so signal events dominate. */
     .event-row.is-minor .event-body { padding-bottom: 7px; }
@@ -343,6 +380,23 @@
         <template x-if="sessionId"><span x-text="sessionId.slice(0, 20) + '…'"></span></template>
       </div>
 
+      <!-- Transport / scrub axis -->
+      <div class="transport" x-show="sessionId && !loading && events.length > 1" x-cloak>
+        <div class="transport-track">
+          <template x-for="(event, i) in events" :key="'t' + event.id">
+            <span class="tick" :class="{ 'tick-fork': canFork(event.type) }"
+              :style="`left: ${tickPct(i)}%; background: ${dotColor(event.type)}`"></span>
+          </template>
+          <input type="range" class="scrub" min="0" :max="events.length - 1"
+            x-model.number="asOf" aria-label="Scrub to event">
+        </div>
+        <div class="transport-readout">
+          <span x-text="'as of  ' + (asOf + 1) + ' / ' + events.length"></span>
+          <span x-text="playheadTime()"></span>
+          <span class="transport-hint">drag · click · ←/→ step</span>
+        </div>
+      </div>
+
       <div class="timeline-body">
         <template x-if="!sessionId">
           <div class="empty-state">Select a session to view its timeline.</div>
@@ -357,7 +411,7 @@
         </template>
 
         <template x-for="(event, i) in events" :key="event.id">
-          <div class="event-row" :class="{ 'is-minor': isMinor(event.type) }">
+          <div class="event-row" :class="{ 'is-minor': isMinor(event.type), 'is-future': isFuture(i), 'is-asof': i === asOf }">
             <div class="event-spine">
               <div class="event-dot" :style="`background: ${dotColor(event.type)}`"></div>
               <template x-if="i < events.length - 1">
@@ -380,7 +434,7 @@
                 <template x-if="event.type === 'llm_call_completed'">
                   <div>
                     <div class="detail-label">Prompt</div>
-                    <div class="detail-value" x-text="event.payload.prompt || event.payload.messages || '—'"></div>
+                    <div class="detail-value" x-text="promptFor(i)"></div>
                     <div class="detail-label">Response</div>
                     <div class="detail-value" x-text="event.payload.content || '—'"></div>
                   </div>
