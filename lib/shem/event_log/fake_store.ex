@@ -23,7 +23,7 @@ defmodule Shem.EventLog.FakeStore do
       table
       |> :ets.tab2list()
       |> Enum.map(fn {_id, event} -> event end)
-      |> Enum.sort_by(& &1.timestamp, DateTime)
+      |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
     {:ok, events}
   end
 

@@ -18,6 +18,15 @@ defmodule Shem.EventLog do
   @spec end_session(String.t()) :: :ok | {:error, :session_not_found}
   def end_session(session_id), do: GenServer.call(__MODULE__, {:end_session, session_id})
 
+  @doc """
+  Mark a session ended (sets `ended_at`, so it no longer reads as active/LIVE)
+  WITHOUT closing its store handle — so it stays readable. For static snapshots
+  like forks that are finalized on creation, not running agents. Appends are
+  still rejected (gated on `ended_at`).
+  """
+  @spec finalize(String.t()) :: :ok | {:error, :session_not_found}
+  def finalize(session_id), do: GenServer.call(__MODULE__, {:finalize, session_id})
+
   @spec list_sessions() :: {:ok, [Session.t()]}
   def list_sessions, do: GenServer.call(__MODULE__, :list_sessions)
 
@@ -107,16 +116,19 @@ defmodule Shem.EventLog do
       :error ->
         {:ok, handle} = state.store.open(session_id, event_log_path())
 
-        last_hash =
+        {last_hash, count} =
           case state.store.read_all(handle) do
-            {:ok, [_ | _] = events} -> List.last(events).hash
-            _ -> nil
+            {:ok, [_ | _] = events} -> {List.last(events).hash, length(events)}
+            _ -> {nil, 0}
           end
 
         session = %Session{
           id: session_id,
           started_at: DateTime.utc_now(),
-          last_hash: last_hash
+          last_hash: last_hash,
+          # continue the append index after existing events so a resumed session
+          # doesn't restart seq at 0 (which would collide on read-ordering).
+          event_count: count
         }
 
         sessions = Map.put(state.sessions, session_id, {handle, session})
@@ -139,6 +151,21 @@ defmodule Shem.EventLog do
   end
 
   @impl true
+  def handle_call({:finalize, session_id}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, session}} ->
+        # keep the handle open (stays readable across all stores); ended_at marks
+        # it non-active and the append guard rejects further writes.
+        closed = Session.close(session)
+        sessions = Map.put(state.sessions, session_id, {handle, closed})
+        {:reply, :ok, %{state | sessions: sessions}}
+
+      :error ->
+        {:reply, {:error, :session_not_found}, state}
+    end
+  end
+
+  @impl true
   def handle_call(:list_sessions, _from, state) do
     sessions = state.sessions |> Map.values() |> Enum.map(fn {_h, s} -> s end)
     {:reply, {:ok, sessions}, state}
@@ -148,18 +175,25 @@ defmodule Shem.EventLog do
   def handle_call({:append, session_id, type, payload, parent_id}, _from, state) do
     case Map.fetch(state.sessions, session_id) do
       {:ok, {handle, session}} when handle != nil ->
-        event = Event.new(session_id, type, payload, parent_id)
-        prev = session.last_hash || Chain.genesis(session_id)
-        event = %{event | hash: Chain.next(prev, event)}
+        # A finalized session keeps its handle open but rejects appends.
+        if is_nil(session.ended_at) do
+          event = Event.new(session_id, type, payload, parent_id)
+          prev = session.last_hash || Chain.genesis(session_id)
+          # seq = this event's 0-based append index (monotonic per session) so the
+          # store can read events back in append order, not timestamp order.
+          event = %{event | hash: Chain.next(prev, event), seq: session.event_count}
 
-        case state.store.append(handle, event) do
-          :ok ->
-            updated = %{Session.increment(session) | last_hash: event.hash}
-            sessions = Map.put(state.sessions, session_id, {handle, updated})
-            {:reply, {:ok, event}, %{state | sessions: sessions}}
+          case state.store.append(handle, event) do
+            :ok ->
+              updated = %{Session.increment(session) | last_hash: event.hash}
+              sessions = Map.put(state.sessions, session_id, {handle, updated})
+              {:reply, {:ok, event}, %{state | sessions: sessions}}
 
-          {:error, reason} ->
-            {:reply, {:error, reason}, state}
+            {:error, reason} ->
+              {:reply, {:error, reason}, state}
+          end
+        else
+          {:reply, {:error, :session_ended}, state}
         end
 
       {:ok, {nil, _session}} ->

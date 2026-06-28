@@ -94,9 +94,12 @@ defmodule Shem.EventLog.MnesiaStore do
   @impl true
   def read_all(session_id) do
     match_head = {@table, {session_id, :_}, :"$1"}
+    # Sort by the per-event append index (:seq) — the hash chain's true order —
+    # with a timestamp fallback for legacy events. Map.get keeps pre-:seq records
+    # from raising on the missing key.
     events =
       :mnesia.dirty_select(@table, [{match_head, [], [:"$1"]}])
-      |> Enum.sort_by(& &1.timestamp, DateTime)
+      |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
 
     {:ok, events}
   end

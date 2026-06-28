@@ -45,6 +45,21 @@ defmodule Shem.EventLog.DETSStoreTest do
     assert Enum.map(events, & &1.type) == [:first, :second]
   end
 
+  test "read_all/1 orders by :seq (append order) when timestamps tie", %{handle: handle} do
+    # Same timestamp (events firing in one microsecond), appended out of order.
+    # Without :seq ordering these come back non-deterministically and break the
+    # hash chain; with it they read back in append order regardless.
+    ts = ~U[2026-06-28 12:00:00.000000Z]
+    e2 = %{Event.new("ses_test", :c, %{}) | timestamp: ts, seq: 2}
+    e0 = %{Event.new("ses_test", :a, %{}) | timestamp: ts, seq: 0}
+    e1 = %{Event.new("ses_test", :b, %{}) | timestamp: ts, seq: 1}
+    for e <- [e2, e0, e1], do: :ok = DETSStore.append(handle, e)
+
+    assert {:ok, events} = DETSStore.read_all(handle)
+    assert Enum.map(events, & &1.seq) == [0, 1, 2]
+    assert Enum.map(events, & &1.type) == [:a, :b, :c]
+  end
+
   test "get/2 retrieves an event by id", %{handle: handle} do
     event = Event.new("ses_test", :tool_invoked, %{tool: "bash"})
     DETSStore.append(handle, event)

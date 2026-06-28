@@ -23,9 +23,12 @@ defmodule Shem.EventLog.DETSStore do
 
   @impl true
   def read_all(table) do
+    # DETS :set has no insertion order, so sort by the per-event append index
+    # (:seq) — the hash chain's true order. Legacy events (no :seq) fall back to
+    # timestamp. Map.get keeps pre-:seq records from raising on the missing key.
     events =
       :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], table)
-      |> Enum.sort_by(& &1.timestamp, DateTime)
+      |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
     {:ok, events}
   end
 

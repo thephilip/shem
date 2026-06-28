@@ -191,8 +191,9 @@ defmodule Shem.REST.Handlers.Sessions do
 
         EventLog.append(new_session_id, :llm_call_completed, fork_payload)
         # A fork is a static branch snapshot, not a running agent — finalize it
-        # immediately so it never shows as a perpetually-"LIVE" session.
-        EventLog.end_session(new_session_id)
+        # immediately so it never shows as a perpetually-"LIVE" session. finalize
+        # (not end_session) keeps the handle open so the fork stays readable.
+        EventLog.finalize(new_session_id)
         {:ok, new_session_id}
 
       {:error, reason} ->
