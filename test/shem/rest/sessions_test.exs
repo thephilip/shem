@@ -222,6 +222,26 @@ defmodule Shem.REST.SessionsTest do
     EventLog.end_session(new_session_id)
   end
 
+  test "POST /sessions/:id/fork with continue:true builds an unfinalized fork and resumes a client-brain agent" do
+    {:ok, session_id} = EventLog.start_session()
+    {:ok, _} = EventLog.append(session_id, :agent_started, %{task: "continue test"})
+    {:ok, _} = EventLog.append(session_id, :agent_checkpoint, %{history: [%{role: :user, content: "continue test"}], turn_count: 0, config: %{}, node: node()})
+    {:ok, llm_event} = EventLog.append(session_id, :llm_call_completed, %{content: "original", tokens_used: 0, latency_ms: 1, model: "test"})
+
+    conn = post_json("/sessions/#{session_id}/fork", %{fork_event_id: llm_event.id, alt_response: "DIVERGED", continue: true})
+    assert conn.status == 201
+    body = Jason.decode!(conn.resp_body)
+    assert body["continued"] == true
+    assert is_binary(body["agent_id"])
+    new_session_id = body["session_id"]
+
+    # The fork is NOT finalized: the resumed agent reconstructed state and appended.
+    {:ok, forked_events} = EventLog.read_session_events(new_session_id)
+    assert Enum.any?(forked_events, &(&1.type == :agent_resumed))
+
+    EventLog.end_session(session_id)
+  end
+
   # GET /sessions/:id/verify ───────────────────────────────────────────────────
 
   describe "GET /:id/verify" do

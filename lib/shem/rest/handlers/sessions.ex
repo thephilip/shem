@@ -25,14 +25,15 @@ defmodule Shem.REST.Handlers.Sessions do
   post "/:id/fork" do
     fork_event_id = Map.get(conn.body_params, "fork_event_id")
     alt_response = Map.get(conn.body_params, "alt_response")
+    continue = Map.get(conn.body_params, "continue", false)
 
     if is_nil(fork_event_id) do
       send_json(conn, 400, %{error: "fork_event_id is required"})
     else
       with {:ok, events} <- EventLog.read_session_events(id),
            {:ok, fork_event} <- find_fork_event(events, fork_event_id),
-           {:ok, new_session_id} <- build_fork(id, events, fork_event, alt_response) do
-        send_json(conn, 201, %{session_id: new_session_id})
+           {:ok, new_session_id} <- build_fork(id, events, fork_event, alt_response, continue) do
+        send_json(conn, 201, fork_response(new_session_id, events, continue))
       else
         {:error, :not_found} -> send_json(conn, 404, %{error: "session not found"})
         {:error, :fork_event_not_found} -> send_json(conn, 422, %{error: "fork_event_id not found in session"})
@@ -166,6 +167,25 @@ defmodule Shem.REST.Handlers.Sessions do
 
   defp sanitize_payload(v), do: v
 
+  # continue: false → static finalized fork; continue: true → live, resumed.
+  defp fork_response(new_session_id, _events, false), do: %{session_id: new_session_id}
+
+  defp fork_response(new_session_id, events, true) do
+    task = task_from_events(events)
+
+    case Shem.Agent.resume(new_session_id, task, brain: :client) do
+      {:ok, agent_id, _} -> %{session_id: new_session_id, agent_id: agent_id, continued: true}
+      {:error, reason} -> %{session_id: new_session_id, continued: false, error: inspect(reason)}
+    end
+  end
+
+  defp task_from_events(events) do
+    case Enum.find(events, &(&1.type == :agent_started)) do
+      %{payload: p} -> Map.get(p, :task) || "Resumed fork"
+      _ -> "Resumed fork"
+    end
+  end
+
   defp find_fork_event(events, fork_event_id) do
     case Enum.find(events, &(&1.id == fork_event_id)) do
       nil -> {:error, :fork_event_not_found}
@@ -174,7 +194,7 @@ defmodule Shem.REST.Handlers.Sessions do
     end
   end
 
-  defp build_fork(original_session_id, events, fork_event, alt_response) do
+  defp build_fork(original_session_id, events, fork_event, alt_response, continue) do
     case EventLog.start_session() do
       {:ok, new_session_id} ->
         # Record provenance first: which session this branched from and at which
@@ -199,10 +219,9 @@ defmodule Shem.REST.Handlers.Sessions do
           end
 
         EventLog.append(new_session_id, :llm_call_completed, fork_payload)
-        # A fork is a static branch snapshot, not a running agent — finalize it
-        # immediately so it never shows as a perpetually-"LIVE" session. finalize
-        # (not end_session) keeps the handle open so the fork stays readable.
-        EventLog.finalize(new_session_id)
+        # Static compare-fork is finalized; a continue-fork stays active so the
+        # resumed agent can append to it.
+        unless continue, do: EventLog.finalize(new_session_id)
         {:ok, new_session_id}
 
       {:error, reason} ->

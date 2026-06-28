@@ -179,14 +179,15 @@ defmodule Shem.Agent do
     end
   end
 
-  @spec resume(String.t(), String.t()) :: {:ok, String.t(), String.t()} | {:error, term()}
-  def resume(session_id, task) do
+  @spec resume(String.t(), String.t(), keyword()) :: {:ok, String.t(), String.t()} | {:error, term()}
+  def resume(session_id, task, opts \\ []) do
     with {:ok, preset} <- Shem.Agent.Preset.resolve("general") do
       config = %Config{
         task: task,
         system_prompt: preset.system_prompt,
         tools: [],
-        max_turns: 20
+        max_turns: 20,
+        brain: Keyword.get(opts, :brain, :model)
       }
 
       name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
