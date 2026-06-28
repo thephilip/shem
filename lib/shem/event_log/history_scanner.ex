@@ -4,7 +4,7 @@ defmodule Shem.EventLog.HistoryScanner do
   @enforce_keys [:session_id]
   defstruct [:session_id, :task, :started_at, :status, :turn_count]
 
-  @type status :: :done | :error | :running | :unknown
+  @type status :: :done | :error | :running | :fork | :unknown
 
   @type t :: %__MODULE__{
           session_id: String.t(),
@@ -90,6 +90,8 @@ defmodule Shem.EventLog.HistoryScanner do
       # :agent_done, so a failed run must not read as :done.
       Enum.any?(events, &(&1.type == :agent_error)) -> :error
       Enum.any?(events, &(&1.type == :agent_done)) -> :done
+      # A fork is a branch snapshot (no terminal agent event) — label it as such.
+      Enum.any?(events, &(&1.type == :branch_created)) -> :fork
       true -> :unknown
     end
   end

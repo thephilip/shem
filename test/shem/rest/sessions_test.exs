@@ -166,12 +166,17 @@ defmodule Shem.REST.SessionsTest do
     assert is_binary(body["session_id"])
     new_session_id = body["session_id"]
 
-    # Forked session has events up to and including the llm_call_completed
+    # Forked session: a branch_created provenance marker, then events up to and
+    # including the llm_call_completed (but not agent_done past the fork point).
     {:ok, forked_events} = EventLog.read_session_events(new_session_id)
-    assert length(forked_events) == 2
+    assert length(forked_events) == 3
     types = Enum.map(forked_events, & &1.type)
-    assert types == [:agent_started, :llm_call_completed]
+    assert types == [:branch_created, :agent_started, :llm_call_completed]
     assert :agent_done not in types
+
+    branch = hd(forked_events)
+    assert branch.payload[:original_session_id] == session_id
+    assert branch.payload[:fork_event_id] == llm_event.id
 
     EventLog.end_session(session_id)
     EventLog.end_session(new_session_id)
@@ -190,7 +195,7 @@ defmodule Shem.REST.SessionsTest do
     new_session_id = Jason.decode!(conn.resp_body)["session_id"]
 
     {:ok, forked_events} = EventLog.read_session_events(new_session_id)
-    assert length(forked_events) == 2
+    assert length(forked_events) == 3
     last = List.last(forked_events)
     assert last.type == :llm_call_completed
     assert last.payload[:content] == "overridden response"
@@ -209,7 +214,7 @@ defmodule Shem.REST.SessionsTest do
     new_session_id = Jason.decode!(conn.resp_body)["session_id"]
 
     {:ok, forked_events} = EventLog.read_session_events(new_session_id)
-    assert length(forked_events) == 2
+    assert length(forked_events) == 3
     last = List.last(forked_events)
     assert last.payload[:content] == "keep this"
 

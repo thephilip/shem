@@ -307,12 +307,12 @@ Alpine.data('sessionList', () => ({
   },
 
   statusLabel(s) {
-    const map = { running: '● LIVE', done: '✓ DONE', error: '✕ ERROR', unknown: '? UNKNOWN' };
+    const map = { running: '● LIVE', done: '✓ DONE', error: '✕ ERROR', fork: '⑂ FORK', unknown: '? UNKNOWN' };
     return map[s.status] || s.status.toUpperCase();
   },
 
   statusColor(status) {
-    const map = { running: 'var(--ok)', done: 'var(--ink-2)', error: 'var(--bad)', unknown: 'var(--ink-3)' };
+    const map = { running: 'var(--ok)', done: 'var(--ink-2)', error: 'var(--bad)', fork: 'var(--accent)', unknown: 'var(--ink-3)' };
     return map[status] || 'var(--ink-3)';
   },
 
@@ -348,7 +348,7 @@ Alpine.data('eventTimeline', () => ({
       this.load();
     });
     window.addEventListener('fork-created', (e) => {
-      if (e.detail.originId === this.sessionId) this.enterCompare(e.detail.sessionId);
+      if (e.detail.originId === this.sessionId) this.showCompare(e.detail.originId, e.detail.sessionId);
     });
   },
 
@@ -356,31 +356,45 @@ Alpine.data('eventTimeline', () => ({
     if (!this.sessionId) return;
     this.loading = true;
     this.expanded = {};
+    let evs = [];
     try {
       const res = await fetch(`/api/sessions/${this.sessionId}/events`);
-      if (res.ok) this.events = await res.json();
+      if (res.ok) evs = await res.json();
     } catch (_) {}
+    // A fork carries a branch_created marker — open it compared to its parent.
+    const branch = evs.find((e) => e.type === 'branch_created');
+    if (branch && branch.payload && branch.payload.original_session_id) {
+      this.loading = false;
+      return this.showCompare(branch.payload.original_session_id, this.sessionId);
+    }
+    this.events = evs;
     this.asOf = Math.max(0, this.events.length - 1);  // default playhead = latest
     this.loading = false;
     this.loadVerify();
   },
 
   // ── Hash-chain verify ───────────────────────────────────────────────────
-  async loadVerify() {
-    this.verify = { state: 'loading' };
+  verifyOrig: null,
+  verifyFork: null,
+
+  async fetchVerify(sessionId) {
     try {
-      const res = await fetch(`/api/sessions/${this.sessionId}/verify`);
-      if (!res.ok) { this.verify = { state: 'error' }; return; }
+      const res = await fetch(`/api/sessions/${sessionId}/verify`);
+      if (!res.ok) return { state: 'error' };
       const b = await res.json();
-      if (b.verified === true) this.verify = { state: 'verified', events: b.events };
-      else if (b.verified === 'legacy') this.verify = { state: 'legacy', events: b.events };
-      else if (b.verified === false) this.verify = { state: 'tampered', brokenAt: b.broken_at };
-      else this.verify = { state: 'error' };
-    } catch (_) { this.verify = { state: 'error' }; }
+      if (b.verified === true) return { state: 'verified', events: b.events };
+      if (b.verified === 'legacy') return { state: 'legacy', events: b.events };
+      if (b.verified === false) return { state: 'tampered', brokenAt: b.broken_at };
+      return { state: 'error' };
+    } catch (_) { return { state: 'error' }; }
   },
 
-  verifyBadge() {
-    const v = this.verify;
+  async loadVerify() {
+    this.verify = { state: 'loading' };
+    this.verify = await this.fetchVerify(this.sessionId);
+  },
+
+  verifyBadgeOf(v) {
     if (!v) return null;
     switch (v.state) {
       case 'loading':  return { glyph: '◌', text: 'verifying…', cls: 'v-loading' };
@@ -390,6 +404,9 @@ Alpine.data('eventTimeline', () => ({
       default:         return { glyph: '?', text: 'verify unavailable', cls: 'v-warn' };
     }
   },
+  verifyBadge()     { return this.verifyBadgeOf(this.verify); },
+  verifyBadgeOrig() { return this.verifyBadgeOf(this.verifyOrig); },
+  verifyBadgeFork() { return this.verifyBadgeOf(this.verifyFork); },
 
   // ── Scrub transport ─────────────────────────────────────────────────────
   isFuture(i)  { return i > this.asOf; },
@@ -405,17 +422,27 @@ Alpine.data('eventTimeline', () => ({
   compareEvents: [],
   forkIdx: 0,        // index where the fork diverges (its last event)
 
-  async enterCompare(forkSessionId) {
-    try {
-      const res = await fetch(`/api/sessions/${forkSessionId}/events`);
-      if (!res.ok) return;
-      this.compareEvents = await res.json();
-    } catch (_) { return; }
-    this.compareId = forkSessionId;
+  async showCompare(originalId, forkId) {
+    let orig = [], fork = [];
+    try { const r = await fetch(`/api/sessions/${originalId}/events`); if (r.ok) orig = await r.json(); } catch (_) {}
+    try { const r = await fetch(`/api/sessions/${forkId}/events`); if (r.ok) fork = await r.json(); } catch (_) {}
+    this.sessionId = originalId;
+    this.events = orig;
+    this.asOf = Math.max(0, orig.length - 1);
+    // branch_created is a provenance marker, not a timeline step — drop it so the
+    // lanes align on the shared prefix.
+    this.compareEvents = fork.filter((e) => e.type !== 'branch_created');
+    this.compareId = forkId;
     this.forkIdx = Math.max(0, this.compareEvents.length - 1);
+    this.verifyOrig = await this.fetchVerify(originalId);
+    this.verifyFork = await this.fetchVerify(forkId);
+    this.verify = this.verifyOrig;
     this.comparing = true;
   },
-  exitCompare() { this.comparing = false; this.compareEvents = []; this.compareId = null; },
+  exitCompare() {
+    this.comparing = false; this.compareEvents = []; this.compareId = null;
+    this.verifyOrig = null; this.verifyFork = null;
+  },
 
   diverged(i) { return i === this.forkIdx; },   // the forked turn (content may differ)
   origOnly(i) { return i > this.forkIdx; },      // original continued; fork branch ended here

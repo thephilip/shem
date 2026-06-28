@@ -426,7 +426,7 @@
       <div class="timeline-header">
         <template x-if="!sessionId"><span>Event Timeline</span></template>
         <template x-if="sessionId"><span x-text="sessionId.slice(0, 20) + '…'"></span></template>
-        <template x-if="sessionId && verifyBadge()">
+        <template x-if="sessionId && !comparing && verifyBadge()">
           <span class="verify-badge" :class="verifyBadge().cls"
             title="EventLog hash-chain integrity">
             <span x-text="verifyBadge().glyph"></span>
@@ -460,7 +460,9 @@
         </div>
         <div class="lanes">
           <div class="lane">
-            <div class="lane-header">ORIGINAL<span class="lane-id" x-text="sessionId ? sessionId.slice(0, 18) + '…' : ''"></span></div>
+            <div class="lane-header">ORIGINAL<span class="lane-id" x-text="sessionId ? sessionId.slice(0, 18) + '…' : ''"></span>
+              <template x-if="verifyBadgeOrig()"><span class="verify-badge" :class="verifyBadgeOrig().cls"><span x-text="verifyBadgeOrig().glyph"></span><span x-text="verifyBadgeOrig().text"></span></span></template>
+            </div>
             <template x-for="(event, i) in events" :key="'o' + event.id">
               <div class="cmp-row" :class="{ 'is-diverged': diverged(i), 'is-orphan': origOnly(i) }">
                 <span class="cmp-time" x-text="formatTime(event.timestamp)"></span>
@@ -471,7 +473,9 @@
             </template>
           </div>
           <div class="lane">
-            <div class="lane-header">FORK<span class="lane-id" x-text="compareId ? compareId.slice(0, 18) + '…' : ''"></span></div>
+            <div class="lane-header">FORK<span class="lane-id" x-text="compareId ? compareId.slice(0, 18) + '…' : ''"></span>
+              <template x-if="verifyBadgeFork()"><span class="verify-badge" :class="verifyBadgeFork().cls"><span x-text="verifyBadgeFork().glyph"></span><span x-text="verifyBadgeFork().text"></span></span></template>
+            </div>
             <template x-for="(event, i) in compareEvents" :key="'f' + event.id">
               <div class="cmp-row" :class="{ 'is-diverged': diverged(i) }">
                 <span class="cmp-time" x-text="formatTime(event.timestamp)"></span>

@@ -31,7 +31,7 @@ defmodule Shem.REST.Handlers.Sessions do
     else
       with {:ok, events} <- EventLog.read_session_events(id),
            {:ok, fork_event} <- find_fork_event(events, fork_event_id),
-           {:ok, new_session_id} <- build_fork(events, fork_event, alt_response) do
+           {:ok, new_session_id} <- build_fork(id, events, fork_event, alt_response) do
         send_json(conn, 201, %{session_id: new_session_id})
       else
         {:error, :not_found} -> send_json(conn, 404, %{error: "session not found"})
@@ -126,6 +126,7 @@ defmodule Shem.REST.Handlers.Sessions do
         :done -> "done"
         :error -> "error"
         :running -> "running"
+        :fork -> "fork"
         _ -> "unknown"
       end
 
@@ -173,9 +174,17 @@ defmodule Shem.REST.Handlers.Sessions do
     end
   end
 
-  defp build_fork(events, fork_event, alt_response) do
+  defp build_fork(original_session_id, events, fork_event, alt_response) do
     case EventLog.start_session() do
       {:ok, new_session_id} ->
+        # Record provenance first: which session this branched from and at which
+        # turn. Lets the UI label forks and re-open their compare-to-parent. The
+        # UI filters branch_created out of the side-by-side lanes.
+        EventLog.append(new_session_id, :branch_created, %{
+          original_session_id: original_session_id,
+          fork_event_id: fork_event.id
+        })
+
         events_before = Enum.take_while(events, &(&1.id != fork_event.id))
 
         Enum.each(events_before, fn event ->
