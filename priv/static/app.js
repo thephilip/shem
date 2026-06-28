@@ -342,8 +342,12 @@ Alpine.data('eventTimeline', () => ({
 
   init() {
     window.addEventListener('session-selected', (e) => {
+      this.exitCompare();
       this.sessionId = e.detail.sessionId;
       this.load();
+    });
+    window.addEventListener('fork-created', (e) => {
+      if (e.detail.originId === this.sessionId) this.enterCompare(e.detail.sessionId);
     });
   },
 
@@ -366,6 +370,27 @@ Alpine.data('eventTimeline', () => ({
     const e = this.events[this.asOf];
     return e ? this.formatTime(e.timestamp) : '';
   },
+
+  // ── Compare: side-by-side original vs fork ──────────────────────────────
+  comparing: false,
+  compareId: null,
+  compareEvents: [],
+  forkIdx: 0,        // index where the fork diverges (its last event)
+
+  async enterCompare(forkSessionId) {
+    try {
+      const res = await fetch(`/api/sessions/${forkSessionId}/events`);
+      if (!res.ok) return;
+      this.compareEvents = await res.json();
+    } catch (_) { return; }
+    this.compareId = forkSessionId;
+    this.forkIdx = Math.max(0, this.compareEvents.length - 1);
+    this.comparing = true;
+  },
+  exitCompare() { this.comparing = false; this.compareEvents = []; this.compareId = null; },
+
+  diverged(i) { return i === this.forkIdx; },   // the forked turn (content may differ)
+  origOnly(i) { return i > this.forkIdx; },      // original continued; fork branch ended here
 
   toggle(id) {
     this.expanded[id] = !this.expanded[id];
@@ -525,7 +550,13 @@ Alpine.data('forkModal', () => ({
         return;
       }
       this.success = true;
-      setTimeout(() => { window.location.href = `/?resume=${body.session_id}`; }, 800);
+      const newId = body.session_id, originId = this.sessionId;
+      setTimeout(() => {
+        // Open the deterministic side-by-side compare instead of resuming the agent
+        // in chat (which would re-run the LLM). Continuation is a separate step (3b).
+        window.dispatchEvent(new CustomEvent('fork-created', { detail: { sessionId: newId, originId } }));
+        this.close();
+      }, 600);
     } catch (_) {
       this.error = 'Network error';
       this.forking = false;
