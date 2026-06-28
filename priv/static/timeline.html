@@ -512,8 +512,15 @@
                 </template>
                 <template x-if="event.type !== 'llm_call_completed'">
                   <div>
-                    <div class="detail-label">Payload</div>
-                    <div class="detail-value" x-text="prettyJson(event.payload)"></div>
+                    <template x-for="[k, v] in payloadEntries(event.payload)" :key="k">
+                      <div>
+                        <div class="detail-label" x-text="k"></div>
+                        <div class="detail-value" x-text="payloadVal(v)"></div>
+                      </div>
+                    </template>
+                    <template x-if="payloadEntries(event.payload).length === 0">
+                      <div class="detail-value">—</div>
+                    </template>
                   </div>
                 </template>
               </div>

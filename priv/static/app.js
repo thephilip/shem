@@ -504,6 +504,16 @@ Alpine.data('eventTimeline', () => ({
 
   prettyJson(obj) {
     try { return JSON.stringify(obj, null, 2); } catch (_) { return String(obj); }
+  },
+
+  // Render a payload as key/value rows. String values are shown raw (real
+  // newlines via pre-wrap) instead of JSON-escaped — pytest output, errors,
+  // and multi-line content stay readable. Nested objects fall back to JSON.
+  payloadEntries(payload) {
+    return (payload && typeof payload === 'object') ? Object.entries(payload) : [];
+  },
+  payloadVal(v) {
+    return typeof v === 'string' ? v : this.prettyJson(v);
   }
 }));
 
