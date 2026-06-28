@@ -5,6 +5,9 @@ defmodule Shem.HTTP.Router do
     at: "/",
     from: :shem,
     gzip: false,
+    # Revalidate via ETag on every load (304 when unchanged) so edited assets
+    # are never served stale — no hard-refresh dance during development.
+    cache_control_for_etags: "no-cache",
     only: ~w(alpine.min.js app.js)
 
   plug :match
