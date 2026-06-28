@@ -293,6 +293,7 @@ defmodule Shem.Agent.Server do
       |> Map.get(:content, "")
 
     EventLog.append(state.session_id, :agent_done, %{reason: :answer, content: last_content})
+    EventLog.finalize(state.session_id)
     broadcast_stream_done(state.session_id)
     Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
     %{state | status: status, done_reason: :answer, awaiting: []}
@@ -300,6 +301,7 @@ defmodule Shem.Agent.Server do
 
   defp finish(state, status, reason) do
     EventLog.append(state.session_id, :agent_done, %{reason: reason})
+    EventLog.finalize(state.session_id)
     broadcast_stream_done(state.session_id)
     Enum.each(state.awaiting, fn from -> GenServer.reply(from, {:ok, status}) end)
     %{state | status: status, done_reason: reason, awaiting: []}

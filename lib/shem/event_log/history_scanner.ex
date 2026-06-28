@@ -86,8 +86,10 @@ defmodule Shem.EventLog.HistoryScanner do
 
   defp infer_status(events) do
     cond do
-      Enum.any?(events, &(&1.type == :agent_done)) -> :done
+      # Check error first: the error path emits :agent_error AND a terminal
+      # :agent_done, so a failed run must not read as :done.
       Enum.any?(events, &(&1.type == :agent_error)) -> :error
+      Enum.any?(events, &(&1.type == :agent_done)) -> :done
       true -> :unknown
     end
   end
