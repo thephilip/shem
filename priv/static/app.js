@@ -433,7 +433,7 @@ Alpine.data('eventTimeline', () => ({
     // lanes align on the shared prefix.
     this.compareEvents = fork.filter((e) => e.type !== 'branch_created');
     this.compareId = forkId;
-    this.forkIdx = Math.max(0, this.compareEvents.length - 1);
+    this.forkIdx = this.computeForkIdx(this.events, this.compareEvents);
     this.verifyOrig = await this.fetchVerify(originalId);
     this.verifyFork = await this.fetchVerify(forkId);
     this.verify = this.verifyOrig;
@@ -444,8 +444,21 @@ Alpine.data('eventTimeline', () => ({
     this.verifyOrig = null; this.verifyFork = null;
   },
 
-  diverged(i) { return i === this.forkIdx; },   // the forked turn (content may differ)
-  origOnly(i) { return i > this.forkIdx; },      // original continued; fork branch ended here
+  computeForkIdx(orig, fork) {
+    const n = Math.min(orig.length, fork.length);
+    for (let i = 0; i < n; i++) {
+      const a = orig[i], b = fork[i];
+      if (a.type !== b.type) return i;
+      if (a.type === 'llm_call_completed' && ((a.payload || {}).content || '') !== ((b.payload || {}).content || '')) return i;
+    }
+    return n;
+  },
+
+  // i < forkIdx: shared (identical prefix). i >= forkIdx: diverged — each lane
+  // shows its own path (original's recorded continuation / fork's live one).
+  shared(i)   { return i < this.forkIdx; },
+  diverged(i) { return i >= this.forkIdx; },
+  isForkPoint(i) { return i === this.forkIdx; },   // the edited answer (first diverged fork row)
 
   toggle(id) {
     this.expanded[id] = !this.expanded[id];

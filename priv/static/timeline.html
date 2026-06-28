@@ -464,11 +464,11 @@
               <template x-if="verifyBadgeOrig()"><span class="verify-badge" :class="verifyBadgeOrig().cls"><span x-text="verifyBadgeOrig().glyph"></span><span x-text="verifyBadgeOrig().text"></span></span></template>
             </div>
             <template x-for="(event, i) in events" :key="'o' + event.id">
-              <div class="cmp-row" :class="{ 'is-diverged': diverged(i), 'is-orphan': origOnly(i) }">
+              <div class="cmp-row" :class="{ 'is-diverged': diverged(i) }">
                 <span class="cmp-time" x-text="formatTime(event.timestamp)"></span>
                 <span class="cmp-glyph" :style="`color: ${dotColor(event.type)}`" x-text="glyph(event.type)"></span>
                 <span class="cmp-label" x-text="label(event)"></span>
-                <span class="cmp-tag" x-show="origOnly(i)">original only</span>
+                <span class="cmp-tag" x-show="diverged(i)">original path</span>
               </div>
             </template>
           </div>
@@ -481,7 +481,8 @@
                 <span class="cmp-time" x-text="formatTime(event.timestamp)"></span>
                 <span class="cmp-glyph" :style="`color: ${dotColor(event.type)}`" x-text="glyph(event.type)"></span>
                 <span class="cmp-label" x-text="label(event)"></span>
-                <span class="cmp-tag" x-show="diverged(i)">forked answer</span>
+                <span class="cmp-tag" x-show="isForkPoint(i)">forked answer</span>
+                <span class="cmp-tag" x-show="diverged(i) && !isForkPoint(i)">fork path</span>
               </div>
             </template>
             <div class="cmp-end">— fork branch ends here —</div>
