@@ -421,27 +421,73 @@ Alpine.data('eventTimeline', () => ({
   compareId: null,
   compareEvents: [],
   forkIdx: 0,        // index where the fork diverges (its last event)
+  forkLive: false,   // is the compared fork a live continuation?
+  forkStatus: null,  // 'running' | 'awaiting_turn' | 'done' | 'error' | 'fork' | ...
+  _pollTimer: null,
 
   async showCompare(originalId, forkId) {
+    this.stopPoll();
     let orig = [], fork = [];
     try { const r = await fetch(`/api/sessions/${originalId}/events`); if (r.ok) orig = await r.json(); } catch (_) {}
     try { const r = await fetch(`/api/sessions/${forkId}/events`); if (r.ok) fork = await r.json(); } catch (_) {}
     this.sessionId = originalId;
     this.events = orig;
     this.asOf = Math.max(0, orig.length - 1);
-    // branch_created is a provenance marker, not a timeline step — drop it so the
-    // lanes align on the shared prefix.
     this.compareEvents = fork.filter((e) => e.type !== 'branch_created');
     this.compareId = forkId;
     this.forkIdx = this.computeForkIdx(this.events, this.compareEvents);
     this.verifyOrig = await this.fetchVerify(originalId);
     this.verifyFork = await this.fetchVerify(forkId);
     this.verify = this.verifyOrig;
+    this.forkStatus = await this.fetchStatus(forkId);
+    // A fork is "live" while its session is still active (running / awaiting a turn).
+    this.forkLive = this.forkStatus === 'running' || this.forkStatus === 'awaiting_turn';
     this.comparing = true;
+    if (this.forkLive) this.startPoll(forkId);
   },
+
   exitCompare() {
+    this.stopPoll();
     this.comparing = false; this.compareEvents = []; this.compareId = null;
     this.verifyOrig = null; this.verifyFork = null;
+    this.forkLive = false; this.forkStatus = null;
+  },
+
+  async fetchStatus(sessionId) {
+    try {
+      const r = await fetch('/api/sessions');
+      if (!r.ok) return null;
+      const s = (await r.json()).find((x) => x.session_id === sessionId);
+      return s ? s.status : null;
+    } catch (_) { return null; }
+  },
+
+  startPoll(forkId) {
+    this._pollTimer = setInterval(async () => {
+      this.forkStatus = (await this.fetchStatus(forkId)) || this.forkStatus;
+      // grow the fork lane
+      try {
+        const r = await fetch(`/api/sessions/${forkId}/events`);
+        if (r.ok) {
+          this.compareEvents = (await r.json()).filter((e) => e.type !== 'branch_created');
+          this.forkIdx = this.computeForkIdx(this.events, this.compareEvents);
+        }
+      } catch (_) {}
+      this.fetchVerify(forkId).then((v) => { this.verifyFork = v; });
+      if (this.forkStatus === 'done' || this.forkStatus === 'error') {
+        this.forkLive = false;
+        this.stopPoll();
+      }
+    }, 2000);
+  },
+
+  stopPoll() {
+    if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+  },
+
+  forkStatusLabel() {
+    const map = { running: '● running', awaiting_turn: '● awaiting turn', done: '✓ done', error: '✕ error' };
+    return this.forkStatus ? (map[this.forkStatus] || this.forkStatus) : '';
   },
 
   computeForkIdx(orig, fork) {

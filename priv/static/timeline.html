@@ -129,6 +129,14 @@
       padding: 3px 9px; border-radius: var(--r-2); border: 1px solid var(--border-strong);
       color: var(--ink-3); flex-shrink: 0;
     }
+    .fork-live {
+      font-family: var(--font-mono); font-size: 10px; color: var(--accent);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .fork-live.is-done { color: var(--ok); animation: none; }
+    .fork-live.is-error { color: var(--bad); animation: none; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+    @media (prefers-reduced-motion: reduce) { .fork-live { animation: none; } }
     .verify-badge.v-ok   { color: var(--ok);   border-color: color-mix(in oklch, var(--ok) 55%, var(--border)); }
     .verify-badge.v-bad  { color: var(--bad);  border-color: var(--bad); }
     .verify-badge.v-warn { color: var(--warn); border-color: color-mix(in oklch, var(--warn) 50%, var(--border)); }
@@ -474,6 +482,7 @@
           </div>
           <div class="lane">
             <div class="lane-header">FORK<span class="lane-id" x-text="compareId ? compareId.slice(0, 18) + '…' : ''"></span>
+              <span class="fork-live" x-show="forkLive || forkStatus" :class="{ 'is-done': forkStatus === 'done', 'is-error': forkStatus === 'error' }" x-text="forkStatusLabel()"></span>
               <template x-if="verifyBadgeFork()"><span class="verify-badge" :class="verifyBadgeFork().cls"><span x-text="verifyBadgeFork().glyph"></span><span x-text="verifyBadgeFork().text"></span></span></template>
             </div>
             <template x-for="(event, i) in compareEvents" :key="'f' + event.id">
@@ -485,7 +494,7 @@
                 <span class="cmp-tag" x-show="diverged(i) && !isForkPoint(i)">fork path</span>
               </div>
             </template>
-            <div class="cmp-end">— fork branch ends here —</div>
+            <div class="cmp-end" x-show="!forkLive">— fork branch ends here —</div>
           </div>
         </div>
       </div>
