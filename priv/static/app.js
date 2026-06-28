@@ -339,6 +339,7 @@ Alpine.data('eventTimeline', () => ({
   expanded: {},
   loading: false,
   asOf: 0,           // scrub position: index of the "as-of" event (playhead)
+  verify: null,      // hash-chain verify state: {state, events?, brokenAt?}
 
   init() {
     window.addEventListener('session-selected', (e) => {
@@ -361,6 +362,33 @@ Alpine.data('eventTimeline', () => ({
     } catch (_) {}
     this.asOf = Math.max(0, this.events.length - 1);  // default playhead = latest
     this.loading = false;
+    this.loadVerify();
+  },
+
+  // ── Hash-chain verify ───────────────────────────────────────────────────
+  async loadVerify() {
+    this.verify = { state: 'loading' };
+    try {
+      const res = await fetch(`/api/sessions/${this.sessionId}/verify`);
+      if (!res.ok) { this.verify = { state: 'error' }; return; }
+      const b = await res.json();
+      if (b.verified === true) this.verify = { state: 'verified', events: b.events };
+      else if (b.verified === 'legacy') this.verify = { state: 'legacy', events: b.events };
+      else if (b.verified === false) this.verify = { state: 'tampered', brokenAt: b.broken_at };
+      else this.verify = { state: 'error' };
+    } catch (_) { this.verify = { state: 'error' }; }
+  },
+
+  verifyBadge() {
+    const v = this.verify;
+    if (!v) return null;
+    switch (v.state) {
+      case 'loading':  return { glyph: '◌', text: 'verifying…', cls: 'v-loading' };
+      case 'verified': return { glyph: '✓', text: `verified · ${v.events} events`, cls: 'v-ok' };
+      case 'legacy':   return { glyph: '▲', text: 'legacy · unverifiable', cls: 'v-warn' };
+      case 'tampered': return { glyph: '✕', text: `tampered at ${(v.brokenAt || '').slice(0, 12)}…`, cls: 'v-bad' };
+      default:         return { glyph: '?', text: 'verify unavailable', cls: 'v-warn' };
+    }
   },
 
   // ── Scrub transport ─────────────────────────────────────────────────────

@@ -123,6 +123,16 @@
       text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3);
       font-weight: 600;
     }
+    .verify-badge {
+      margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.03em;
+      padding: 3px 9px; border-radius: var(--r-2); border: 1px solid var(--border-strong);
+      color: var(--ink-3); flex-shrink: 0;
+    }
+    .verify-badge.v-ok   { color: var(--ok);   border-color: color-mix(in oklch, var(--ok) 55%, var(--border)); }
+    .verify-badge.v-bad  { color: var(--bad);  border-color: var(--bad); }
+    .verify-badge.v-warn { color: var(--warn); border-color: color-mix(in oklch, var(--warn) 50%, var(--border)); }
+    .verify-badge.v-loading { color: var(--ink-3); }
 
     /* ── Transport / scrub axis ────────────────────────────────────────────── */
     .transport {
@@ -416,6 +426,13 @@
       <div class="timeline-header">
         <template x-if="!sessionId"><span>Event Timeline</span></template>
         <template x-if="sessionId"><span x-text="sessionId.slice(0, 20) + '…'"></span></template>
+        <template x-if="sessionId && verifyBadge()">
+          <span class="verify-badge" :class="verifyBadge().cls"
+            title="EventLog hash-chain integrity">
+            <span x-text="verifyBadge().glyph"></span>
+            <span x-text="verifyBadge().text"></span>
+          </span>
+        </template>
       </div>
 
       <!-- Transport / scrub axis -->
