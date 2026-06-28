@@ -127,5 +127,34 @@ defmodule Shem.Agent.CheckpointTest do
       assert checkpoint.turn_count == 1
       assert Map.get(checkpoint, :node) == nil
     end
+
+    test "folds the post-checkpoint llm answer into history and advances turn_count" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :agent_checkpoint, %{
+        history: [%{role: :user, content: "task"}], turn_count: 0, config: %{}, node: node()
+      })
+      EventLog.append(sid, :llm_call_completed, %{content: "EDITED", tokens_used: 0, latency_ms: 1})
+
+      assert {:ok, %{history: history, turn_count: 1}} = Checkpoint.reconstruct(sid)
+      assert List.last(history) == %{role: :assistant, content: "EDITED"}
+      EventLog.end_session(sid)
+    end
+
+    test "folds a post-checkpoint tool result as a tool message" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :agent_checkpoint, %{history: [], turn_count: 2, config: %{}, node: node()})
+      EventLog.append(sid, :agent_tool_result, %{tool: "ReverseWords", result: "olleh"})
+
+      assert {:ok, %{history: history, turn_count: 2}} = Checkpoint.reconstruct(sid)
+      assert List.last(history) == %{role: :tool, content: "Tool result (ReverseWords): olleh"}
+      EventLog.end_session(sid)
+    end
+
+    test "returns :not_found when there is no checkpoint (fold_tail variant)" do
+      {:ok, sid} = EventLog.start_session()
+      EventLog.append(sid, :agent_started, %{task: "x"})
+      assert Checkpoint.reconstruct(sid) == :not_found
+      EventLog.end_session(sid)
+    end
   end
 end
