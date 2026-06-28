@@ -40,6 +40,11 @@ defmodule Shem.MCP.RouterTest do
     resp = decode_response(conn)
     assert resp["result"]["serverInfo"]["name"] == "shem"
     assert resp["id"] == 1
+    # instructions guide the client model on WHEN to use Shem (the "used" lever)
+    instructions = resp["result"]["instructions"]
+    assert is_binary(instructions)
+    assert instructions =~ "spawn_agent"
+    assert instructions =~ "graduate_tool"
   end
 
   test "POST /message tools/list includes the core lab tools" do
