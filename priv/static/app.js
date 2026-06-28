@@ -420,7 +420,7 @@ Alpine.data('eventTimeline', () => ({
   comparing: false,
   compareId: null,
   compareEvents: [],
-  forkIdx: 0,        // index where the fork diverges (its last event)
+  forkIdx: 0,        // index where the original and fork lanes first differ
   forkLive: false,   // is the compared fork a live continuation?
   forkStatus: null,  // 'running' | 'awaiting_turn' | 'done' | 'error' | 'fork' | ...
   _pollTimer: null,

@@ -175,7 +175,11 @@ defmodule Shem.REST.Handlers.Sessions do
 
     case Shem.Agent.resume(new_session_id, task, brain: :client) do
       {:ok, agent_id, _} -> %{session_id: new_session_id, agent_id: agent_id, continued: true}
-      {:error, reason} -> %{session_id: new_session_id, continued: false, error: inspect(reason)}
+      {:error, reason} ->
+        # Resume failed — finalize the fork so it's a static snapshot, not a
+        # forever-"running" orphan the UI would poll with no agent behind it.
+        EventLog.finalize(new_session_id)
+        %{session_id: new_session_id, continued: false, error: inspect(reason)}
     end
   end
 
