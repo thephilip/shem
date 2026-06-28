@@ -48,6 +48,43 @@ Capability the model can't replicate in its own context window is stickier than
 any instruction. So the strategy is two-pronged: **nudge** (cheap, do it) AND
 **be needed** (the real moat).
 
+## The structural half: the client-brain round-trip (and being ahead of the fold)
+
+The cheapest levers above are *nudges* (shift the odds). The strongest mechanism
+Shem already owns is **structural**: the shipped client-brain loop — agent parks
+`:awaiting_turn`, returns `prompt` + `turn_token`, advances on `provide_turn`. That
+is the round-trip pattern (MCP SEP-2322) the ecosystem is converging on **as
+sampling is deprecated** (2026-07-28, SEP-2577; see `reference-mcp-sampling`). Shem
+already implements the pattern MCP is standardizing on — the real "ahead of the
+fold" position.
+
+Why it matters for *used*: a parked agent **pulls** the brain — it *requires*
+`provide_turn` to advance, so engagement is structural, not probabilistic. That is
+stickier than any description.
+
+**Honest limit:** the pull only works **while a brain is already looping on that
+agent; you cannot wake an idle one** (true server→client push needs sampling, which
+is dying). So the round-trip **deepens** engagement once an agent exists — it does
+**not** solve cold start ("why would Claude spawn a Shem agent at all?"). Hence
+nudge and pull are **complementary, not either/or**:
+- **Nudge** (`instructions` field, "when to use" descriptions) → gets the brain to
+  *start* a loop.
+- **Round-trip pull** → keeps it engaged.
+
+### Implication for the main page (`/`) — reopen the chat-routing decision
+
+`/` (`index.html`) is today a Shem-as-app chat on the **model brain** (local LLM) —
+dead without LM Studio. The 2026-06-25 direction note said "keep the chat as
+Shem-as-app, own LLM; don't route it through MCP." **That decision deserves
+reopening:** the fork-continue work proved a chat-shaped loop runs **keyless** via
+the client brain (`provide_turn`). So the compelling `/` is not a local-LLM chatbox
+but a **co-driver surface** — the human (or a connected Claude) supplies the agent's
+turns through the round-trip. That `/` works with no local model AND showcases the
+differentiator instead of being a generic chat. (The genuinely-needed differentiator
+remains the debugger; a keyless co-driver `/` would at least stop the front door from
+being a dead chat — see the open front-door question: should `/` even be the chat, or
+the debugger / a live-agents view?)
+
 ## Concrete levers, cheapest first
 
 1. **Set the MCP `instructions` field** (`MCP.Router` initialize). Small change,
