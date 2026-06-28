@@ -599,14 +599,14 @@ Alpine.data('forkModal', () => ({
 
   close() { this.open = false; },
 
-  async fork() {
-    this.forking = true;
+  async fork(continue_) {
+    this.forking = continue_ ? 'continue' : 'compare';
     this.error = '';
     try {
       const res = await fetch(`/api/sessions/${this.sessionId}/fork`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fork_event_id: this.event.id, alt_response: this.altResponse })
+        body: JSON.stringify({ fork_event_id: this.event.id, alt_response: this.altResponse, continue: continue_ })
       });
       const body = await res.json();
       if (!res.ok) {
@@ -617,8 +617,8 @@ Alpine.data('forkModal', () => ({
       this.success = true;
       const newId = body.session_id, originId = this.sessionId;
       setTimeout(() => {
-        // Open the deterministic side-by-side compare instead of resuming the agent
-        // in chat (which would re-run the LLM). Continuation is a separate step (3b).
+        // Liveness is auto-detected in showCompare from the fork's status, so the
+        // event only carries the ids (works for fresh forks AND later re-opens).
         window.dispatchEvent(new CustomEvent('fork-created', { detail: { sessionId: newId, originId } }));
         this.close();
       }, 600);

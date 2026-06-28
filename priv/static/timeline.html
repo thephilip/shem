@@ -582,8 +582,11 @@
         <div x-show="success" class="alert-success">✓ Fork created — opening side-by-side…</div>
 
         <div class="modal-actions">
-          <button class="btn-fork" :disabled="forking || success" @click="fork()">
-            <span x-text="forking ? 'Forking…' : 'Fork from here →'"></span>
+          <button class="btn-fork" :disabled="forking || success" @click="fork(false)">
+            <span x-text="forking === 'compare' ? 'Forking…' : 'Fork to compare'"></span>
+          </button>
+          <button class="btn-fork" :disabled="forking || success" @click="fork(true)">
+            <span x-text="forking === 'continue' ? 'Resuming…' : 'Fork & continue →'"></span>
           </button>
           <button class="btn-cancel" @click="close()">Cancel</button>
         </div>
