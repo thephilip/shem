@@ -60,11 +60,16 @@ session a3f ──┬── turn 6 ──● fork here
 ```
 
 Python-based frameworks can't do this — they log text you read after the fact.
-Shem gives you a timeline you re-run. Open `/timeline`, click any event, fork it.
+Shem gives you a timeline you *re-run*, in the browser at `/timeline`: **scrub** the
+event log to any point, **fork** at any LLM turn, and watch the original and the fork
+**diverge side by side** — the divergence point marked, each lane integrity-checked.
+Choose **Fork & continue** and the branch *runs forward live* — the agent resumes from
+your altered state and keeps going, driven by whatever brain you point at it (including
+Claude over MCP, no local model needed). You literally watch the two runs split.
 
-And because the log is sha256 hash-chained per session, a retroactive edit is
-*detectable* (`GET /api/sessions/:id/verify`) — the replay you trust can't be
-quietly rewritten.
+And because the log is sha256 hash-chained per session, each lane carries a live
+**verify badge**: a retroactive edit is *detectable* (`GET /api/sessions/:id/verify`) —
+the replay you trust can't be quietly rewritten.
 
 ## Why Shem?
 
@@ -72,7 +77,7 @@ quietly rewritten.
 
 **Steerable.** Pause a running agent at its next turn boundary (`Space`), inject a course-correction, resume. Kill it outright (`Ctrl+K`). Fence it to a directory (`/fence <path>`). The agent is a process you control, not a request you wait on.
 
-**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated JavaScript tools run **deny-all sandboxed** under Deno — no network, filesystem, or env access unless granted. Go and Python tools run on the host (the deny-all sandbox is Deno-only this phase).
+**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated Python, JavaScript, and Go tools run **container-sandboxed** at invocation — `--network=none` and a read-only source mount — with JavaScript additionally under Deno's deny-all permission model. (Without a container runtime they fall back to the host with a warning.)
 
 ## Quick start
 
@@ -99,7 +104,7 @@ Shem doubles as an MCP tool server. Claude Code is the brain; Shem is the
 self-extending tool backend and agent orchestrator:
 
 ```bash
-shem start --headless
+shem start     # serves MCP + REST + Web UI on :4000 in the background
 claude mcp add --transport sse shem http://127.0.0.1:4000/mcp/sse
 ```
 
@@ -225,7 +230,7 @@ collisions.
 Everything runs on one port (default `4000`):
 
 - **TUI** — `shem` (dashboard with live host metrics, agent panel, streaming output)
-- **Web UI** — `http://127.0.0.1:4000/` (chat) and `/timeline` (browse, inspect, and **fork** any session from any event)
+- **Web UI** — `http://127.0.0.1:4000/` (chat) and `/timeline` — the visual time-travel debugger: **scrub** a session, **fork** any LLM turn, watch the original and fork **diverge side by side** (live, if you Fork & continue), each with a hash-chain **verify badge**
 - **REST API** — `/api` (agents, presets, sessions, routes, chain verification)
 - **MCP** — `/mcp/sse` (see above)
 - **Python SDK** — `sdk/python` (`Client`, `Agent`, `@tool` decorator)
@@ -258,7 +263,7 @@ MIX_ENV=prod mix release
 
 ## Roadmap
 
-Upcoming: the launch demo (multi-node cluster surviving node loss mid-task, timeline forking, red-team self-patching), human-in-the-loop approvals, and hive_mind trust-weighted consensus.
+Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge) and container-sandboxed polyglot tools (Python/JS/Go). Upcoming: a browser **co-driver** (inject a running agent's next turn from the WebUI), human-in-the-loop approvals, and hive_mind trust-weighted consensus.
 
 ## License
 
