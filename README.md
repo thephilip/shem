@@ -67,6 +67,13 @@ Choose **Fork & continue** and the branch *runs forward live* — the agent resu
 your altered state and keeps going, driven by whatever brain you point at it (including
 Claude over MCP, no local model needed). You literally watch the two runs split.
 
+**What replay promises (and what it doesn't).** Replaying *from the log* is
+deterministic: LLM turns and tool results come from the recorded events, so
+the same session replays identically, every time. **Fork & continue** is
+different by design — the continuation runs forward *live*, so new LLM calls
+re-roll and side-effecting tools execute again. Deterministic evidence
+behind you, live divergence ahead of you.
+
 And because the log is sha256 hash-chained per session, each lane carries a live
 **verify badge**: a retroactive edit is *detectable* (`GET /api/sessions/:id/verify`) —
 the replay you trust can't be quietly rewritten.
@@ -78,6 +85,9 @@ the replay you trust can't be quietly rewritten.
 **Steerable.** Pause a running agent at its next turn boundary (`Space`), inject a course-correction, resume. Kill it outright (`Ctrl+K`). Fence it to a directory (`/fence <path>`). The agent is a process you control, not a request you wait on.
 
 **Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated Python, JavaScript, and Go tools run **container-sandboxed** at invocation — `--network=none` and a read-only source mount — with JavaScript additionally under Deno's deny-all permission model. (Without a container runtime they fall back to the host with a warning.)
+Elixir tools currently compile into the host BEAM behind a static safety
+scan (pure compute only — no file, system, or network access); full parity
+sandboxing for Elixir is on the roadmap ([Phase 5](ROADMAP.md)).
 
 ## Quick start
 

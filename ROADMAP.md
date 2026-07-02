@@ -105,7 +105,7 @@ every graduated tool inspectable without touching the filesystem.
   MCP client, today. Publish during Phases 1–2.
 - [ ] **Token-saving number**: run `bench/token_bench.py` with a real
   tokenizer on Dogfood-track sessions; publish the before/after in the README.
-- [ ] **README hygiene** (rides Phase 1): determinism paragraph, sandbox
+- [x] **README hygiene** (rides Phase 1): determinism paragraph, sandbox
   caveat.
 
 ## Dogfood track (standing practice — gated on Phase 1)
