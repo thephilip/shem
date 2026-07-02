@@ -81,31 +81,9 @@ defmodule Shem.MCP.Router do
          "version" => to_string(Application.spec(:shem, :vsn) || "dev")
        },
        # Surfaced to the client model: tells it WHEN to reach for Shem, not just
-       # what each tool does. The "used" lever (see docs/future-work/2026-06-28-llm-usage-stickiness.md).
+       # what each tool does. The "used" lever (see ROADMAP.md — Outward track).
        "instructions" => server_instructions()
      }}
-  end
-
-  defp server_instructions do
-    """
-    Shem is a BEAM-native server for autonomous, self-evolving agents. Reach for it \
-    instead of doing work inline whenever the work should outlive this turn, run \
-    concurrently/fault-tolerantly, or be replayable:
-
-    - spawn_agent: delegate a task to an agent that runs concurrently and survives \
-    crashes/node death. Use brain: "client" to drive its turns yourself via \
-    provide_turn (no separate model needed).
-    - write_tool / graduate_tool: when you've written code you'll likely need again, \
-    graduate it — it's property-tested, persisted, and callable in EVERY future \
-    session, instead of re-deriving it each time.
-    - list_tools / invoke_tool: call tools you or earlier sessions already graduated \
-    before writing new code.
-    - Every run is a forkable, hash-verified event log: fork at any turn to explore \
-    "what if it had decided differently", then replay/verify deterministically.
-
-    Prefer doing it inline only for genuine one-offs that don't need to persist, \
-    parallelize, or be audited.
-    """
   end
 
   defp dispatch_method("ping", _args), do: {:ok, %{}}
@@ -144,6 +122,28 @@ defmodule Shem.MCP.Router do
 
   defp dispatch_method("tools/call", _), do: {:error, -32602, "missing name or arguments"}
   defp dispatch_method(_, _), do: {:error, -32601, "Method not found"}
+
+  defp server_instructions do
+    """
+    Shem is a BEAM-native server for autonomous, self-evolving agents. Reach for it \
+    instead of doing work inline whenever the work should outlive this turn, run \
+    concurrently/fault-tolerantly, or be replayable:
+
+    - spawn_agent: delegate a task to an agent that runs concurrently and survives \
+    crashes/node death. Use brain: "client" to drive its turns yourself via \
+    provide_turn (no separate model needed).
+    - write_tool / graduate_tool: when you've written code you'll likely need again, \
+    graduate it — it's property-tested, persisted, and callable in EVERY future \
+    session, instead of re-deriving it each time.
+    - list_tools / invoke_tool: call tools you or earlier sessions already graduated \
+    before writing new code.
+    - Every run is a forkable, hash-verified event log: fork at any turn to explore \
+    "what if it had decided differently", then replay/verify deterministically.
+
+    Prefer doing it inline only for genuine one-offs that don't need to persist, \
+    parallelize, or be audited.
+    """
+  end
 
   defp call_tool("execute_code", args), do: ExecuteCode.call(args)
   defp call_tool("graduate_tool", args), do: GraduateTool.call(args)
