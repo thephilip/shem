@@ -38,15 +38,18 @@ defmodule Shem.MCP.Handlers.InvokeTool do
   defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
     case :code.is_loaded(module) do
       false ->
-        case Code.compile_string(source) do
-          [{^module, bytecode} | _] ->
-            case :code.load_binary(module, ~c"nofile", bytecode) do
-              {:module, _} -> :ok
-              {:error, _} -> {:error, :load_failed}
-            end
+        # Tamper defense: stored source is re-scanned before any recompile.
+        with :ok <- Shem.Lab.SourceScan.scan(source) do
+          case Code.compile_string(source) do
+            [{^module, bytecode} | _] ->
+              case :code.load_binary(module, ~c"nofile", bytecode) do
+                {:module, _} -> :ok
+                {:error, _} -> {:error, :load_failed}
+              end
 
-          _ ->
-            {:error, :load_failed}
+            _ ->
+              {:error, :load_failed}
+          end
         end
 
       _ ->
