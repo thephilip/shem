@@ -3,6 +3,7 @@
 #   start [--port N]   background, then print a verified status banner
 #   stop               graceful shutdown, narrated (flush checkpoints, evacuate agents)
 #   status             one-shot health
+#   install <repo> [p] install a tool pack from a git repo (re-gates each tool)
 # Dispatches to the release launcher (bin/shem) that sits next to this script.
 set -eu
 
@@ -16,7 +17,7 @@ PORT_FILE="$RELEASE_TMP/shem.port"
 # status/stop display the port a previous `start` chose (start re-derives its own below).
 [ -f "$PORT_FILE" ] && PORT="$(cat "$PORT_FILE" 2>/dev/null || printf %s "$PORT")"
 
-usage() { echo "usage: shem {start [--port N] | stop | status}"; }
+usage() { echo "usage: shem {start [--port N] | stop | status | install <repo> [path]}"; }
 
 running() { "$LAUNCHER" pid >/dev/null 2>&1; }   # node up? dependency-free
 
@@ -111,10 +112,18 @@ cmd_status() {
   fi
 }
 
+cmd_install() {  # bin/shem-install validates the URL and does the rpc; we add the friendly gate
+  [ -n "${1:-}" ] || { echo "usage: shem install <repo> [path]" >&2; exit 2; }
+  running || { echo "Shem is not running. Start it first:  shem start" >&2; exit 1; }
+  echo "Installing pack from $1 (path: ${2:-.}) — re-gating each tool …"
+  exec "$REL_DIR/bin/shem-install" "$@"
+}
+
 case "${1:-}" in
-  start)  shift; cmd_start "$@" ;;
-  stop)   shift; cmd_stop ;;
-  status) shift; cmd_status ;;
+  start)   shift; cmd_start "$@" ;;
+  stop)    shift; cmd_stop ;;
+  status)  shift; cmd_status ;;
+  install) shift; cmd_install "$@" ;;
   ""|-h|--help|help) usage ;;
   *) echo "shem: unknown command '$1'" >&2; usage >&2; exit 2 ;;
 esac
