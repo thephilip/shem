@@ -339,4 +339,60 @@ defmodule Shem.REST.AgentsTest do
 
     Shem.Agent.stop(name)
   end
+
+  # POST /agents/:id/turn ─────────────────────────────────────────────────────
+
+  test "POST /agents/:id/turn drives a parked client-brain agent: tool call re-parks, plain text finishes" do
+    {:ok, _name, sid} =
+      Shem.Agent.start_with_preset("general", "co-driver turn test", brain: :client)
+
+    wait_for_awaiting(sid)
+
+    %{"turn_token" => token} = Jason.decode!(get_path("/agents/#{sid}").resp_body)
+
+    # Turn 1: a tool call — executes and re-parks with a fresh token
+    conn =
+      post_json("/agents/#{sid}/turn", %{
+        turn_token: token,
+        content: ~s({"tool":"execute_code","args":{"code":"IO.puts 8"}})
+      })
+
+    assert conn.status == 200
+    body = Jason.decode!(conn.resp_body)
+    assert body["status"] == "awaiting_turn"
+    assert is_binary(body["prompt"])
+    refute body["turn_token"] == token
+
+    # Replaying the OLD token is a stale-turn conflict
+    conn = post_json("/agents/#{sid}/turn", %{turn_token: token, content: "hi"})
+    assert conn.status == 409
+
+    # Turn 2: plain text (no tool JSON) finishes the run
+    conn =
+      post_json("/agents/#{sid}/turn", %{
+        turn_token: body["turn_token"],
+        content: "The answer is 8."
+      })
+
+    assert conn.status == 200
+    done = Jason.decode!(conn.resp_body)
+    assert done["status"] == "done"
+    assert done["output"] =~ "8"
+  end
+
+  test "POST /agents/:id/turn validates input and unknown agents" do
+    conn = post_json("/agents/no_such_agent/turn", %{turn_token: "1:1", content: "x"})
+    assert conn.status == 404
+
+    {:ok, name, sid} =
+      Shem.Agent.start_with_preset("general", "co-driver validation test", brain: :client)
+
+    wait_for_awaiting(sid)
+
+    assert post_json("/agents/#{sid}/turn", %{content: "x"}).status == 400
+    assert post_json("/agents/#{sid}/turn", %{turn_token: "1:1"}).status == 400
+    assert post_json("/agents/#{sid}/turn", %{turn_token: "garbage", content: "x"}).status == 400
+
+    Shem.Agent.stop(name)
+  end
 end

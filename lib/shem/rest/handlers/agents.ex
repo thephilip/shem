@@ -178,6 +178,50 @@ defmodule Shem.REST.Handlers.Agents do
     end
   end
 
+  post "/:id/turn" do
+    token_s = Map.get(conn.body_params, "turn_token")
+    content = Map.get(conn.body_params, "content")
+
+    cond do
+      not is_binary(token_s) or token_s == "" ->
+        send_json(conn, 400, %{error: "turn_token is required"})
+
+      not is_binary(content) or content == "" ->
+        send_json(conn, 400, %{error: "content is required"})
+
+      true ->
+        with {:ok, name} <- resolve_agent(id),
+             {:ok, token} <- ProvideTurn.decode_token(token_s) do
+          case Shem.Agent.provide_turn(name, token, content) do
+            {:ok, %{status: :awaiting_turn, prompt: p, turn_token: t}} ->
+              send_json(conn, 200, %{
+                status: "awaiting_turn",
+                prompt: p,
+                turn_token: ProvideTurn.encode_token(t)
+              })
+
+            {:ok, %{status: :done, output: out}} ->
+              send_json(conn, 200, %{status: "done", output: out})
+
+            {:ok, %{status: :error, reason: r}} ->
+              send_json(conn, 200, %{status: "error", reason: r})
+
+            {:ok, %{status: :waiting, output: out}} ->
+              send_json(conn, 200, %{status: "waiting", output: out})
+
+            {:error, :stale_turn} ->
+              send_json(conn, 409, %{error: "turn_token does not match the awaited turn"})
+
+            {:error, :not_found} ->
+              send_json(conn, 404, %{error: "agent not found"})
+          end
+        else
+          :not_found -> send_json(conn, 404, %{error: "agent not found"})
+          {:error, :invalid_args, _} -> send_json(conn, 400, %{error: "bad turn_token"})
+        end
+    end
+  end
+
   match _ do
     send_json(conn, 404, %{error: "not found"})
   end

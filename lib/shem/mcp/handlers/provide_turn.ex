@@ -45,7 +45,8 @@ defmodule Shem.MCP.Handlers.ProvideTurn do
     end
   end
 
-  defp decode_token(s) do
+  @doc "Decode the wire token \"turn:nonce\". Shared with the REST turn endpoint."
+  def decode_token(s) do
     case String.split(s, ":") do
       [t, n] -> {:ok, {String.to_integer(t), String.to_integer(n)}}
       _ -> {:error, :invalid_args, "bad turn_token"}
