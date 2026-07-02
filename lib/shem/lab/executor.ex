@@ -12,11 +12,26 @@ defmodule Shem.Lab.Executor do
       Keyword.get(opts, :timeout, Application.get_env(:shem, :executor_timeout_ms, @default_timeout))
 
     target_node = Keyword.get(opts, :node, nil)
+    scan? = Keyword.get(opts, :scan, true)
 
-    if target_node && target_node != Node.self() do
-      run_remote(source, fun, timeout, target_node)
-    else
-      run_local(source, fun, timeout)
+    with :ok <- maybe_scan(source, scan?) do
+      if target_node && target_node != Node.self() do
+        run_remote(source, fun, timeout, target_node)
+      else
+        run_local(source, fun, timeout)
+      end
+    end
+  end
+
+  # ponytail: scan failures reuse the :compile error channel — every caller
+  # already handles {:error, :compile, msg}; the "safety scan:" prefix keeps
+  # them distinguishable.
+  defp maybe_scan(_source, false), do: :ok
+
+  defp maybe_scan(source, true) do
+    case Shem.Lab.SourceScan.scan(source) do
+      :ok -> :ok
+      {:error, msg} -> {:error, :compile, msg}
     end
   end
 

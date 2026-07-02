@@ -280,7 +280,7 @@ defmodule Shem.Agent.ToolDispatch do
     source = args["source"] || ""
     timeout = args["timeout_ms"] || 5_000
 
-    case Lab.Executor.run(source, fn mod -> mod.run() end, timeout: timeout) do
+    case Lab.Executor.run(source, fn mod -> mod.run() end, timeout: timeout, scan: false) do
       {:ok, result} -> {:ok, inspect(result)}
       {:error, :compile, msg} -> {:error, "compile error: #{msg}"}
       {:error, :timeout} -> {:error, "timeout after #{timeout}ms"}

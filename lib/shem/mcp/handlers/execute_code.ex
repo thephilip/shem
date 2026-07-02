@@ -7,7 +7,7 @@ defmodule Shem.MCP.Handlers.ExecuteCode do
   @spec call(map()) :: {:ok, any()} | {:error, atom(), any()}
   def call(args) do
     with {:ok, valid} <- Schema.validate(args, @schema) do
-      Executor.run(valid["source"], fn mod -> mod.run() end)
+      Executor.run(valid["source"], fn mod -> mod.run() end, scan: false)
     end
   end
 end

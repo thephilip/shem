@@ -75,6 +75,11 @@ defmodule Shem.Lab.GraduationGate do
           {:error, :compile, reason} -> {:error, :compile, reason}
         end
 
+      {:error, :compile, "safety scan: " <> _ = reason} = err ->
+        {:ok, _} = Shem.EventLog.start_session("security")
+        Shem.EventLog.append("security", :scan_rejected, %{reason: reason})
+        err
+
       {:error, :compile, reason} ->
         {:error, :compile, reason}
 
