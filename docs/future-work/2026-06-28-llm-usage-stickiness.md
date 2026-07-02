@@ -85,6 +85,13 @@ remains the debugger; a keyless co-driver `/` would at least stop the front door
 being a dead chat — see the open front-door question: should `/` even be the chat, or
 the debugger / a live-agents view?)
 
+**Update 2026-07-02:** the fork-lane human co-driver is being built first (REST rail:
+`GET /api/agents/:id` gains prompt+turn_token when parked, `POST /api/agents/:id/turn`,
+`GET /api/tools`; co-driver strip in the timeline fork lane). The front-door `/`
+co-driver is DEFERRED, not dropped — when picked up it reuses that rail and strip
+unchanged; the only new work is the surface (agent list on `/`) and answering the
+open question above.
+
 ## Concrete levers, cheapest first
 
 1. **Set the MCP `instructions` field** (`MCP.Router` initialize). Small change,
