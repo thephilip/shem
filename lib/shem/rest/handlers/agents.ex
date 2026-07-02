@@ -1,6 +1,8 @@
 defmodule Shem.REST.Handlers.Agents do
   use Plug.Router
 
+  alias Shem.MCP.Handlers.{AgentCommon, ProvideTurn}
+
   plug :match
   plug :dispatch
 
@@ -121,18 +123,29 @@ defmodule Shem.REST.Handlers.Agents do
   end
 
   get "/:id" do
-    case Shem.Agent.status(id) do
-      {:ok, status} ->
-        node_str =
-          case Shem.ProcessRegistry.lookup(id) do
-            {pid, _} -> Atom.to_string(node(pid))
-            nil -> nil
-          end
+    with {:ok, name} <- resolve_agent(id),
+         {:ok, info} <- Shem.Agent.info(name) do
+      node_str =
+        case Shem.ProcessRegistry.lookup(name) do
+          {pid, _} -> Atom.to_string(node(pid))
+          nil -> nil
+        end
 
-        send_json(conn, 200, %{status: status, node: node_str})
+      base = %{status: info.status, node: node_str}
 
-      {:error, :not_found} ->
-        send_json(conn, 404, %{error: "agent not found"})
+      base =
+        if info.status == :awaiting_turn do
+          Map.merge(base, %{
+            prompt: info.awaiting_prompt,
+            turn_token: ProvideTurn.encode_token(info.turn_token)
+          })
+        else
+          base
+        end
+
+      send_json(conn, 200, base)
+    else
+      _ -> send_json(conn, 404, %{error: "agent not found"})
     end
   end
 
@@ -234,6 +247,14 @@ defmodule Shem.REST.Handlers.Agents do
       30_000 ->
         :pg.leave(:shem_streams, session_id, self())
         conn
+    end
+  end
+
+  # Accept an agent process name or an EventLog session id (what the WebUI holds).
+  defp resolve_agent(id) do
+    case Shem.Agent.info(id) do
+      {:ok, _} -> {:ok, id}
+      {:error, :not_found} -> AgentCommon.find_by_session(id)
     end
   end
 

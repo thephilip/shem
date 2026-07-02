@@ -287,4 +287,56 @@ defmodule Shem.REST.AgentsTest do
 
     Shem.Agent.stop(agent_id)
   end
+
+  # GET /agents/:id co-driver fields ──────────────────────────────────────────
+
+  defp wait_for_awaiting(sid, tries \\ 300)
+  defp wait_for_awaiting(_sid, 0), do: flunk("agent never parked")
+
+  defp wait_for_awaiting(sid, n) do
+    case Shem.MCP.Handlers.AgentCommon.find_by_session(sid) do
+      {:ok, name} ->
+        case Shem.Agent.info(name) do
+          {:ok, %{status: :awaiting_turn}} ->
+            name
+
+          _ ->
+            Process.sleep(20)
+            wait_for_awaiting(sid, n - 1)
+        end
+
+      :not_found ->
+        Process.sleep(20)
+        wait_for_awaiting(sid, n - 1)
+    end
+  end
+
+  test "GET /agents/:id accepts a session id and exposes prompt + turn_token when parked" do
+    {:ok, name, sid} =
+      Shem.Agent.start_with_preset("general", "co-driver status test", brain: :client)
+
+    wait_for_awaiting(sid)
+
+    conn = get_path("/agents/#{sid}")
+    assert conn.status == 200
+    body = Jason.decode!(conn.resp_body)
+    assert body["status"] == "awaiting_turn"
+    assert is_binary(body["prompt"]) and body["prompt"] != ""
+    assert body["turn_token"] =~ ~r/^\d+:\d+$/
+
+    Shem.Agent.stop(name)
+  end
+
+  test "GET /agents/:id by agent NAME still works (parked agent, so it can't finish mid-test)" do
+    {:ok, _name, sid} =
+      Shem.Agent.start_with_preset("general", "by-name status test", brain: :client)
+
+    name = wait_for_awaiting(sid)
+
+    conn = get_path("/agents/#{name}")
+    assert conn.status == 200
+    assert Jason.decode!(conn.resp_body)["status"] == "awaiting_turn"
+
+    Shem.Agent.stop(name)
+  end
 end
