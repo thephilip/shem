@@ -5,7 +5,7 @@ defmodule Shem.Agent do
     @enforce_keys [:task, :system_prompt]
     defstruct [:task, :system_prompt, model: :default, tools: [], max_turns: 20,
                spawn_depth: 0, conversational: false, project_context: nil, fence: nil,
-               placement: :any, brain: :model]
+               placement: :any, brain: :model, preset: nil, pipeline: nil]
 
     @type placement ::
             :any
@@ -24,7 +24,9 @@ defmodule Shem.Agent do
             conversational: boolean(),
             fence: String.t() | nil,
             placement: placement(),
-            brain: :model | :client
+            brain: :model | :client,
+            preset: String.t() | nil,
+            pipeline: [{module(), keyword()}] | nil
           }
   end
 
@@ -155,7 +157,8 @@ defmodule Shem.Agent do
         conversational: Keyword.get(opts, :conversational, false),
         project_context: Keyword.get(opts, :project_context, Shem.Context.Project.detect()),
         placement: Keyword.get(opts, :placement, :any),
-        brain: Keyword.get(opts, :brain, :model)
+        brain: Keyword.get(opts, :brain, :model),
+        preset: preset_name
       }
       start(config)
     end

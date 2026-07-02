@@ -125,6 +125,10 @@ defmodule Shem.Agent.Server do
   @impl true
   def init({name, config, session_id}) do
     config = prepend_project_context(config)
+    # Replay support: a config-carried pipeline overrides the app LLM pipeline
+    # for every call this agent makes. provide_turn's put/delete never collides —
+    # pipeline-carrying replay agents are brain: :model, provide_turn is :client.
+    if config.pipeline, do: Process.put(:shem_replay_pipeline, config.pipeline)
     Process.put(:spawn_agent_depth, config.spawn_depth)
     {:ok, ^session_id} = EventLog.start_session(session_id)
 
@@ -134,7 +138,9 @@ defmodule Shem.Agent.Server do
           EventLog.append(session_id, :agent_started, %{
             task: config.task,
             model: config.model,
-            max_turns: config.max_turns
+            max_turns: config.max_turns,
+            preset: config.preset,
+            project_context: config.project_context && Map.from_struct(config.project_context)
           })
           {[%{role: :user, content: config.task}], 0}
 
