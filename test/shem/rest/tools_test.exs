@@ -6,6 +6,11 @@ defmodule Shem.REST.ToolsTest do
 
   @opts Router.init([])
 
+  setup do
+    # Other suites flush the registry; rebuild seeds + graduated from disk.
+    :ok = Shem.Lab.Registry.rescan()
+  end
+
   test "GET /tools lists registry tools with id, description, schema" do
     conn = conn(:get, "/tools") |> Router.call(@opts)
     assert conn.status == 200

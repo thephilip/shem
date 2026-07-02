@@ -193,6 +193,18 @@
       color: var(--ink-3); font-weight: 600; display: flex; gap: 10px; align-items: baseline;
     }
     .lane-id { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0; font-weight: 400; }
+    /* ── Co-driver strip ───────────────────────────────────────────────────── */
+    .codriver { border-top: 1px solid var(--border); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .codriver-prompt-toggle { background: none; border: none; color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; cursor: pointer; text-align: left; padding: 0; }
+    .codriver-prompt { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); white-space: pre-wrap; max-height: 180px; overflow-y: auto; margin: 0; border-left: 2px solid var(--border); padding-left: 8px; }
+    .codriver-box { background: var(--bg); color: var(--ink); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; padding: 6px 8px; resize: vertical; }
+    .codriver-box:focus { outline: none; border-color: var(--accent); }
+    .codriver-row { display: flex; gap: 8px; align-items: center; }
+    .codriver-tools { background: var(--bg); color: var(--ink-2); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; padding: 3px 6px; }
+    .codriver-send { background: var(--accent); color: var(--bg); border: none; font-size: 11px; font-weight: 600; padding: 4px 12px; cursor: pointer; margin-left: auto; }
+    .codriver-send:disabled { opacity: 0.4; cursor: default; }
+    .codriver-hint { font-family: var(--font-mono); font-size: 9px; color: var(--ink-2); }
+    .codriver-notice { font-family: var(--font-mono); font-size: 10px; color: var(--warn); }
     .cmp-row {
       display: flex; align-items: baseline; gap: 9px; padding: 5px 16px;
       border-bottom: 1px solid color-mix(in oklch, var(--border) 45%, transparent);
@@ -492,6 +504,30 @@
                 <span class="cmp-tag" x-show="diverged(i) && !isForkPoint(i)">fork path</span>
               </div>
             </template>
+            <!-- Co-driver: the human is the parked agent's brain -->
+            <div class="codriver" x-show="forkStatus === 'awaiting_turn' && turnToken" x-cloak>
+              <button class="codriver-prompt-toggle" @click="promptOpen = !promptOpen"
+                      x-text="promptOpen ? '▾ parked prompt' : '▸ parked prompt'"></button>
+              <pre class="codriver-prompt" x-show="promptOpen" x-text="turnPrompt"></pre>
+              <textarea class="codriver-box" x-ref="turnBox" x-model="turnDraft"
+                        :disabled="turnSending" rows="3"
+                        placeholder="Write the agent's next reply…"
+                        @keydown.ctrl.enter="provideTurn()"></textarea>
+              <div class="codriver-row">
+                <select class="codriver-tools" x-show="tools.length > 0" :disabled="turnSending"
+                        @change="insertTool($event.target.value); $event.target.value = ''">
+                  <option value="">insert tool call…</option>
+                  <template x-for="t in tools" :key="t.id">
+                    <option :value="t.id" x-text="t.id"></option>
+                  </template>
+                </select>
+                <button class="codriver-send" @click="provideTurn()"
+                        :disabled="turnSending || !turnDraft.trim()"
+                        x-text="turnSending ? 'Sending…' : 'Provide turn'"></button>
+              </div>
+              <div class="codriver-hint">A {"tool": …} call steers the agent; plain text ends the run as its final answer.</div>
+              <div class="codriver-notice" x-show="turnNotice" x-text="turnNotice"></div>
+            </div>
             <div class="cmp-end" x-show="!forkLive">— fork branch ends here —</div>
           </div>
         </div>
