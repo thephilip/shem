@@ -13,6 +13,10 @@ defmodule Shem.MixProject do
     ]
   end
 
+  def cli do
+    [preferred_envs: ["test.dist": :test]]
+  end
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
@@ -40,8 +44,22 @@ defmodule Shem.MixProject do
   defp aliases do
     [
       "deps.get": ["deps.get", &patch_waf/1],
-      "deps.compile": [&patch_waf/1, "deps.compile"]
+      "deps.compile": [&patch_waf/1, "deps.compile"],
+      "test.dist": &test_dist/1
     ]
+  end
+
+  defp test_dist(args) do
+    if Node.alive?() do
+      Mix.Task.run("test", ["--only", "distributed" | args])
+    else
+      Mix.shell().error("""
+      Distributed tests need a named node. Run:
+        elixir --sname shem_test -S mix test.dist
+      """)
+
+      exit({:shutdown, 1})
+    end
   end
 
   defp releases do
