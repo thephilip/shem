@@ -1,6 +1,8 @@
 defmodule Shem.HTTP.Router do
   use Plug.Router
 
+  plug Shem.HTTP.HostGuard
+
   plug Plug.Static,
     at: "/",
     from: :shem,
