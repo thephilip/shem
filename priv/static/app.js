@@ -333,6 +333,21 @@ Alpine.data('sessionList', () => ({
 
 // ── Timeline: Event Timeline ─────────────────────────────────────────────────
 
+// Build an insertable tool-call template: one placeholder key per schema
+// property, typed by the schema's "type". Mirror-tested in codriver.test.mjs.
+function toolTemplate(tool) {
+  const args = {};
+  for (const [k, v] of Object.entries(tool.schema || {})) {
+    const ty = (v && v.type) || 'string';
+    args[k] =
+      ty === 'number' || ty === 'integer' ? 0 :
+      ty === 'boolean' ? false :
+      ty === 'array' ? [] :
+      ty === 'object' ? {} : '';
+  }
+  return JSON.stringify({ tool: tool.id, args });
+}
+
 Alpine.data('eventTimeline', () => ({
   sessionId: null,
   events: [],
@@ -444,6 +459,10 @@ Alpine.data('eventTimeline', () => ({
     this.forkLive = this.forkStatus === 'running' || this.forkStatus === 'awaiting_turn';
     this.comparing = true;
     if (this.forkLive) this.startPoll(forkId);
+    if (this.forkStatus === 'awaiting_turn') {
+      this.loadTools();
+      await this.fetchTurnInfo(forkId);
+    }
   },
 
   exitCompare() {
@@ -451,6 +470,8 @@ Alpine.data('eventTimeline', () => ({
     this.comparing = false; this.compareEvents = []; this.compareId = null;
     this.verifyOrig = null; this.verifyFork = null;
     this.forkLive = false; this.forkStatus = null;
+    this.turnPrompt = ''; this.turnToken = null; this.turnDraft = '';
+    this.turnSending = false; this.turnNotice = ''; this.promptOpen = false;
   },
 
   async fetchStatus(sessionId) {
@@ -465,6 +486,12 @@ Alpine.data('eventTimeline', () => ({
   startPoll(forkId) {
     this._pollTimer = setInterval(async () => {
       this.forkStatus = (await this.fetchStatus(forkId)) || this.forkStatus;
+      if (this.forkStatus === 'awaiting_turn') {
+        if (this.tools.length === 0) this.loadTools();
+        await this.fetchTurnInfo(forkId);
+      } else {
+        this.turnToken = null;
+      }
       // grow the fork lane
       try {
         const r = await fetch(`/api/sessions/${forkId}/events`);
@@ -486,7 +513,7 @@ Alpine.data('eventTimeline', () => ({
   },
 
   forkStatusLabel() {
-    const map = { running: '● running', awaiting_turn: '● awaiting turn', done: '✓ done', error: '✕ error' };
+    const map = { running: '● running', awaiting_turn: '◈ awaiting turn — you are the brain', done: '✓ done', error: '✕ error' };
     return this.forkStatus ? (map[this.forkStatus] || this.forkStatus) : '';
   },
 
@@ -505,6 +532,76 @@ Alpine.data('eventTimeline', () => ({
   shared(i)   { return i < this.forkIdx; },
   diverged(i) { return i >= this.forkIdx; },
   isForkPoint(i) { return i === this.forkIdx; },   // the edited answer (first diverged fork row)
+
+  // ── Co-driver: human supplies a parked fork's next turn ─────────────────
+  turnPrompt: '',
+  turnToken: null,
+  turnDraft: '',
+  turnSending: false,
+  turnNotice: '',
+  promptOpen: false,
+  tools: [],
+
+  async fetchTurnInfo(id) {
+    try {
+      const r = await fetch(`/api/agents/${id}`);
+      if (!r.ok) { this.turnToken = null; return; }
+      const a = await r.json();
+      if (a.status === 'awaiting_turn') {
+        this.turnPrompt = a.prompt || '';
+        this.turnToken = a.turn_token;
+      } else {
+        this.turnToken = null;
+      }
+    } catch (_) { this.turnToken = null; }
+  },
+
+  async loadTools() {
+    try {
+      const r = await fetch('/api/tools');
+      if (r.ok) this.tools = (await r.json()).tools || [];
+    } catch (_) { this.tools = []; }  // helper is progressive enhancement
+  },
+
+  insertTool(id) {
+    const t = this.tools.find((x) => x.id === id);
+    if (!t) return;
+    const tpl = toolTemplate(t);
+    const ta = this.$refs.turnBox;
+    const at = ta ? ta.selectionStart : this.turnDraft.length;
+    this.turnDraft = this.turnDraft.slice(0, at) + tpl + this.turnDraft.slice(at);
+  },
+
+  async provideTurn() {
+    if (!this.turnDraft.trim() || !this.turnToken || this.turnSending) return;
+    this.turnSending = true;
+    this.turnNotice = '';
+    try {
+      const r = await fetch(`/api/agents/${this.compareId}/turn`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ turn_token: this.turnToken, content: this.turnDraft }),
+      });
+      if (r.status === 409) {
+        this.turnNotice = 'another co-driver took this turn';
+        await this.fetchTurnInfo(this.compareId);
+      } else if (r.status === 404) {
+        this.turnToken = null;  // agent died; poll renders the terminal state
+      } else if (r.ok) {
+        this.turnDraft = '';
+        const res = await r.json();
+        if (res.status === 'awaiting_turn') {
+          this.turnPrompt = res.prompt || '';
+          this.turnToken = res.turn_token;
+        } else {
+          this.turnToken = null;
+        }
+      } else {
+        this.turnNotice = 'send failed';
+      }
+    } catch (_) { this.turnNotice = 'send failed'; }
+    this.turnSending = false;
+  },
 
   toggle(id) {
     this.expanded[id] = !this.expanded[id];
