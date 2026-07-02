@@ -64,9 +64,15 @@ if System.get_env("RELEASE_NAME") do
     if host = Map.get(server, "host"), do: config(:shem, mcp_host: host)
   end
 
+  # Apply auth config from YAML
+  with %{"auth" => auth} <- user_config do
+    if token = Map.get(auth, "token"), do: config(:shem, auth_token: token)
+  end
+
   # CLI/env overrides win over the config file (`shem start --port N` exports SHEM_PORT).
   if port = System.get_env("SHEM_PORT"), do: config(:shem, mcp_port: String.to_integer(port))
   if host = System.get_env("SHEM_HOST"), do: config(:shem, mcp_host: host)
+  if token = System.get_env("SHEM_AUTH_TOKEN"), do: config(:shem, auth_token: token)
 
   # Apply tui config from YAML (only if not already set by --headless)
   if Map.has_key?(user_config, "tui") and

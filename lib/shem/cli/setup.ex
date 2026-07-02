@@ -29,7 +29,7 @@ defmodule Shem.CLI.Setup do
     IO.puts("")
     {backend_key, model, url} = step_backend()
     api_key = step_api_key(backend_key)
-    {port, host} = step_server()
+    {port, host, token} = step_server()
 
     config = %{
       "llm" => %{"default" => %{
@@ -44,6 +44,8 @@ defmodule Shem.CLI.Setup do
       "data_dir" => "~/.config/shem"
     }
 
+    config = if token, do: Map.put(config, "auth", %{"token" => token}), else: config
+
     IO.puts("")
     spinner("Testing connection to #{backend_label(backend_key)}", fn ->
       validate_backend!(backend_key, api_key, url, model)
@@ -55,7 +57,15 @@ defmodule Shem.CLI.Setup do
 
     line()
     green("Setup complete.")
-    IO.puts("Run `shem start` to launch.\n")
+    IO.puts("Run `shem start` to launch.")
+
+    if token do
+      IO.puts("")
+      IO.puts("Point MCP clients at the server with the token, e.g.:")
+      IO.puts(~s|  claude mcp add --transport sse shem http://#{host}:#{port}/mcp/sse --header "Authorization: Bearer #{token}"|)
+    end
+
+    IO.puts("")
   end
 
   # ── Steps ───────────────────────────────────────────────────────────────────
@@ -118,7 +128,18 @@ defmodule Shem.CLI.Setup do
     host_str = prompt("  Host [127.0.0.1]")
     port = if port_str == "", do: 4000, else: String.to_integer(port_str)
     host = if host_str == "", do: "127.0.0.1", else: host_str
-    {port, host}
+
+    token =
+      if host in ["127.0.0.1", "localhost", "::1"] do
+        nil
+      else
+        t = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
+        IO.puts("  Non-loopback bind — generated auth token (saved to config):")
+        IO.puts("    #{t}")
+        t
+      end
+
+    {port, host, token}
   end
 
   # ── Validation ──────────────────────────────────────────────────────────────
