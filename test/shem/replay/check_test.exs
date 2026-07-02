@@ -56,6 +56,25 @@ defmodule Shem.Replay.CheckTest do
     sid
   end
 
+  # Like craft_golden/1, but the recorded exchange is a FAILED LLM call
+  # (StubTransport returns {:error, reason}) instead of a content response.
+  defp craft_golden_with_failure(reason) do
+    {:ok, sid} = Shem.EventLog.start_session()
+
+    Shem.EventLog.append(sid, :agent_started, %{
+      task: "crafted task",
+      model: :default,
+      max_turns: 20,
+      preset: @preset_name,
+      project_context: nil
+    })
+
+    StubServer.push_response({:error, reason})
+    Shem.LLM.complete(%Request{prompt: "crafted", model: :default, session_id: sid})
+
+    sid
+  end
+
   defp classes(report), do: report.findings |> Enum.map(& &1.class) |> Enum.uniq()
 
   test "clean replay: unchanged preset reproduces the recording" do
@@ -99,6 +118,15 @@ defmodule Shem.Replay.CheckTest do
     assert {:ok, report} = Check.run(sid)
     assert :unused_calls in classes(report)
     refute :extra_calls in classes(report)
+  end
+
+  test "a recorded failed LLM call replays as an agent error and reports replay_error" do
+    sid = craft_golden_with_failure("boom")
+
+    assert {:ok, report} = Check.run(sid)
+    replay_error = Enum.find(report.findings, &(&1.class == :replay_error))
+    assert replay_error, inspect(report.findings)
+    assert is_binary(replay_error.detail)
   end
 
   test "unknown session is an error" do
