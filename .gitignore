@@ -52,3 +52,6 @@ SESSION_HANDOFF.md
 
 # Ponytail debt ledger — local tracking only
 /PONYTAIL_DEBT.md
+
+# Local project-work tooling (impeccable hooks)
+/.github/hooks/
