@@ -5,14 +5,14 @@
     "semantic_hash": "5929c731d5bca5967e0fb415b7fa9a01"
   },
   "config/config.exs": {
-    "mtime": 1780938937.7455606,
-    "ast_hash": "a8d927ca25bb4cd9eb96f0ab92abba96",
-    "semantic_hash": "a8d927ca25bb4cd9eb96f0ab92abba96"
+    "mtime": 1782068115.7795231,
+    "ast_hash": "cf86221c4e3b161ee486be447032906a",
+    "semantic_hash": "cf86221c4e3b161ee486be447032906a"
   },
   "config/dev.exs": {
-    "mtime": 1781057374.5400226,
-    "ast_hash": "eeded563797cd5db80dc29637d67cb06",
-    "semantic_hash": "eeded563797cd5db80dc29637d67cb06"
+    "mtime": 1782095436.554848,
+    "ast_hash": "0de01f5b47fa215f84e995d0020329a6",
+    "semantic_hash": "0de01f5b47fa215f84e995d0020329a6"
   },
   "config/prod.exs": {
     "mtime": 1780793350.0462098,
@@ -20,19 +20,19 @@
     "semantic_hash": "88716c74148b039ee7c4e6e6bf79f7f6"
   },
   "config/runtime.exs": {
-    "mtime": 1781206096.5384133,
-    "ast_hash": "9e0d216242b9cf360d3e11856d2e6ee1",
-    "semantic_hash": "9e0d216242b9cf360d3e11856d2e6ee1"
+    "mtime": 1783024066.9060183,
+    "ast_hash": "852379c7015a719cfe004b739f4e6f52",
+    "semantic_hash": ""
   },
   "config/test.exs": {
-    "mtime": 1781057377.6330388,
-    "ast_hash": "5fd2298a11180da824714a45005b4132",
-    "semantic_hash": "5fd2298a11180da824714a45005b4132"
+    "mtime": 1782068136.4531004,
+    "ast_hash": "020165180bbf6c6b336be2257bbf82ae",
+    "semantic_hash": "020165180bbf6c6b336be2257bbf82ae"
   },
   "install.sh": {
-    "mtime": 1781312790.3902333,
-    "ast_hash": "499fc8b2b24ee29453ae2f6405289b3b",
-    "semantic_hash": "499fc8b2b24ee29453ae2f6405289b3b"
+    "mtime": 1782145676.5959408,
+    "ast_hash": "0b7764279da00a8e4e19f0dfccbbe445",
+    "semantic_hash": "0b7764279da00a8e4e19f0dfccbbe445"
   },
   "lib/shem.ex": {
     "mtime": 1780506616.9768865,
@@ -45,24 +45,24 @@
     "semantic_hash": "2420cd47cc9774d968c82030d8fbd108"
   },
   "lib/shem/adversarial/hardening_job.ex": {
-    "mtime": 1781213042.0081058,
-    "ast_hash": "becea2a25c2b2c16e68dd9ee1562452a",
-    "semantic_hash": "becea2a25c2b2c16e68dd9ee1562452a"
+    "mtime": 1782331678.0,
+    "ast_hash": "fb8a1723038af7b8e814c99694d4d15f",
+    "semantic_hash": "fb8a1723038af7b8e814c99694d4d15f"
   },
   "lib/shem/agent.ex": {
-    "mtime": 1781301187.5579624,
-    "ast_hash": "bf02b65ff774fdc0c07fadd1090a32cc",
-    "semantic_hash": "bf02b65ff774fdc0c07fadd1090a32cc"
+    "mtime": 1782742280.8080893,
+    "ast_hash": "3da53b017c6098123bf193181b3cbcce",
+    "semantic_hash": ""
   },
   "lib/shem/agent/checkpoint.ex": {
-    "mtime": 1780772473.151842,
-    "ast_hash": "1a9addb1e0c91929509bba27f07dab16",
-    "semantic_hash": "1a9addb1e0c91929509bba27f07dab16"
+    "mtime": 1782742280.789089,
+    "ast_hash": "133a0f1576bbb87f6680e311015803cc",
+    "semantic_hash": ""
   },
   "lib/shem/agent/preset.ex": {
-    "mtime": 1780966768.85663,
-    "ast_hash": "d1c2a4940eb37488634bdebc4944557f",
-    "semantic_hash": "d1c2a4940eb37488634bdebc4944557f"
+    "mtime": 1782435890.9911253,
+    "ast_hash": "bb0a178fa215ecf4451586c12e154d36",
+    "semantic_hash": "bb0a178fa215ecf4451586c12e154d36"
   },
   "lib/shem/agent/preset_store.ex": {
     "mtime": 1781194895.8305905,
@@ -70,29 +70,29 @@
     "semantic_hash": "8229d0299ae2895e44a9f3b48ff14a34"
   },
   "lib/shem/agent/server.ex": {
-    "mtime": 1781301407.8077495,
-    "ast_hash": "96de6392463261068cecd0f307ba0007",
-    "semantic_hash": "96de6392463261068cecd0f307ba0007"
+    "mtime": 1782742280.7500885,
+    "ast_hash": "ab50ed020cc6da590eed1d3903eb455a",
+    "semantic_hash": ""
   },
   "lib/shem/agent/tool_dispatch.ex": {
-    "mtime": 1781213053.6552823,
-    "ast_hash": "bd315cfc211dceb5ef3f22f3d5ced8c1",
-    "semantic_hash": "bd315cfc211dceb5ef3f22f3d5ced8c1"
+    "mtime": 1783023876.8744829,
+    "ast_hash": "ea594776afbe47108fe9b5aaed58709a",
+    "semantic_hash": ""
   },
   "lib/shem/agent/turn.ex": {
-    "mtime": 1781137458.0,
-    "ast_hash": "96a338c30435a0bb09cf02ef251f3942",
-    "semantic_hash": "96a338c30435a0bb09cf02ef251f3942"
+    "mtime": 1782401613.8529177,
+    "ast_hash": "fc9e5ff32daf1011484dc53b242eb5c7",
+    "semantic_hash": "fc9e5ff32daf1011484dc53b242eb5c7"
   },
   "lib/shem/agent_supervisor.ex": {
-    "mtime": 1781220820.54216,
-    "ast_hash": "03e5ca7c78da9351084a15ffc73f6c6c",
-    "semantic_hash": "03e5ca7c78da9351084a15ffc73f6c6c"
+    "mtime": 1782331678.0,
+    "ast_hash": "734f0632278ef7621f12c37dbf12a531",
+    "semantic_hash": "734f0632278ef7621f12c37dbf12a531"
   },
   "lib/shem/application.ex": {
-    "mtime": 1781057370.2910004,
-    "ast_hash": "365879476aad3943bc9dbf08738d5243",
-    "semantic_hash": "365879476aad3943bc9dbf08738d5243"
+    "mtime": 1782569081.2324584,
+    "ast_hash": "183a6e3b636be8ae7b8bd52aeec158f4",
+    "semantic_hash": ""
   },
   "lib/shem/cli/banner.ex": {
     "mtime": 1781200661.3955448,
@@ -105,14 +105,14 @@
     "semantic_hash": "205d4c29bea47421aadf19cf32874d13"
   },
   "lib/shem/cli/config_file.ex": {
-    "mtime": 1781200534.8236413,
-    "ast_hash": "d1793394c5939b15ce2e15b1556f05ad",
-    "semantic_hash": "d1793394c5939b15ce2e15b1556f05ad"
+    "mtime": 1782061847.9486654,
+    "ast_hash": "18ffc7cc88df18f6a1ace747c662b001",
+    "semantic_hash": "18ffc7cc88df18f6a1ace747c662b001"
   },
   "lib/shem/cli/setup.ex": {
-    "mtime": 1781205507.850019,
-    "ast_hash": "bdc5fe4b83c9d0dc9490dcdca14f2972",
-    "semantic_hash": "bdc5fe4b83c9d0dc9490dcdca14f2972"
+    "mtime": 1783024084.9823546,
+    "ast_hash": "b65e2b917e80902d91481bae487f76bf",
+    "semantic_hash": ""
   },
   "lib/shem/cli/status.ex": {
     "mtime": 1781205514.9292145,
@@ -120,8 +120,8 @@
     "semantic_hash": "46b1520ea5501dc26942376bdda34fc3"
   },
   "lib/shem/cluster.ex": {
-    "mtime": 1781373903.1821468,
-    "ast_hash": "92e56f0b8aa40f39cd64e08cda294ff2",
+    "mtime": 1782476224.8421326,
+    "ast_hash": "0fac8bdb8552ec16855999323ccc2d24",
     "semantic_hash": ""
   },
   "lib/shem/context/project.ex": {
@@ -130,34 +130,34 @@
     "semantic_hash": "a4203598b9bfacca6fa06dcf813ef8c7"
   },
   "lib/shem/event_log.ex": {
-    "mtime": 1781309507.8023806,
-    "ast_hash": "58ba0e08dd13613062c16e6a69fb21a5",
-    "semantic_hash": "58ba0e08dd13613062c16e6a69fb21a5"
+    "mtime": 1782742280.7310882,
+    "ast_hash": "0952d0b4226dbde280e4fc759b5cc8a3",
+    "semantic_hash": ""
   },
   "lib/shem/event_log/chain.ex": {
-    "mtime": 1781309296.0765467,
+    "mtime": 1782730225.0,
     "ast_hash": "4374676ef31b4bbe2ca83c8b64eb9b38",
     "semantic_hash": "4374676ef31b4bbe2ca83c8b64eb9b38"
   },
   "lib/shem/event_log/dets_store.ex": {
-    "mtime": 1780688997.4411073,
-    "ast_hash": "81717b5415505081d470b8fff39f0434",
-    "semantic_hash": "81717b5415505081d470b8fff39f0434"
+    "mtime": 1782742280.7310882,
+    "ast_hash": "f1edbae82b97adfb29a562825dce83a7",
+    "semantic_hash": ""
   },
   "lib/shem/event_log/event.ex": {
-    "mtime": 1781308816.777114,
-    "ast_hash": "acd4ad3532f44d3c8ff963d63bd6095d",
-    "semantic_hash": "acd4ad3532f44d3c8ff963d63bd6095d"
+    "mtime": 1782742280.7310882,
+    "ast_hash": "7816d0093337ccea5dbdbe9cd8da03e8",
+    "semantic_hash": ""
   },
   "lib/shem/event_log/fake_store.ex": {
-    "mtime": 1780688997.4413838,
-    "ast_hash": "a341ad77e6c615fd433f948137e591a2",
-    "semantic_hash": "a341ad77e6c615fd433f948137e591a2"
+    "mtime": 1782742280.7310882,
+    "ast_hash": "906a5ea5479c70f146efa409200b7caf",
+    "semantic_hash": ""
   },
   "lib/shem/event_log/history_scanner.ex": {
-    "mtime": 1781185283.051373,
-    "ast_hash": "e96428691c9b7f7e7e320cc1b614da93",
-    "semantic_hash": "e96428691c9b7f7e7e320cc1b614da93"
+    "mtime": 1782742280.7690887,
+    "ast_hash": "07cb30d4501cbf54d628c8a03a0a70cf",
+    "semantic_hash": ""
   },
   "lib/shem/event_log/replay.ex": {
     "mtime": 1780511421.1036458,
@@ -170,9 +170,9 @@
     "semantic_hash": "104c7b64a266f6839be0c031e5b283bd"
   },
   "lib/shem/event_log/store.ex": {
-    "mtime": 1780510864.8290353,
-    "ast_hash": "005b43547b34122f0b37f91d806f935d",
-    "semantic_hash": "005b43547b34122f0b37f91d806f935d"
+    "mtime": 1781526985.5194728,
+    "ast_hash": "71e64563e540c860d59624de84915a0c",
+    "semantic_hash": "71e64563e540c860d59624de84915a0c"
   },
   "lib/shem/guardrails.ex": {
     "mtime": 1781137800.943665,
@@ -180,14 +180,14 @@
     "semantic_hash": "e458db2db82c61d9fcff8b684c21d7f2"
   },
   "lib/shem/http/router.ex": {
-    "mtime": 1781189067.6627622,
-    "ast_hash": "ed6efccc24d7ab7cf7e89e443693fe4d",
-    "semantic_hash": "ed6efccc24d7ab7cf7e89e443693fe4d"
+    "mtime": 1783023970.824231,
+    "ast_hash": "1f2222e5cf21a49342357ab54c4fb12c",
+    "semantic_hash": ""
   },
   "lib/shem/lab/executor.ex": {
-    "mtime": 1780920781.3579414,
-    "ast_hash": "fac1c5aeccc62f58380e8d1c981ee0db",
-    "semantic_hash": "fac1c5aeccc62f58380e8d1c981ee0db"
+    "mtime": 1783023740.9079523,
+    "ast_hash": "a499d4127517388e11a0ed734324bee1",
+    "semantic_hash": ""
   },
   "lib/shem/lab/executor/backend.ex": {
     "mtime": 1780920438.3148327,
@@ -195,9 +195,9 @@
     "semantic_hash": "491189e134d70da7a4965f7834cbf312"
   },
   "lib/shem/lab/executor/backend/container.ex": {
-    "mtime": 1780921659.1452897,
-    "ast_hash": "f8fdc5b42512fd9c3178e13de9b929a5",
-    "semantic_hash": "f8fdc5b42512fd9c3178e13de9b929a5"
+    "mtime": 1781660019.9965096,
+    "ast_hash": "223bd4ebfcf151188e4f3edd31cffd3b",
+    "semantic_hash": "223bd4ebfcf151188e4f3edd31cffd3b"
   },
   "lib/shem/lab/executor/backend/local.ex": {
     "mtime": 1780920441.1608772,
@@ -205,24 +205,24 @@
     "semantic_hash": "18dda90bb5356d26954eee3442f49f9d"
   },
   "lib/shem/lab/graduation_gate.ex": {
-    "mtime": 1781302066.8040895,
-    "ast_hash": "66daa09d52d733a768d00a9f80397152",
-    "semantic_hash": "66daa09d52d733a768d00a9f80397152"
+    "mtime": 1783023756.3272395,
+    "ast_hash": "4e5778b8a0f324a19c5e281772e5a739",
+    "semantic_hash": ""
   },
   "lib/shem/lab/registry.ex": {
-    "mtime": 1780701299.7873418,
-    "ast_hash": "a0ff11d18dd655b25c3b6a12e3043e86",
-    "semantic_hash": "a0ff11d18dd655b25c3b6a12e3043e86"
+    "mtime": 1782509374.1013296,
+    "ast_hash": "66ac3504b2efe74f01189411697518e7",
+    "semantic_hash": ""
   },
   "lib/shem/lab/workspace.ex": {
-    "mtime": 1780530929.0,
-    "ast_hash": "ee2f1ef1fa67c6e04bd00a6e16cd7a60",
-    "semantic_hash": "ee2f1ef1fa67c6e04bd00a6e16cd7a60"
+    "mtime": 1782509374.1023297,
+    "ast_hash": "20fe85579c7927242d3caa5012bb4950",
+    "semantic_hash": ""
   },
   "lib/shem/llm.ex": {
-    "mtime": 1780884912.0446782,
-    "ast_hash": "02b7e6450f5250cd98e3a49a37a16258",
-    "semantic_hash": "02b7e6450f5250cd98e3a49a37a16258"
+    "mtime": 1782072765.001604,
+    "ast_hash": "c7c231aaeb81444d62ed2a9a19dd38cb",
+    "semantic_hash": "c7c231aaeb81444d62ed2a9a19dd38cb"
   },
   "lib/shem/llm/branch.ex": {
     "mtime": 1780688997.4416108,
@@ -240,34 +240,34 @@
     "semantic_hash": "6fae19a0ef3311bbe4674eef404634e3"
   },
   "lib/shem/llm/middleware/anthropic_transport.ex": {
-    "mtime": 1780880667.5662546,
+    "mtime": 1781556712.0,
     "ast_hash": "7b7deabe98610368a934c696e3f3a9b1",
     "semantic_hash": "7b7deabe98610368a934c696e3f3a9b1"
   },
   "lib/shem/llm/middleware/budget_check.ex": {
-    "mtime": 1781095278.184914,
-    "ast_hash": "d3b480ddb9b8a6df28d752b7a6f4571c",
-    "semantic_hash": "d3b480ddb9b8a6df28d752b7a6f4571c"
+    "mtime": 1782061614.5611317,
+    "ast_hash": "2ba964f14a6bd7ddd478a552061e656f",
+    "semantic_hash": "2ba964f14a6bd7ddd478a552061e656f"
   },
   "lib/shem/llm/middleware/event_logger.ex": {
-    "mtime": 1780878766.1932032,
-    "ast_hash": "b09646f92ae9cf196c53561b430d898c",
-    "semantic_hash": "b09646f92ae9cf196c53561b430d898c"
+    "mtime": 1782061614.5611317,
+    "ast_hash": "9814329845374c332b2063f21c90ddfb",
+    "semantic_hash": "9814329845374c332b2063f21c90ddfb"
   },
   "lib/shem/llm/middleware/llama_cpp_transport.ex": {
-    "mtime": 1780879756.3166063,
+    "mtime": 1781556712.0,
     "ast_hash": "8420f9fc4806a20dbcacc367a144c495",
     "semantic_hash": "8420f9fc4806a20dbcacc367a144c495"
   },
   "lib/shem/llm/middleware/ollama_transport.ex": {
-    "mtime": 1780880947.2237012,
+    "mtime": 1781556712.0,
     "ast_hash": "8a45c9f3c63b03baa91a36095f020090",
     "semantic_hash": "8a45c9f3c63b03baa91a36095f020090"
   },
   "lib/shem/llm/middleware/openai_transport.ex": {
-    "mtime": 1780879561.2609675,
-    "ast_hash": "48e1c3077b85ea1f7554bea6e58d5b35",
-    "semantic_hash": "48e1c3077b85ea1f7554bea6e58d5b35"
+    "mtime": 1781553437.7414308,
+    "ast_hash": "388af6fe38c47563f93ccb333b030fce",
+    "semantic_hash": "388af6fe38c47563f93ccb333b030fce"
   },
   "lib/shem/llm/middleware/router_transport.ex": {
     "mtime": 1780878386.5183682,
@@ -285,7 +285,7 @@
     "semantic_hash": "d23a5b6d785c4d65669d3255b0ad0ede"
   },
   "lib/shem/llm/replay_transport.ex": {
-    "mtime": 1780855905.0,
+    "mtime": 1781556712.0,
     "ast_hash": "2ffa30a48a5e7b4841159b2043bceb40",
     "semantic_hash": "2ffa30a48a5e7b4841159b2043bceb40"
   },
@@ -300,9 +300,9 @@
     "semantic_hash": "0b8c690b9341d8d0fae8155019606459"
   },
   "lib/shem/llm/response.ex": {
-    "mtime": 1780852969.8303626,
-    "ast_hash": "c7bf8bd7245e490b29a316b2df8b9544",
-    "semantic_hash": "c7bf8bd7245e490b29a316b2df8b9544"
+    "mtime": 1781553229.7432115,
+    "ast_hash": "186c2b5464d3753fa2d693a566fda8b9",
+    "semantic_hash": "186c2b5464d3753fa2d693a566fda8b9"
   },
   "lib/shem/llm/router.ex": {
     "mtime": 1780791276.111976,
@@ -310,7 +310,7 @@
     "semantic_hash": "23a3eb7e50c646a66315bb569ba6fc5c"
   },
   "lib/shem/llm/stub_transport.ex": {
-    "mtime": 1780878383.2393425,
+    "mtime": 1781556712.0,
     "ast_hash": "3827f23686866dba7d097c376367e061",
     "semantic_hash": "3827f23686866dba7d097c376367e061"
   },
@@ -345,19 +345,19 @@
     "semantic_hash": "d54dff934b99acb840000d45c4308f38"
   },
   "lib/shem/mcp/handlers/agent_common.ex": {
-    "mtime": 1781285504.085287,
-    "ast_hash": "39c4363bd0931ee3960977494a5fb964",
-    "semantic_hash": "39c4363bd0931ee3960977494a5fb964"
+    "mtime": 1782061614.5611317,
+    "ast_hash": "cff8d42f45b2cb108e567688f74b8576",
+    "semantic_hash": "cff8d42f45b2cb108e567688f74b8576"
   },
   "lib/shem/mcp/handlers/agent_status.ex": {
-    "mtime": 1781284178.7456424,
-    "ast_hash": "5702939ae00a0a1de2c999d2fc613f70",
-    "semantic_hash": "5702939ae00a0a1de2c999d2fc613f70"
+    "mtime": 1782332402.1120212,
+    "ast_hash": "c4b8879a1afda4d8c820cb02f2c089b5",
+    "semantic_hash": "c4b8879a1afda4d8c820cb02f2c089b5"
   },
   "lib/shem/mcp/handlers/execute_code.ex": {
-    "mtime": 1780537185.1728492,
-    "ast_hash": "c6c1e2783de60a27c6342bb5df29279c",
-    "semantic_hash": "c6c1e2783de60a27c6342bb5df29279c"
+    "mtime": 1783023742.3199787,
+    "ast_hash": "abdfae93a9d8d49c2a55459498c61e3e",
+    "semantic_hash": ""
   },
   "lib/shem/mcp/handlers/graduate_tool.ex": {
     "mtime": 1780537185.1729083,
@@ -365,14 +365,14 @@
     "semantic_hash": "e19f4934175ef33355f3c7576a92949b"
   },
   "lib/shem/mcp/handlers/invoke_tool.ex": {
-    "mtime": 1780537916.8726654,
-    "ast_hash": "c50fdc19dacda69d92f25200f4f8e82b",
-    "semantic_hash": "c50fdc19dacda69d92f25200f4f8e82b"
+    "mtime": 1783023879.9175396,
+    "ast_hash": "6dcd5acd9101bf652b25beb5917c20fa",
+    "semantic_hash": ""
   },
   "lib/shem/mcp/handlers/list_agents.ex": {
-    "mtime": 1781284448.68014,
-    "ast_hash": "2ae5078a0540ce6ce02843a6916d145b",
-    "semantic_hash": "2ae5078a0540ce6ce02843a6916d145b"
+    "mtime": 1781474676.3623233,
+    "ast_hash": "a6e8be3ac489f797bd286d66715750cc",
+    "semantic_hash": "a6e8be3ac489f797bd286d66715750cc"
   },
   "lib/shem/mcp/handlers/list_tools.ex": {
     "mtime": 1780537185.1729083,
@@ -380,9 +380,9 @@
     "semantic_hash": "6c6ff3a7428d4e375f0ceea900fa5eaa"
   },
   "lib/shem/mcp/handlers/spawn_agent.ex": {
-    "mtime": 1781283954.0392904,
-    "ast_hash": "53bab06ce2a5d4699b59bcdbffe6ad5e",
-    "semantic_hash": "53bab06ce2a5d4699b59bcdbffe6ad5e"
+    "mtime": 1782332373.715242,
+    "ast_hash": "38372071fc009e47878213cee79ef9fc",
+    "semantic_hash": "38372071fc009e47878213cee79ef9fc"
   },
   "lib/shem/mcp/handlers/stop_agent.ex": {
     "mtime": 1781284755.5456257,
@@ -390,9 +390,9 @@
     "semantic_hash": "bbb5c1063f8964794c26856300f01b85"
   },
   "lib/shem/mcp/router.ex": {
-    "mtime": 1781312014.8966584,
-    "ast_hash": "26e2c410f8be7c5b60d2dde0d98d32e7",
-    "semantic_hash": "26e2c410f8be7c5b60d2dde0d98d32e7"
+    "mtime": 1783011889.7777371,
+    "ast_hash": "fbd52ed0bcec1e30a6e6d0dc8ba4e028",
+    "semantic_hash": ""
   },
   "lib/shem/mcp/schema.ex": {
     "mtime": 1780537185.1729083,
@@ -400,9 +400,9 @@
     "semantic_hash": "482534a46a4ccd76d6fcbe29dceedf94"
   },
   "lib/shem/mcp/server.ex": {
-    "mtime": 1781201839.8687205,
-    "ast_hash": "436c2b6e99e200c59de8a885e279bbf0",
-    "semantic_hash": "436c2b6e99e200c59de8a885e279bbf0"
+    "mtime": 1783024053.5377698,
+    "ast_hash": "2b723333e7e2f3b4a95afb6c0b5b8184",
+    "semantic_hash": ""
   },
   "lib/shem/mcp/session_registry.ex": {
     "mtime": 1780537185.1729083,
@@ -415,19 +415,19 @@
     "semantic_hash": "03be470d2e2bbd3e605f0f392dcde0e5"
   },
   "lib/shem/process_registry.ex": {
-    "mtime": 1781220814.8339992,
-    "ast_hash": "6424f68c8552c3140de91fc4b3d30710",
-    "semantic_hash": "6424f68c8552c3140de91fc4b3d30710"
+    "mtime": 1781404235.6630106,
+    "ast_hash": "8e56c889ad33020303106ca9fdc29032",
+    "semantic_hash": "8e56c889ad33020303106ca9fdc29032"
   },
   "lib/shem/rest/handlers/agents.ex": {
-    "mtime": 1781213376.9206975,
-    "ast_hash": "6e7782ad1a7cedc6bffe2f6fa268f74f",
-    "semantic_hash": "6e7782ad1a7cedc6bffe2f6fa268f74f"
+    "mtime": 1783025624.192508,
+    "ast_hash": "dba43c8f904ad6f26dddeff3d021ca82",
+    "semantic_hash": ""
   },
   "lib/shem/rest/handlers/health.ex": {
     "mtime": 1781373932.7379355,
     "ast_hash": "d361ac8171c106c0715202fb52716a17",
-    "semantic_hash": ""
+    "semantic_hash": "d361ac8171c106c0715202fb52716a17"
   },
   "lib/shem/rest/handlers/presets.ex": {
     "mtime": 1781051329.7739873,
@@ -440,13 +440,13 @@
     "semantic_hash": "94f297639d88823328c61f5325ac1c05"
   },
   "lib/shem/rest/handlers/sessions.ex": {
-    "mtime": 1781309514.5277562,
-    "ast_hash": "0fbdf5841fe907e06ddd052c94344300",
-    "semantic_hash": "0fbdf5841fe907e06ddd052c94344300"
+    "mtime": 1782742280.907091,
+    "ast_hash": "3861082ca02736fc7739f67780073b11",
+    "semantic_hash": ""
   },
   "lib/shem/rest/router.ex": {
-    "mtime": 1781373936.1960278,
-    "ast_hash": "7be572562c68c6c54294722931655e75",
+    "mtime": 1783025490.4342477,
+    "ast_hash": "1d775f4653ef27a8b0b8958faa051974",
     "semantic_hash": ""
   },
   "lib/shem/shadow/agent.ex": {
@@ -460,9 +460,9 @@
     "semantic_hash": "954976865f3bd66f267f5477b8b726da"
   },
   "lib/shem/tool.ex": {
-    "mtime": 1780537185.1729083,
-    "ast_hash": "a50bd26f341cc46b2fe927c1cf577a49",
-    "semantic_hash": "a50bd26f341cc46b2fe927c1cf577a49"
+    "mtime": 1781659445.6952503,
+    "ast_hash": "69807dee3244679b5eac064c2b7bca81",
+    "semantic_hash": "69807dee3244679b5eac064c2b7bca81"
   },
   "lib/shem/trust/store.ex": {
     "mtime": 1781301978.9438412,
@@ -470,14 +470,14 @@
     "semantic_hash": "ab401056a8b715b6059ae0ff4b382c5b"
   },
   "lib/shem/tui/agent_view.ex": {
-    "mtime": 1781294758.4926572,
-    "ast_hash": "5e14ff70254c78de336f0a78744135f4",
-    "semantic_hash": "5e14ff70254c78de336f0a78744135f4"
+    "mtime": 1781554724.3281503,
+    "ast_hash": "ef5864ae64e201ac5be89002f2ae2aed",
+    "semantic_hash": "ef5864ae64e201ac5be89002f2ae2aed"
   },
   "lib/shem/tui/app.ex": {
-    "mtime": 1781301618.6241767,
-    "ast_hash": "2bb8fd7868988251a6d3c9ef27ea42ec",
-    "semantic_hash": "2bb8fd7868988251a6d3c9ef27ea42ec"
+    "mtime": 1782071433.345167,
+    "ast_hash": "1023e8a8dc353afc1788d20e128cc873",
+    "semantic_hash": "1023e8a8dc353afc1788d20e128cc873"
   },
   "lib/shem/tui/autocomplete.ex": {
     "mtime": 1781293376.8877857,
@@ -495,9 +495,9 @@
     "semantic_hash": "fd6bcd23299259149f55e373a837d0d6"
   },
   "lib/shem/tui/stream_sink.ex": {
-    "mtime": 1780916143.5078585,
-    "ast_hash": "c58ce9ece30bb00648f0e4e997261043",
-    "semantic_hash": "c58ce9ece30bb00648f0e4e997261043"
+    "mtime": 1781554712.6342175,
+    "ast_hash": "38f3d13f09a994801a1c4748500fd1cd",
+    "semantic_hash": "38f3d13f09a994801a1c4748500fd1cd"
   },
   "lib/shem/tui/system_stats.ex": {
     "mtime": 1781288771.436838,
@@ -505,9 +505,9 @@
     "semantic_hash": "90d4afc7d5ecd454f07854e3cdd52329"
   },
   "lib/shem/tui/views/dashboard.ex": {
-    "mtime": 1781288808.8220763,
-    "ast_hash": "1ffafdc0ef93eae669099cf1453306e7",
-    "semantic_hash": "1ffafdc0ef93eae669099cf1453306e7"
+    "mtime": 1782071788.658464,
+    "ast_hash": "e25a4553f7962168529766ff77df6c8f",
+    "semantic_hash": "e25a4553f7962168529766ff77df6c8f"
   },
   "lib/shem/tui/views/history.ex": {
     "mtime": 1781294787.3914921,
@@ -515,9 +515,9 @@
     "semantic_hash": "5b665a1394054b1f743d601704d1ed80"
   },
   "lib/shem/tui/views/interactive.ex": {
-    "mtime": 1781301632.7964952,
-    "ast_hash": "a29103a6f9d2e1e3d106a0b56854f95b",
-    "semantic_hash": "a29103a6f9d2e1e3d106a0b56854f95b"
+    "mtime": 1781473589.111145,
+    "ast_hash": "bce6d3500b5ec21fc1eaeff41faac233",
+    "semantic_hash": "bce6d3500b5ec21fc1eaeff41faac233"
   },
   "lib/shem/tui/welcome.ex": {
     "mtime": 1781205977.7494435,
@@ -525,9 +525,9 @@
     "semantic_hash": "290856e0aaf167e9af724ec55f6998a4"
   },
   "mix.exs": {
-    "mtime": 1781312830.9560125,
-    "ast_hash": "76c8d12ed0c58c10e2ac02ee25bd8b21",
-    "semantic_hash": "76c8d12ed0c58c10e2ac02ee25bd8b21"
+    "mtime": 1783024693.5846703,
+    "ast_hash": "35ba3568d8d436cc3591a7e39fbd2eee",
+    "semantic_hash": ""
   },
   "priv/waf": {
     "mtime": 1780507712.156243,
@@ -560,9 +560,9 @@
     "semantic_hash": "71af5bf3b3535f0f5d5746018d16ff62"
   },
   "test/shem/agent/checkpoint_test.exs": {
-    "mtime": 1780772481.216895,
-    "ast_hash": "78f027fb3f69c334085b119bf72f9add",
-    "semantic_hash": "78f027fb3f69c334085b119bf72f9add"
+    "mtime": 1782742280.789089,
+    "ast_hash": "8d506e0da136f03170fbfb0e57d5dd06",
+    "semantic_hash": ""
   },
   "test/shem/agent/conversational_test.exs": {
     "mtime": 1781213194.5087996,
@@ -575,34 +575,34 @@
     "semantic_hash": "623dbb362ee7bd8611fb5aa753d16b66"
   },
   "test/shem/agent/preset_test.exs": {
-    "mtime": 1780966763.095506,
-    "ast_hash": "ed7fde8f02deb9b7200f86ed0b6286d6",
-    "semantic_hash": "ed7fde8f02deb9b7200f86ed0b6286d6"
+    "mtime": 1782435830.4627182,
+    "ast_hash": "039ee1732b986fe2d6c3b608728c0eb2",
+    "semantic_hash": "039ee1732b986fe2d6c3b608728c0eb2"
   },
   "test/shem/agent/server_test.exs": {
-    "mtime": 1781311000.3925867,
-    "ast_hash": "f4dc71d15ff7acd26d9a109f6c35c5c6",
-    "semantic_hash": "f4dc71d15ff7acd26d9a109f6c35c5c6"
+    "mtime": 1781472911.8643901,
+    "ast_hash": "be9aeba64120c11973ca4a75b94511b7",
+    "semantic_hash": "be9aeba64120c11973ca4a75b94511b7"
   },
   "test/shem/agent/tool_dispatch_test.exs": {
-    "mtime": 1781136849.7322776,
-    "ast_hash": "0838fbed5d0ae126c13e5bc48327171b",
-    "semantic_hash": "0838fbed5d0ae126c13e5bc48327171b"
+    "mtime": 1782094317.9642096,
+    "ast_hash": "73355a310dd020d21361a52d1c640f8c",
+    "semantic_hash": "73355a310dd020d21361a52d1c640f8c"
   },
   "test/shem/agent/turn_test.exs": {
-    "mtime": 1780885829.079995,
-    "ast_hash": "e37ea57a116383da0ecaa05ee0a4151b",
-    "semantic_hash": "e37ea57a116383da0ecaa05ee0a4151b"
+    "mtime": 1782401613.8529177,
+    "ast_hash": "a2dfc4152f5c3a702a85f607b99a90dd",
+    "semantic_hash": "a2dfc4152f5c3a702a85f607b99a90dd"
   },
   "test/shem/agent_supervisor_test.exs": {
-    "mtime": 1781213263.0756917,
-    "ast_hash": "f2977e79a029630eac8c7640a76aa5cf",
-    "semantic_hash": "f2977e79a029630eac8c7640a76aa5cf"
+    "mtime": 1781404665.2562373,
+    "ast_hash": "719fb15461109a2bd5ada7cb999387a2",
+    "semantic_hash": "719fb15461109a2bd5ada7cb999387a2"
   },
   "test/shem/agent_test.exs": {
-    "mtime": 1781213325.8475122,
-    "ast_hash": "1e3a30246fdc97aff94dff746875e684",
-    "semantic_hash": "1e3a30246fdc97aff94dff746875e684"
+    "mtime": 1782327614.505964,
+    "ast_hash": "30ed01c89ade3aa8b071c32cf8114809",
+    "semantic_hash": "30ed01c89ade3aa8b071c32cf8114809"
   },
   "test/shem/application_executor_test.exs": {
     "mtime": 1780921140.1600304,
@@ -610,9 +610,9 @@
     "semantic_hash": "36d1d91a4d29ed40f35899e10ab5c844"
   },
   "test/shem/cli/config_file_test.exs": {
-    "mtime": 1781200481.1771936,
-    "ast_hash": "2f97abf92983e9c9c23dd28f7a39d1a1",
-    "semantic_hash": "2f97abf92983e9c9c23dd28f7a39d1a1"
+    "mtime": 1782061835.9834316,
+    "ast_hash": "bd58e85c6101ec857fc19b394fd7aa32",
+    "semantic_hash": "bd58e85c6101ec857fc19b394fd7aa32"
   },
   "test/shem/cli/config_test.exs": {
     "mtime": 1781201145.1455276,
@@ -620,9 +620,9 @@
     "semantic_hash": "63c81c43bb402decf6d19d9a961f7274"
   },
   "test/shem/cluster_test.exs": {
-    "mtime": 1781379212.4339974,
-    "ast_hash": "d42c1c203fe6d408771f13362904abec",
-    "semantic_hash": ""
+    "mtime": 1781405499.6952155,
+    "ast_hash": "e990e48b1894e21c9ab064421d0558ef",
+    "semantic_hash": "e990e48b1894e21c9ab064421d0558ef"
   },
   "test/shem/context/project_test.exs": {
     "mtime": 1780966874.0019097,
@@ -635,9 +635,9 @@
     "semantic_hash": "988ed846cc89c5e2d215e2dc321e3bda"
   },
   "test/shem/event_log/dets_store_test.exs": {
-    "mtime": 1780511013.1920924,
-    "ast_hash": "14f56d1459c445f497a9a67e58e3d5ac",
-    "semantic_hash": "14f56d1459c445f497a9a67e58e3d5ac"
+    "mtime": 1782742280.7310882,
+    "ast_hash": "0ee0b05e1b5701ae900a6fdff3b39d9e",
+    "semantic_hash": ""
   },
   "test/shem/event_log/event_test.exs": {
     "mtime": 1780510686.562015,
@@ -665,9 +665,9 @@
     "semantic_hash": "c908b302abd0eb2d03ed514c5548ff1c"
   },
   "test/shem/event_log_test.exs": {
-    "mtime": 1781309458.426382,
-    "ast_hash": "1d58121f8081669464923254f0d23c95",
-    "semantic_hash": "1d58121f8081669464923254f0d23c95"
+    "mtime": 1781527308.355324,
+    "ast_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7",
+    "semantic_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7"
   },
   "test/shem/guardrails_test.exs": {
     "mtime": 1781137800.9437613,
@@ -680,9 +680,9 @@
     "semantic_hash": "8df7927bff9e2d16f23a43776346542b"
   },
   "test/shem/lab/executor/backend_container_test.exs": {
-    "mtime": 1780920713.1559553,
-    "ast_hash": "6459a8facc23310238a1deff43e1326e",
-    "semantic_hash": "6459a8facc23310238a1deff43e1326e"
+    "mtime": 1781659653.1931312,
+    "ast_hash": "7fb38d6eeef20c14357a4dcac3d12962",
+    "semantic_hash": "7fb38d6eeef20c14357a4dcac3d12962"
   },
   "test/shem/lab/executor/backend_local_test.exs": {
     "mtime": 1780920429.8987005,
@@ -700,19 +700,19 @@
     "semantic_hash": "066ea5c0675b1a27db03f624a17da5f2"
   },
   "test/shem/lab/graduation_gate_test.exs": {
-    "mtime": 1781302027.5640805,
-    "ast_hash": "fd7cb3a7dabdc0744e78a1566a0f4a46",
-    "semantic_hash": "fd7cb3a7dabdc0744e78a1566a0f4a46"
+    "mtime": 1782411558.4639041,
+    "ast_hash": "37af1b968e54eb9403ef1607856b0451",
+    "semantic_hash": "37af1b968e54eb9403ef1607856b0451"
   },
   "test/shem/lab/registry_test.exs": {
-    "mtime": 1780701290.4041266,
-    "ast_hash": "26b9c8e3ad85ea30196c64fb47856dde",
-    "semantic_hash": "26b9c8e3ad85ea30196c64fb47856dde"
+    "mtime": 1782439051.4530578,
+    "ast_hash": "6eb50dfc92883cdd0f984ac17ac73cf0",
+    "semantic_hash": "6eb50dfc92883cdd0f984ac17ac73cf0"
   },
   "test/shem/lab/workspace_test.exs": {
-    "mtime": 1780525067.072932,
-    "ast_hash": "5d863568e4355a033da855f2bf23e534",
-    "semantic_hash": "5d863568e4355a033da855f2bf23e534"
+    "mtime": 1782431778.9594285,
+    "ast_hash": "800b84862a52ab69073b3918f5475f16",
+    "semantic_hash": "800b84862a52ab69073b3918f5475f16"
   },
   "test/shem/llm/branch_test.exs": {
     "mtime": 1780688997.443013,
@@ -755,9 +755,9 @@
     "semantic_hash": "cbec4bc67da95b30edaa69b0d8a7c573"
   },
   "test/shem/llm/middleware/openai_transport_test.exs": {
-    "mtime": 1780879542.2149596,
-    "ast_hash": "16f978e31b820b4af81d8b4806ce401a",
-    "semantic_hash": "16f978e31b820b4af81d8b4806ce401a"
+    "mtime": 1781553409.957409,
+    "ast_hash": "364870b7118115795ae8d9e697d7fe1f",
+    "semantic_hash": "364870b7118115795ae8d9e697d7fe1f"
   },
   "test/shem/llm/middleware/router_transport_test.exs": {
     "mtime": 1780775878.6847906,
@@ -800,9 +800,9 @@
     "semantic_hash": "fb51111fb19ea25f5f0d1d6e89efbcbc"
   },
   "test/shem/llm_test.exs": {
-    "mtime": 1780878425.3746727,
-    "ast_hash": "96710c4878dd23d970c815bd04372c23",
-    "semantic_hash": "96710c4878dd23d970c815bd04372c23"
+    "mtime": 1781472925.8495522,
+    "ast_hash": "07266a15b2b9d229f75a08566151fb16",
+    "semantic_hash": "07266a15b2b9d229f75a08566151fb16"
   },
   "test/shem/mcp/agent_tools_integration_test.exs": {
     "mtime": 1781285098.458453,
@@ -850,29 +850,29 @@
     "semantic_hash": "c2a26949f7bcab72c466f6d549908833"
   },
   "test/shem/mcp/handlers/graduate_tool_test.exs": {
-    "mtime": 1780537185.1734722,
-    "ast_hash": "ddbeeb3de013e7c2f09b774a2809a3d1",
-    "semantic_hash": "ddbeeb3de013e7c2f09b774a2809a3d1"
+    "mtime": 1781659487.8404913,
+    "ast_hash": "90f6bae091b078c7a2e36907222346fc",
+    "semantic_hash": "90f6bae091b078c7a2e36907222346fc"
   },
   "test/shem/mcp/handlers/invoke_tool_test.exs": {
-    "mtime": 1780537185.1734722,
-    "ast_hash": "53a40099cf0804fb0e1b29ac44151386",
-    "semantic_hash": "53a40099cf0804fb0e1b29ac44151386"
+    "mtime": 1781659476.877171,
+    "ast_hash": "bd8ce2baf029e5562592d90abf0f0ae6",
+    "semantic_hash": "bd8ce2baf029e5562592d90abf0f0ae6"
   },
   "test/shem/mcp/handlers/list_agents_test.exs": {
-    "mtime": 1781284437.250942,
-    "ast_hash": "9529a5764d04b1ff3acc593f081b05cb",
-    "semantic_hash": "9529a5764d04b1ff3acc593f081b05cb"
+    "mtime": 1781474497.75914,
+    "ast_hash": "738ad2b0db896eca8b994371a0f7f3f4",
+    "semantic_hash": "738ad2b0db896eca8b994371a0f7f3f4"
   },
   "test/shem/mcp/handlers/list_tools_test.exs": {
-    "mtime": 1780537185.1734722,
-    "ast_hash": "6fb8bd29612da4d8cfe01956cdf66da6",
-    "semantic_hash": "6fb8bd29612da4d8cfe01956cdf66da6"
+    "mtime": 1781659480.8172863,
+    "ast_hash": "d64666a255b53e2761be519c2793bdc2",
+    "semantic_hash": "d64666a255b53e2761be519c2793bdc2"
   },
   "test/shem/mcp/handlers/spawn_agent_test.exs": {
-    "mtime": 1781284950.2310653,
-    "ast_hash": "09841a5c441089ed9aed07fa8da0b33b",
-    "semantic_hash": "09841a5c441089ed9aed07fa8da0b33b"
+    "mtime": 1781474497.75914,
+    "ast_hash": "d9de9eed4813efa961f73e2017461e34",
+    "semantic_hash": "d9de9eed4813efa961f73e2017461e34"
   },
   "test/shem/mcp/handlers/stop_agent_test.exs": {
     "mtime": 1781284748.8885038,
@@ -880,9 +880,9 @@
     "semantic_hash": "8783593d08eac4083c994e706f132dd2"
   },
   "test/shem/mcp/router_test.exs": {
-    "mtime": 1781285109.0831966,
-    "ast_hash": "910272446f198b4713801a2c86c75639",
-    "semantic_hash": "910272446f198b4713801a2c86c75639"
+    "mtime": 1782742280.965092,
+    "ast_hash": "798562e17fd267270dbde70ce63ce225",
+    "semantic_hash": ""
   },
   "test/shem/mcp/schema_test.exs": {
     "mtime": 1780688997.4439726,
@@ -905,9 +905,9 @@
     "semantic_hash": "de8494287083ed0d703d16e697f0f72c"
   },
   "test/shem/rest/agents_test.exs": {
-    "mtime": 1781213194.5091872,
-    "ast_hash": "b59f14c64c68b018d49f29c5004cfc40",
-    "semantic_hash": "b59f14c64c68b018d49f29c5004cfc40"
+    "mtime": 1783025592.4331918,
+    "ast_hash": "35d0a5de04264cdd541dafb5cf09b752",
+    "semantic_hash": ""
   },
   "test/shem/rest/health_test.exs": {
     "mtime": 1781200974.3826902,
@@ -925,9 +925,9 @@
     "semantic_hash": "3373955be792c09e576c61255b1207fa"
   },
   "test/shem/rest/sessions_test.exs": {
-    "mtime": 1781309469.7170446,
-    "ast_hash": "2cc702b2c01447d99e5880c736da5326",
-    "semantic_hash": "2cc702b2c01447d99e5880c736da5326"
+    "mtime": 1782742280.8090894,
+    "ast_hash": "a64383c35d663011c47145fc9dc1e5b3",
+    "semantic_hash": ""
   },
   "test/shem/rest/shadow_test.exs": {
     "mtime": 1781094331.9047666,
@@ -950,9 +950,9 @@
     "semantic_hash": "528da061ea780ba105756d9700539b7d"
   },
   "test/shem/tool_test.exs": {
-    "mtime": 1780688997.4439726,
-    "ast_hash": "8b94de28dec8e1d55c17537e0e821077",
-    "semantic_hash": "8b94de28dec8e1d55c17537e0e821077"
+    "mtime": 1781659463.0137634,
+    "ast_hash": "afe813b78fa563c95c83d5fc9f741bcd",
+    "semantic_hash": "afe813b78fa563c95c83d5fc9f741bcd"
   },
   "test/shem/trust/store_test.exs": {
     "mtime": 1781301962.8464339,
@@ -970,9 +970,9 @@
     "semantic_hash": "459300fa870903f9830470fd99a65b87"
   },
   "test/shem/tui/app_test.exs": {
-    "mtime": 1781301579.112301,
-    "ast_hash": "3165873ec00eb81a6c6cabbb1945ca92",
-    "semantic_hash": "3165873ec00eb81a6c6cabbb1945ca92"
+    "mtime": 1781473986.899494,
+    "ast_hash": "8d022a3d255748a7a7d1f38e169d6a19",
+    "semantic_hash": "8d022a3d255748a7a7d1f38e169d6a19"
   },
   "test/shem/tui/autocomplete_test.exs": {
     "mtime": 1781293361.6294467,
@@ -990,9 +990,9 @@
     "semantic_hash": "b8420ae95479dbca8fce362a0f3deb52"
   },
   "test/shem/tui/views/dashboard_test.exs": {
-    "mtime": 1781288856.0236444,
-    "ast_hash": "6eb1ab1d30874307bbd9c71b0a706451",
-    "semantic_hash": "6eb1ab1d30874307bbd9c71b0a706451"
+    "mtime": 1781473970.7593987,
+    "ast_hash": "b683268d25fca3450f347e33373be336",
+    "semantic_hash": "b683268d25fca3450f347e33373be336"
   },
   "test/shem/tui/views/history_test.exs": {
     "mtime": 1781294793.177463,
@@ -1000,9 +1000,9 @@
     "semantic_hash": "002c7ef8c42d19508ea72294348081fc"
   },
   "test/shem/tui/views/interactive_test.exs": {
-    "mtime": 1780916275.591957,
-    "ast_hash": "9d47c00c16ba82514883ff6cd05b4b75",
-    "semantic_hash": "9d47c00c16ba82514883ff6cd05b4b75"
+    "mtime": 1781473980.9844592,
+    "ast_hash": "4810b42b784f2de71b8cf9df41a7d381",
+    "semantic_hash": "4810b42b784f2de71b8cf9df41a7d381"
   },
   "test/shem/tui/welcome_test.exs": {
     "mtime": 1780968855.6772764,
@@ -1015,1363 +1015,418 @@
     "semantic_hash": "510870aa6dea090a823e2f184ea44459"
   },
   "test/test_helper.exs": {
-    "mtime": 1780506616.9772606,
-    "ast_hash": "7566dc08e72e565faebc0970e685df87",
-    "semantic_hash": "7566dc08e72e565faebc0970e685df87"
+    "mtime": 1783024106.9737637,
+    "ast_hash": "42ba5e3b362ba4c40f748a50b80dea97",
+    "semantic_hash": ""
   },
   "lib/shem/rest/handlers/cluster.ex": {
     "mtime": 1781373918.339551,
     "ast_hash": "806032e31e4ab663af2b19252b4ba609",
+    "semantic_hash": "806032e31e4ab663af2b19252b4ba609"
+  },
+  "lib/shem/event_log/mnesia_store.ex": {
+    "mtime": 1782742280.7310882,
+    "ast_hash": "0ec580bc93afe652c9a06853be8e307f",
     "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/.formatter.exs": {
-    "mtime": 1780506616.9761682,
-    "ast_hash": "5929c731d5bca5967e0fb415b7fa9a01",
-    "semantic_hash": "5929c731d5bca5967e0fb415b7fa9a01"
-  },
-  "/home/philip/Downloads/_project/shem/config/config.exs": {
-    "mtime": 1782068115.7795231,
-    "ast_hash": "cf86221c4e3b161ee486be447032906a",
-    "semantic_hash": "cf86221c4e3b161ee486be447032906a"
-  },
-  "/home/philip/Downloads/_project/shem/config/dev.exs": {
-    "mtime": 1782095436.554848,
-    "ast_hash": "0de01f5b47fa215f84e995d0020329a6",
-    "semantic_hash": "0de01f5b47fa215f84e995d0020329a6"
-  },
-  "/home/philip/Downloads/_project/shem/config/prod.exs": {
-    "mtime": 1780793350.0462098,
-    "ast_hash": "88716c74148b039ee7c4e6e6bf79f7f6",
-    "semantic_hash": "88716c74148b039ee7c4e6e6bf79f7f6"
-  },
-  "/home/philip/Downloads/_project/shem/config/runtime.exs": {
-    "mtime": 1781206096.5384133,
-    "ast_hash": "9e0d216242b9cf360d3e11856d2e6ee1",
-    "semantic_hash": "9e0d216242b9cf360d3e11856d2e6ee1"
-  },
-  "/home/philip/Downloads/_project/shem/config/test.exs": {
-    "mtime": 1782068136.4531004,
-    "ast_hash": "020165180bbf6c6b336be2257bbf82ae",
-    "semantic_hash": "020165180bbf6c6b336be2257bbf82ae"
-  },
-  "/home/philip/Downloads/_project/shem/install.sh": {
-    "mtime": 1782145676.5959408,
-    "ast_hash": "0b7764279da00a8e4e19f0dfccbbe445",
-    "semantic_hash": "0b7764279da00a8e4e19f0dfccbbe445"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem.ex": {
-    "mtime": 1780506616.9768865,
-    "ast_hash": "d76db3f8a79791fddf1568f0ba748722",
-    "semantic_hash": "d76db3f8a79791fddf1568f0ba748722"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/adversarial.ex": {
-    "mtime": 1780702324.9703412,
-    "ast_hash": "2420cd47cc9774d968c82030d8fbd108",
-    "semantic_hash": "2420cd47cc9774d968c82030d8fbd108"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/adversarial/hardening_job.ex": {
-    "mtime": 1782331678.0,
-    "ast_hash": "fb8a1723038af7b8e814c99694d4d15f",
-    "semantic_hash": "fb8a1723038af7b8e814c99694d4d15f"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent.ex": {
-    "mtime": 1782331736.162234,
-    "ast_hash": "68b1dddf3f1ff9c1ff1b001b5c2de5c8",
-    "semantic_hash": "68b1dddf3f1ff9c1ff1b001b5c2de5c8"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/checkpoint.ex": {
-    "mtime": 1781402335.93394,
-    "ast_hash": "b814846245e5f4fb4c18cc4b2fcf80cf",
-    "semantic_hash": "b814846245e5f4fb4c18cc4b2fcf80cf"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/preset.ex": {
-    "mtime": 1782435890.9911253,
-    "ast_hash": "bb0a178fa215ecf4451586c12e154d36",
-    "semantic_hash": "bb0a178fa215ecf4451586c12e154d36"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/preset_store.ex": {
-    "mtime": 1781194895.8305905,
-    "ast_hash": "8229d0299ae2895e44a9f3b48ff14a34",
-    "semantic_hash": "8229d0299ae2895e44a9f3b48ff14a34"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/server.ex": {
-    "mtime": 1782353293.503196,
-    "ast_hash": "59031fc77f6dd00e6be5181e9143f2ad",
-    "semantic_hash": "59031fc77f6dd00e6be5181e9143f2ad"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/tool_dispatch.ex": {
-    "mtime": 1782435867.492701,
-    "ast_hash": "3f75d157d090567f67946a210f146bfd",
-    "semantic_hash": "3f75d157d090567f67946a210f146bfd"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent/turn.ex": {
-    "mtime": 1782401613.8529177,
-    "ast_hash": "fc9e5ff32daf1011484dc53b242eb5c7",
-    "semantic_hash": "fc9e5ff32daf1011484dc53b242eb5c7"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/agent_supervisor.ex": {
-    "mtime": 1782331678.0,
-    "ast_hash": "734f0632278ef7621f12c37dbf12a531",
-    "semantic_hash": "734f0632278ef7621f12c37dbf12a531"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/application.ex": {
-    "mtime": 1782071172.8996372,
-    "ast_hash": "2d226f8f2a049a2156c72b47da2f700b",
-    "semantic_hash": "2d226f8f2a049a2156c72b47da2f700b"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cli/banner.ex": {
-    "mtime": 1781200661.3955448,
-    "ast_hash": "dbaec5f84a28e206437d45f5ac02f190",
-    "semantic_hash": "dbaec5f84a28e206437d45f5ac02f190"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cli/config.ex": {
-    "mtime": 1781201151.8683875,
-    "ast_hash": "205d4c29bea47421aadf19cf32874d13",
-    "semantic_hash": "205d4c29bea47421aadf19cf32874d13"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cli/config_file.ex": {
-    "mtime": 1782061847.9486654,
-    "ast_hash": "18ffc7cc88df18f6a1ace747c662b001",
-    "semantic_hash": "18ffc7cc88df18f6a1ace747c662b001"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cli/setup.ex": {
-    "mtime": 1781205507.850019,
-    "ast_hash": "bdc5fe4b83c9d0dc9490dcdca14f2972",
-    "semantic_hash": "bdc5fe4b83c9d0dc9490dcdca14f2972"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cli/status.ex": {
-    "mtime": 1781205514.9292145,
-    "ast_hash": "46b1520ea5501dc26942376bdda34fc3",
-    "semantic_hash": "46b1520ea5501dc26942376bdda34fc3"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/cluster.ex": {
-    "mtime": 1781442957.4503763,
-    "ast_hash": "14510768b3849bf46194a0ae7e546c3a",
-    "semantic_hash": "14510768b3849bf46194a0ae7e546c3a"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/context/project.ex": {
-    "mtime": 1780966884.0761292,
-    "ast_hash": "a4203598b9bfacca6fa06dcf813ef8c7",
-    "semantic_hash": "a4203598b9bfacca6fa06dcf813ef8c7"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log.ex": {
-    "mtime": 1782072771.1787167,
-    "ast_hash": "f3508423097ac56c0f1a4258758fe4ab",
-    "semantic_hash": "f3508423097ac56c0f1a4258758fe4ab"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/chain.ex": {
-    "mtime": 1781309296.0765467,
-    "ast_hash": "4374676ef31b4bbe2ca83c8b64eb9b38",
-    "semantic_hash": "4374676ef31b4bbe2ca83c8b64eb9b38"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/dets_store.ex": {
-    "mtime": 1781527319.8165693,
-    "ast_hash": "bb4eba4c9d1d6245cce19903d1722069",
-    "semantic_hash": "bb4eba4c9d1d6245cce19903d1722069"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/event.ex": {
-    "mtime": 1781308816.777114,
-    "ast_hash": "acd4ad3532f44d3c8ff963d63bd6095d",
-    "semantic_hash": "acd4ad3532f44d3c8ff963d63bd6095d"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/fake_store.ex": {
-    "mtime": 1781526990.009567,
-    "ast_hash": "187e192ca3d5363fd8e61e9b2edc6270",
-    "semantic_hash": "187e192ca3d5363fd8e61e9b2edc6270"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/history_scanner.ex": {
-    "mtime": 1781185283.051373,
-    "ast_hash": "e96428691c9b7f7e7e320cc1b614da93",
-    "semantic_hash": "e96428691c9b7f7e7e320cc1b614da93"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/mnesia_store.ex": {
-    "mtime": 1781527385.780983,
-    "ast_hash": "d288306df3be9015fe46be628b407ba7",
-    "semantic_hash": "d288306df3be9015fe46be628b407ba7"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/replay.ex": {
-    "mtime": 1780511421.1036458,
-    "ast_hash": "25fd6b7f756290da594267a3a8fe6032",
-    "semantic_hash": "25fd6b7f756290da594267a3a8fe6032"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/session.ex": {
-    "mtime": 1781309481.7717876,
-    "ast_hash": "104c7b64a266f6839be0c031e5b283bd",
-    "semantic_hash": "104c7b64a266f6839be0c031e5b283bd"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/event_log/store.ex": {
-    "mtime": 1781526985.5194728,
-    "ast_hash": "71e64563e540c860d59624de84915a0c",
-    "semantic_hash": "71e64563e540c860d59624de84915a0c"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/guardrails.ex": {
-    "mtime": 1781137800.943665,
-    "ast_hash": "e458db2db82c61d9fcff8b684c21d7f2",
-    "semantic_hash": "e458db2db82c61d9fcff8b684c21d7f2"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/http/router.ex": {
-    "mtime": 1782072032.8683853,
-    "ast_hash": "4f95a9e902780c6a02997b1294705a14",
-    "semantic_hash": "4f95a9e902780c6a02997b1294705a14"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/executor.ex": {
-    "mtime": 1780920781.3579414,
-    "ast_hash": "fac1c5aeccc62f58380e8d1c981ee0db",
-    "semantic_hash": "fac1c5aeccc62f58380e8d1c981ee0db"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/executor/backend.ex": {
-    "mtime": 1780920438.3148327,
-    "ast_hash": "491189e134d70da7a4965f7834cbf312",
-    "semantic_hash": "491189e134d70da7a4965f7834cbf312"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/executor/backend/container.ex": {
-    "mtime": 1781660019.9965096,
-    "ast_hash": "223bd4ebfcf151188e4f3edd31cffd3b",
-    "semantic_hash": "223bd4ebfcf151188e4f3edd31cffd3b"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/executor/backend/local.ex": {
-    "mtime": 1780920441.1608772,
-    "ast_hash": "18dda90bb5356d26954eee3442f49f9d",
-    "semantic_hash": "18dda90bb5356d26954eee3442f49f9d"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/graduation_gate.ex": {
-    "mtime": 1782434013.100975,
-    "ast_hash": "0672fc2ed88b085890ae58744240a643",
-    "semantic_hash": "0672fc2ed88b085890ae58744240a643"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/registry.ex": {
-    "mtime": 1782439010.663195,
-    "ast_hash": "d4ae3457fac3a7188904a29c7da7cbf5",
-    "semantic_hash": "d4ae3457fac3a7188904a29c7da7cbf5"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/workspace.ex": {
-    "mtime": 1782431804.1385443,
-    "ast_hash": "e48393ba59d21bc57f5a6781c4a2a7b5",
-    "semantic_hash": "e48393ba59d21bc57f5a6781c4a2a7b5"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm.ex": {
-    "mtime": 1782072765.001604,
-    "ast_hash": "c7c231aaeb81444d62ed2a9a19dd38cb",
-    "semantic_hash": "c7c231aaeb81444d62ed2a9a19dd38cb"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/branch.ex": {
-    "mtime": 1780688997.4416108,
-    "ast_hash": "66694a1dda4effe24920d8f0539e3690",
-    "semantic_hash": "66694a1dda4effe24920d8f0539e3690"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/budget_server.ex": {
-    "mtime": 1780688997.441775,
-    "ast_hash": "4234bc386f52a762e4b9171ce52f0f13",
-    "semantic_hash": "4234bc386f52a762e4b9171ce52f0f13"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware.ex": {
-    "mtime": 1780878242.792203,
-    "ast_hash": "6fae19a0ef3311bbe4674eef404634e3",
-    "semantic_hash": "6fae19a0ef3311bbe4674eef404634e3"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/anthropic_transport.ex": {
-    "mtime": 1781556712.0,
-    "ast_hash": "7b7deabe98610368a934c696e3f3a9b1",
-    "semantic_hash": "7b7deabe98610368a934c696e3f3a9b1"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/budget_check.ex": {
-    "mtime": 1782061614.5611317,
-    "ast_hash": "2ba964f14a6bd7ddd478a552061e656f",
-    "semantic_hash": "2ba964f14a6bd7ddd478a552061e656f"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/event_logger.ex": {
-    "mtime": 1782061614.5611317,
-    "ast_hash": "9814329845374c332b2063f21c90ddfb",
-    "semantic_hash": "9814329845374c332b2063f21c90ddfb"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/llama_cpp_transport.ex": {
-    "mtime": 1781556712.0,
-    "ast_hash": "8420f9fc4806a20dbcacc367a144c495",
-    "semantic_hash": "8420f9fc4806a20dbcacc367a144c495"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/ollama_transport.ex": {
-    "mtime": 1781556712.0,
-    "ast_hash": "8a45c9f3c63b03baa91a36095f020090",
-    "semantic_hash": "8a45c9f3c63b03baa91a36095f020090"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/openai_transport.ex": {
-    "mtime": 1781553437.7414308,
-    "ast_hash": "388af6fe38c47563f93ccb333b030fce",
-    "semantic_hash": "388af6fe38c47563f93ccb333b030fce"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/router_transport.ex": {
-    "mtime": 1780878386.5183682,
-    "ast_hash": "f7c71fe9c3dc3a5594747c7cede66af8",
-    "semantic_hash": "f7c71fe9c3dc3a5594747c7cede66af8"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/replay.ex": {
-    "mtime": 1780633728.3653693,
-    "ast_hash": "c10f7a479b843d762bf1dc42a214ea20",
-    "semantic_hash": "c10f7a479b843d762bf1dc42a214ea20"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/replay/utils.ex": {
-    "mtime": 1780633702.896833,
-    "ast_hash": "d23a5b6d785c4d65669d3255b0ad0ede",
-    "semantic_hash": "d23a5b6d785c4d65669d3255b0ad0ede"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/replay_transport.ex": {
-    "mtime": 1781556712.0,
-    "ast_hash": "2ffa30a48a5e7b4841159b2043bceb40",
-    "semantic_hash": "2ffa30a48a5e7b4841159b2043bceb40"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/replay_transport/server.ex": {
-    "mtime": 1780616036.4426486,
-    "ast_hash": "f6c2ba96dfac9a7176adae9a7bf11d00",
-    "semantic_hash": "f6c2ba96dfac9a7176adae9a7bf11d00"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/request.ex": {
-    "mtime": 1780852967.0493236,
-    "ast_hash": "0b8c690b9341d8d0fae8155019606459",
-    "semantic_hash": "0b8c690b9341d8d0fae8155019606459"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/response.ex": {
-    "mtime": 1781553229.7432115,
-    "ast_hash": "186c2b5464d3753fa2d693a566fda8b9",
-    "semantic_hash": "186c2b5464d3753fa2d693a566fda8b9"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/router.ex": {
-    "mtime": 1780791276.111976,
-    "ast_hash": "23a3eb7e50c646a66315bb569ba6fc5c",
-    "semantic_hash": "23a3eb7e50c646a66315bb569ba6fc5c"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/stub_transport.ex": {
-    "mtime": 1781556712.0,
-    "ast_hash": "3827f23686866dba7d097c376367e061",
-    "semantic_hash": "3827f23686866dba7d097c376367e061"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/stub_transport/server.ex": {
-    "mtime": 1781315570.2345388,
-    "ast_hash": "1a3d80e8a1f883e0849318e305b96c3c",
-    "semantic_hash": "1a3d80e8a1f883e0849318e305b96c3c"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/client.ex": {
-    "mtime": 1780688997.4419184,
-    "ast_hash": "3045a2a5b2338d57bb89a13f011ba63b",
-    "semantic_hash": "3045a2a5b2338d57bb89a13f011ba63b"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/client/config.ex": {
-    "mtime": 1780688997.4419184,
-    "ast_hash": "9b9e0145fcaf1f87e07e90eefddd0af7",
-    "semantic_hash": "9b9e0145fcaf1f87e07e90eefddd0af7"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/client/protocol.ex": {
-    "mtime": 1780688997.442176,
-    "ast_hash": "4c0f7445f5875930744ab9dd0ac85013",
-    "semantic_hash": "4c0f7445f5875930744ab9dd0ac85013"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/client/server_conn.ex": {
-    "mtime": 1780688997.4422524,
-    "ast_hash": "e3b5c3d3d303cf0ab5cf5ffa9373fdd9",
-    "semantic_hash": "e3b5c3d3d303cf0ab5cf5ffa9373fdd9"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/client/supervisor.ex": {
-    "mtime": 1780688997.4423323,
-    "ast_hash": "d54dff934b99acb840000d45c4308f38",
-    "semantic_hash": "d54dff934b99acb840000d45c4308f38"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/agent_common.ex": {
-    "mtime": 1782061614.5611317,
-    "ast_hash": "cff8d42f45b2cb108e567688f74b8576",
-    "semantic_hash": "cff8d42f45b2cb108e567688f74b8576"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/agent_status.ex": {
-    "mtime": 1782332402.1120212,
-    "ast_hash": "c4b8879a1afda4d8c820cb02f2c089b5",
-    "semantic_hash": "c4b8879a1afda4d8c820cb02f2c089b5"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/execute_code.ex": {
-    "mtime": 1780537185.1728492,
-    "ast_hash": "c6c1e2783de60a27c6342bb5df29279c",
-    "semantic_hash": "c6c1e2783de60a27c6342bb5df29279c"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/graduate_tool.ex": {
-    "mtime": 1780537185.1729083,
-    "ast_hash": "e19f4934175ef33355f3c7576a92949b",
-    "semantic_hash": "e19f4934175ef33355f3c7576a92949b"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/invoke_tool.ex": {
-    "mtime": 1782409199.8991642,
-    "ast_hash": "1750d659daa8670768573c7d06c7e4ed",
-    "semantic_hash": "1750d659daa8670768573c7d06c7e4ed"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/list_agents.ex": {
-    "mtime": 1781474676.3623233,
-    "ast_hash": "a6e8be3ac489f797bd286d66715750cc",
-    "semantic_hash": "a6e8be3ac489f797bd286d66715750cc"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/list_tools.ex": {
-    "mtime": 1780537185.1729083,
-    "ast_hash": "6c6ff3a7428d4e375f0ceea900fa5eaa",
-    "semantic_hash": "6c6ff3a7428d4e375f0ceea900fa5eaa"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/spawn_agent.ex": {
-    "mtime": 1782332373.715242,
-    "ast_hash": "38372071fc009e47878213cee79ef9fc",
-    "semantic_hash": "38372071fc009e47878213cee79ef9fc"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/stop_agent.ex": {
-    "mtime": 1781284755.5456257,
-    "ast_hash": "bbb5c1063f8964794c26856300f01b85",
-    "semantic_hash": "bbb5c1063f8964794c26856300f01b85"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/router.ex": {
-    "mtime": 1782348250.5257165,
-    "ast_hash": "5290dc61fb50fdd87bf2db4a6f7139bf",
-    "semantic_hash": "5290dc61fb50fdd87bf2db4a6f7139bf"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/schema.ex": {
-    "mtime": 1780537185.1729083,
-    "ast_hash": "482534a46a4ccd76d6fcbe29dceedf94",
-    "semantic_hash": "482534a46a4ccd76d6fcbe29dceedf94"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/server.ex": {
-    "mtime": 1781201839.8687205,
-    "ast_hash": "436c2b6e99e200c59de8a885e279bbf0",
-    "semantic_hash": "436c2b6e99e200c59de8a885e279bbf0"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/session_registry.ex": {
-    "mtime": 1780537185.1729083,
-    "ast_hash": "1b94e3acde112db7fb6da230eaa108f4",
-    "semantic_hash": "1b94e3acde112db7fb6da230eaa108f4"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/memory/store.ex": {
-    "mtime": 1781194895.8305905,
-    "ast_hash": "03be470d2e2bbd3e605f0f392dcde0e5",
-    "semantic_hash": "03be470d2e2bbd3e605f0f392dcde0e5"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/node_registry.ex": {
+  "lib/shem/node_registry.ex": {
     "mtime": 1781403877.106136,
     "ast_hash": "5a5750d92ce0383a0bf9295d7a8ab3af",
     "semantic_hash": "5a5750d92ce0383a0bf9295d7a8ab3af"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/placement_strategy.ex": {
+  "lib/shem/placement_strategy.ex": {
     "mtime": 1781442510.936397,
     "ast_hash": "b2a292c0aeef8465007f6ce7df980447",
     "semantic_hash": "b2a292c0aeef8465007f6ce7df980447"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/process_registry.ex": {
-    "mtime": 1781404235.6630106,
-    "ast_hash": "8e56c889ad33020303106ca9fdc29032",
-    "semantic_hash": "8e56c889ad33020303106ca9fdc29032"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/agents.ex": {
-    "mtime": 1781555301.4478245,
-    "ast_hash": "b41890dbc0db46ae5730bc5c6f64730d",
-    "semantic_hash": "b41890dbc0db46ae5730bc5c6f64730d"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/cluster.ex": {
-    "mtime": 1781373918.339551,
-    "ast_hash": "806032e31e4ab663af2b19252b4ba609",
-    "semantic_hash": "806032e31e4ab663af2b19252b4ba609"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/health.ex": {
-    "mtime": 1781373932.7379355,
-    "ast_hash": "d361ac8171c106c0715202fb52716a17",
-    "semantic_hash": "d361ac8171c106c0715202fb52716a17"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/presets.ex": {
-    "mtime": 1781051329.7739873,
-    "ast_hash": "4e39c2f5297ad301ef2f664c35931b1e",
-    "semantic_hash": "4e39c2f5297ad301ef2f664c35931b1e"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/routes.ex": {
-    "mtime": 1780836572.708801,
-    "ast_hash": "94f297639d88823328c61f5325ac1c05",
-    "semantic_hash": "94f297639d88823328c61f5325ac1c05"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/sessions.ex": {
-    "mtime": 1781309514.5277562,
-    "ast_hash": "0fbdf5841fe907e06ddd052c94344300",
-    "semantic_hash": "0fbdf5841fe907e06ddd052c94344300"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/router.ex": {
-    "mtime": 1782268504.286479,
-    "ast_hash": "14e688568215657b1654907a7b7621f7",
-    "semantic_hash": "14e688568215657b1654907a7b7621f7"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/shadow/agent.ex": {
-    "mtime": 1781095135.0264046,
-    "ast_hash": "074781bd5918d8f613070e8fd7f83b28",
-    "semantic_hash": "074781bd5918d8f613070e8fd7f83b28"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/shadow/prompt.ex": {
-    "mtime": 1781057651.2660706,
-    "ast_hash": "954976865f3bd66f267f5477b8b726da",
-    "semantic_hash": "954976865f3bd66f267f5477b8b726da"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tool.ex": {
-    "mtime": 1781659445.6952503,
-    "ast_hash": "69807dee3244679b5eac064c2b7bca81",
-    "semantic_hash": "69807dee3244679b5eac064c2b7bca81"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/trust/store.ex": {
-    "mtime": 1781301978.9438412,
-    "ast_hash": "ab401056a8b715b6059ae0ff4b382c5b",
-    "semantic_hash": "ab401056a8b715b6059ae0ff4b382c5b"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/agent_view.ex": {
-    "mtime": 1781554724.3281503,
-    "ast_hash": "ef5864ae64e201ac5be89002f2ae2aed",
-    "semantic_hash": "ef5864ae64e201ac5be89002f2ae2aed"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/app.ex": {
-    "mtime": 1782071433.345167,
-    "ast_hash": "1023e8a8dc353afc1788d20e128cc873",
-    "semantic_hash": "1023e8a8dc353afc1788d20e128cc873"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/autocomplete.ex": {
-    "mtime": 1781293376.8877857,
-    "ast_hash": "d20f14f640990dec73aadc78f4f119a5",
-    "semantic_hash": "d20f14f640990dec73aadc78f4f119a5"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/command_dispatch.ex": {
-    "mtime": 1781137800.9437613,
-    "ast_hash": "4c1d70f816948487e11ecc00e1934e56",
-    "semantic_hash": "4c1d70f816948487e11ecc00e1934e56"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/runtime_supervisor.ex": {
-    "mtime": 1780509180.1268418,
-    "ast_hash": "fd6bcd23299259149f55e373a837d0d6",
-    "semantic_hash": "fd6bcd23299259149f55e373a837d0d6"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/stream_sink.ex": {
-    "mtime": 1781554712.6342175,
-    "ast_hash": "38f3d13f09a994801a1c4748500fd1cd",
-    "semantic_hash": "38f3d13f09a994801a1c4748500fd1cd"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/system_stats.ex": {
-    "mtime": 1781288771.436838,
-    "ast_hash": "90d4afc7d5ecd454f07854e3cdd52329",
-    "semantic_hash": "90d4afc7d5ecd454f07854e3cdd52329"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/views/dashboard.ex": {
-    "mtime": 1782071788.658464,
-    "ast_hash": "e25a4553f7962168529766ff77df6c8f",
-    "semantic_hash": "e25a4553f7962168529766ff77df6c8f"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/views/history.ex": {
-    "mtime": 1781294787.3914921,
-    "ast_hash": "5b665a1394054b1f743d601704d1ed80",
-    "semantic_hash": "5b665a1394054b1f743d601704d1ed80"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/views/interactive.ex": {
-    "mtime": 1781473589.111145,
-    "ast_hash": "bce6d3500b5ec21fc1eaeff41faac233",
-    "semantic_hash": "bce6d3500b5ec21fc1eaeff41faac233"
-  },
-  "/home/philip/Downloads/_project/shem/lib/shem/tui/welcome.ex": {
-    "mtime": 1781205977.7494435,
-    "ast_hash": "290856e0aaf167e9af724ec55f6998a4",
-    "semantic_hash": "290856e0aaf167e9af724ec55f6998a4"
-  },
-  "/home/philip/Downloads/_project/shem/mix.exs": {
-    "mtime": 1782132729.675938,
-    "ast_hash": "8654a8fd5d7854e5fa33fdd5d961a8f4",
-    "semantic_hash": "8654a8fd5d7854e5fa33fdd5d961a8f4"
-  },
-  "/home/philip/Downloads/_project/shem/priv/waf": {
-    "mtime": 1780507712.156243,
-    "ast_hash": "eb93889ea26e29a54a98c58be12bbcae",
-    "semantic_hash": "eb93889ea26e29a54a98c58be12bbcae"
-  },
-  "/home/philip/Downloads/_project/shem/run_qwen.sh": {
-    "mtime": 1780606718.7727664,
-    "ast_hash": "1c747de8a7bc0bad80b7648d0031e31b",
-    "semantic_hash": "1c747de8a7bc0bad80b7648d0031e31b"
-  },
-  "/home/philip/Downloads/_project/shem/scripts/generate_banner.py": {
-    "mtime": 1781200640.021629,
-    "ast_hash": "40256dfa7a4e0edc9bc64911108ca526",
-    "semantic_hash": "40256dfa7a4e0edc9bc64911108ca526"
-  },
-  "/home/philip/Downloads/_project/shem/scripts/smoke_llm.exs": {
-    "mtime": 1780607057.680759,
-    "ast_hash": "ab6b2c3180f21420f1b307968a01cc09",
-    "semantic_hash": "ab6b2c3180f21420f1b307968a01cc09"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/adversarial/hardening_job_test.exs": {
-    "mtime": 1780707195.0761464,
-    "ast_hash": "5c29e52c0687c926cb18ea2a47b4e225",
-    "semantic_hash": "5c29e52c0687c926cb18ea2a47b4e225"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/adversarial_test.exs": {
-    "mtime": 1780702328.6924129,
-    "ast_hash": "71af5bf3b3535f0f5d5746018d16ff62",
-    "semantic_hash": "71af5bf3b3535f0f5d5746018d16ff62"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/checkpoint_test.exs": {
-    "mtime": 1781402457.183465,
-    "ast_hash": "c05b3e932f706dbca093044db863bdfe",
-    "semantic_hash": "c05b3e932f706dbca093044db863bdfe"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/conversational_test.exs": {
-    "mtime": 1781213194.5087996,
-    "ast_hash": "b1c5c20162f43e7cfc2073b0a04b5c69",
-    "semantic_hash": "b1c5c20162f43e7cfc2073b0a04b5c69"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/preset_store_test.exs": {
-    "mtime": 1780759285.0845401,
-    "ast_hash": "623dbb362ee7bd8611fb5aa753d16b66",
-    "semantic_hash": "623dbb362ee7bd8611fb5aa753d16b66"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/preset_test.exs": {
-    "mtime": 1782435830.4627182,
-    "ast_hash": "039ee1732b986fe2d6c3b608728c0eb2",
-    "semantic_hash": "039ee1732b986fe2d6c3b608728c0eb2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/server_test.exs": {
-    "mtime": 1781472911.8643901,
-    "ast_hash": "be9aeba64120c11973ca4a75b94511b7",
-    "semantic_hash": "be9aeba64120c11973ca4a75b94511b7"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/tool_dispatch_test.exs": {
-    "mtime": 1782094317.9642096,
-    "ast_hash": "73355a310dd020d21361a52d1c640f8c",
-    "semantic_hash": "73355a310dd020d21361a52d1c640f8c"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/turn_test.exs": {
-    "mtime": 1782401613.8529177,
-    "ast_hash": "a2dfc4152f5c3a702a85f607b99a90dd",
-    "semantic_hash": "a2dfc4152f5c3a702a85f607b99a90dd"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent_supervisor_test.exs": {
-    "mtime": 1781404665.2562373,
-    "ast_hash": "719fb15461109a2bd5ada7cb999387a2",
-    "semantic_hash": "719fb15461109a2bd5ada7cb999387a2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/agent_test.exs": {
-    "mtime": 1782327614.505964,
-    "ast_hash": "30ed01c89ade3aa8b071c32cf8114809",
-    "semantic_hash": "30ed01c89ade3aa8b071c32cf8114809"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/application_executor_test.exs": {
-    "mtime": 1780921140.1600304,
-    "ast_hash": "36d1d91a4d29ed40f35899e10ab5c844",
-    "semantic_hash": "36d1d91a4d29ed40f35899e10ab5c844"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/application_test.exs": {
+  "test/shem/application_test.exs": {
     "mtime": 1781381735.2952104,
     "ast_hash": "01bcbb3674dfeed81e73594f478bb9eb",
     "semantic_hash": "01bcbb3674dfeed81e73594f478bb9eb"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/cli/config_file_test.exs": {
-    "mtime": 1782061835.9834316,
-    "ast_hash": "bd58e85c6101ec857fc19b394fd7aa32",
-    "semantic_hash": "bd58e85c6101ec857fc19b394fd7aa32"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/cli/config_test.exs": {
-    "mtime": 1781201145.1455276,
-    "ast_hash": "63c81c43bb402decf6d19d9a961f7274",
-    "semantic_hash": "63c81c43bb402decf6d19d9a961f7274"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/cluster_test.exs": {
-    "mtime": 1781405499.6952155,
-    "ast_hash": "e990e48b1894e21c9ab064421d0558ef",
-    "semantic_hash": "e990e48b1894e21c9ab064421d0558ef"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/context/project_test.exs": {
-    "mtime": 1780966874.0019097,
-    "ast_hash": "5174d39e76a0d10d0429b336c4c0d3be",
-    "semantic_hash": "5174d39e76a0d10d0429b336c4c0d3be"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/distributed/event_log_test.exs": {
+  "test/shem/distributed/event_log_test.exs": {
     "mtime": 1781527342.0130446,
     "ast_hash": "6102c42f81174ff296e40d70452bb535",
     "semantic_hash": "6102c42f81174ff296e40d70452bb535"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/distributed/failover_test.exs": {
+  "test/shem/distributed/failover_test.exs": {
     "mtime": 1782350532.6656003,
     "ast_hash": "93bb1ed8e96887541778ac4fe2e5703b",
     "semantic_hash": "93bb1ed8e96887541778ac4fe2e5703b"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/distributed/streaming_test.exs": {
+  "test/shem/distributed/streaming_test.exs": {
     "mtime": 1782350623.5516834,
     "ast_hash": "a5d44dd6b0167aea4fa52377cbc6205c",
     "semantic_hash": "a5d44dd6b0167aea4fa52377cbc6205c"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/backend_selection_test.exs": {
+  "test/shem/event_log/backend_selection_test.exs": {
     "mtime": 1781381964.4072566,
     "ast_hash": "ad2a2ae7a56d88f4ff8c249d5363f005",
     "semantic_hash": "ad2a2ae7a56d88f4ff8c249d5363f005"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/chain_test.exs": {
-    "mtime": 1781309301.0436447,
-    "ast_hash": "988ed846cc89c5e2d215e2dc321e3bda",
-    "semantic_hash": "988ed846cc89c5e2d215e2dc321e3bda"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/dets_store_test.exs": {
-    "mtime": 1780511013.1920924,
-    "ast_hash": "14f56d1459c445f497a9a67e58e3d5ac",
-    "semantic_hash": "14f56d1459c445f497a9a67e58e3d5ac"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/event_test.exs": {
-    "mtime": 1780510686.562015,
-    "ast_hash": "fe18aa2403408f9613a65fb0fdf1f248",
-    "semantic_hash": "fe18aa2403408f9613a65fb0fdf1f248"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/fake_store_test.exs": {
-    "mtime": 1780510887.63052,
-    "ast_hash": "2c4f139dc432f9432b3273c99734d63a",
-    "semantic_hash": "2c4f139dc432f9432b3273c99734d63a"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/history_scanner_test.exs": {
-    "mtime": 1780771129.6278198,
-    "ast_hash": "6018046b8a35d93c08fce88b69c8d688",
-    "semantic_hash": "6018046b8a35d93c08fce88b69c8d688"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/mnesia_store_test.exs": {
+  "test/shem/event_log/mnesia_store_test.exs": {
     "mtime": 1781381392.8916526,
     "ast_hash": "1d4ae848a29b3e3aea70149f80fd9954",
     "semantic_hash": "1d4ae848a29b3e3aea70149f80fd9954"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/replay_test.exs": {
-    "mtime": 1780688997.442658,
-    "ast_hash": "afbec6a771ed05276dd87e42cec2ef8d",
-    "semantic_hash": "afbec6a771ed05276dd87e42cec2ef8d"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log/session_test.exs": {
-    "mtime": 1780510774.4850528,
-    "ast_hash": "c908b302abd0eb2d03ed514c5548ff1c",
-    "semantic_hash": "c908b302abd0eb2d03ed514c5548ff1c"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/event_log_test.exs": {
-    "mtime": 1781527308.355324,
-    "ast_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7",
-    "semantic_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/guardrails_test.exs": {
-    "mtime": 1781137800.9437613,
-    "ast_hash": "8914171ed5ebde67abb4d57aa497f6e7",
-    "semantic_hash": "8914171ed5ebde67abb4d57aa497f6e7"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/http/router_test.exs": {
-    "mtime": 1780941797.94424,
-    "ast_hash": "8df7927bff9e2d16f23a43776346542b",
-    "semantic_hash": "8df7927bff9e2d16f23a43776346542b"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/executor/backend_container_test.exs": {
-    "mtime": 1781659653.1931312,
-    "ast_hash": "7fb38d6eeef20c14357a4dcac3d12962",
-    "semantic_hash": "7fb38d6eeef20c14357a4dcac3d12962"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/executor/backend_local_test.exs": {
-    "mtime": 1780920429.8987005,
-    "ast_hash": "4fc801549a3fcf4b87dc67e551c76174",
-    "semantic_hash": "4fc801549a3fcf4b87dc67e551c76174"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/executor_shell_test.exs": {
-    "mtime": 1780920909.7897773,
-    "ast_hash": "e216a5ab5183404e739cef3bed24d10e",
-    "semantic_hash": "e216a5ab5183404e739cef3bed24d10e"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/executor_test.exs": {
-    "mtime": 1780688997.4428482,
-    "ast_hash": "066ea5c0675b1a27db03f624a17da5f2",
-    "semantic_hash": "066ea5c0675b1a27db03f624a17da5f2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/graduation_gate_test.exs": {
-    "mtime": 1782411558.4639041,
-    "ast_hash": "37af1b968e54eb9403ef1607856b0451",
-    "semantic_hash": "37af1b968e54eb9403ef1607856b0451"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/registry_test.exs": {
-    "mtime": 1782439051.4530578,
-    "ast_hash": "6eb50dfc92883cdd0f984ac17ac73cf0",
-    "semantic_hash": "6eb50dfc92883cdd0f984ac17ac73cf0"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/workspace_test.exs": {
-    "mtime": 1782431778.9594285,
-    "ast_hash": "800b84862a52ab69073b3918f5475f16",
-    "semantic_hash": "800b84862a52ab69073b3918f5475f16"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/branch_test.exs": {
-    "mtime": 1780688997.443013,
-    "ast_hash": "9cd205107d7a3bb192d42e5a3cfaa0a6",
-    "semantic_hash": "9cd205107d7a3bb192d42e5a3cfaa0a6"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/budget_server_test.exs": {
-    "mtime": 1780688997.4431844,
-    "ast_hash": "f8d6599e14d1339dd8fec0a6f70dc8bf",
-    "semantic_hash": "f8d6599e14d1339dd8fec0a6f70dc8bf"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/anthropic_transport_test.exs": {
-    "mtime": 1780880625.1995115,
-    "ast_hash": "86902bf3271016f318421476b2f63217",
-    "semantic_hash": "86902bf3271016f318421476b2f63217"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/budget_check_events_test.exs": {
-    "mtime": 1780599612.1091995,
-    "ast_hash": "7537105ebd52768839b0af670991f12a",
-    "semantic_hash": "7537105ebd52768839b0af670991f12a"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/budget_check_test.exs": {
-    "mtime": 1780878780.0343018,
-    "ast_hash": "b34fadaa9346c25f8f9a9bdede5d823b",
-    "semantic_hash": "b34fadaa9346c25f8f9a9bdede5d823b"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/event_logger_test.exs": {
-    "mtime": 1780878746.9250653,
-    "ast_hash": "e67776af28650cc042e85a08c81f5ada",
-    "semantic_hash": "e67776af28650cc042e85a08c81f5ada"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/llama_cpp_transport_test.exs": {
-    "mtime": 1780880412.7396412,
-    "ast_hash": "75627ca1528e38a5f143c9a17462159b",
-    "semantic_hash": "75627ca1528e38a5f143c9a17462159b"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/ollama_transport_test.exs": {
-    "mtime": 1780880916.910564,
-    "ast_hash": "cbec4bc67da95b30edaa69b0d8a7c573",
-    "semantic_hash": "cbec4bc67da95b30edaa69b0d8a7c573"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/openai_transport_test.exs": {
-    "mtime": 1781553409.957409,
-    "ast_hash": "364870b7118115795ae8d9e697d7fe1f",
-    "semantic_hash": "364870b7118115795ae8d9e697d7fe1f"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/router_transport_test.exs": {
-    "mtime": 1780775878.6847906,
-    "ast_hash": "3502aef0f9a3698c4e9ab555abd43b80",
-    "semantic_hash": "3502aef0f9a3698c4e9ab555abd43b80"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/replay_test.exs": {
-    "mtime": 1780688997.4433298,
-    "ast_hash": "eaf6cf350f775c341b5de5916e9a742f",
-    "semantic_hash": "eaf6cf350f775c341b5de5916e9a742f"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/replay_transport/server_test.exs": {
-    "mtime": 1780688997.4433298,
-    "ast_hash": "04693224905df9d558d0a1909c6c4c1b",
-    "semantic_hash": "04693224905df9d558d0a1909c6c4c1b"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/replay_transport_test.exs": {
-    "mtime": 1780688997.4434924,
-    "ast_hash": "367049a5cb10e0ab09ab8cfc447161ad",
-    "semantic_hash": "367049a5cb10e0ab09ab8cfc447161ad"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/request_test.exs": {
-    "mtime": 1780852956.3001719,
-    "ast_hash": "478ab1d3e8e7ecc5d10ce371348a4ef7",
-    "semantic_hash": "478ab1d3e8e7ecc5d10ce371348a4ef7"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/response_test.exs": {
-    "mtime": 1780852960.0402248,
-    "ast_hash": "c8eabf594f9dc3a51e049074db4ed825",
-    "semantic_hash": "c8eabf594f9dc3a51e049074db4ed825"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/router_test.exs": {
-    "mtime": 1780791279.8401237,
-    "ast_hash": "1914904ab1bf933235f9b98f23277d7a",
-    "semantic_hash": "1914904ab1bf933235f9b98f23277d7a"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/stub_transport_test.exs": {
-    "mtime": 1780688997.443646,
-    "ast_hash": "fb51111fb19ea25f5f0d1d6e89efbcbc",
-    "semantic_hash": "fb51111fb19ea25f5f0d1d6e89efbcbc"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/llm_test.exs": {
-    "mtime": 1781472925.8495522,
-    "ast_hash": "07266a15b2b9d229f75a08566151fb16",
-    "semantic_hash": "07266a15b2b9d229f75a08566151fb16"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/agent_tools_integration_test.exs": {
-    "mtime": 1781285098.458453,
-    "ast_hash": "4f28a4f869aaf8a5f19b2fcf55695716",
-    "semantic_hash": "4f28a4f869aaf8a5f19b2fcf55695716"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/client/config_test.exs": {
-    "mtime": 1780589865.7992675,
-    "ast_hash": "b428ab05ad8ca0a2fea825f600b5ed84",
-    "semantic_hash": "b428ab05ad8ca0a2fea825f600b5ed84"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/client/protocol_test.exs": {
-    "mtime": 1780589913.954527,
-    "ast_hash": "9c418ca8a35131528e888b996ffaed55",
-    "semantic_hash": "9c418ca8a35131528e888b996ffaed55"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/client/server_conn_test.exs": {
-    "mtime": 1781315544.6278434,
-    "ast_hash": "f299f2470fc86a2fb8180ebaf1c58e5c",
-    "semantic_hash": "f299f2470fc86a2fb8180ebaf1c58e5c"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/client/supervisor_test.exs": {
-    "mtime": 1780688997.443818,
-    "ast_hash": "5e67753995c6ae873c66dfbb37db5c9f",
-    "semantic_hash": "5e67753995c6ae873c66dfbb37db5c9f"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/client_test.exs": {
-    "mtime": 1781315575.6286848,
-    "ast_hash": "deb06b67e920a5a1931c9c28b311c628",
-    "semantic_hash": "deb06b67e920a5a1931c9c28b311c628"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/agent_common_test.exs": {
-    "mtime": 1781283867.2971342,
-    "ast_hash": "020215d06dfb1ed6b1b816f71c0cd375",
-    "semantic_hash": "020215d06dfb1ed6b1b816f71c0cd375"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/agent_status_test.exs": {
-    "mtime": 1781284367.1827412,
-    "ast_hash": "9ecf5baee94618844c88e08c0457846b",
-    "semantic_hash": "9ecf5baee94618844c88e08c0457846b"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/execute_code_test.exs": {
-    "mtime": 1780537185.1733925,
-    "ast_hash": "c2a26949f7bcab72c466f6d549908833",
-    "semantic_hash": "c2a26949f7bcab72c466f6d549908833"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/graduate_tool_test.exs": {
-    "mtime": 1781659487.8404913,
-    "ast_hash": "90f6bae091b078c7a2e36907222346fc",
-    "semantic_hash": "90f6bae091b078c7a2e36907222346fc"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/invoke_tool_test.exs": {
-    "mtime": 1781659476.877171,
-    "ast_hash": "bd8ce2baf029e5562592d90abf0f0ae6",
-    "semantic_hash": "bd8ce2baf029e5562592d90abf0f0ae6"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/list_agents_test.exs": {
-    "mtime": 1781474497.75914,
-    "ast_hash": "738ad2b0db896eca8b994371a0f7f3f4",
-    "semantic_hash": "738ad2b0db896eca8b994371a0f7f3f4"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/list_tools_test.exs": {
-    "mtime": 1781659480.8172863,
-    "ast_hash": "d64666a255b53e2761be519c2793bdc2",
-    "semantic_hash": "d64666a255b53e2761be519c2793bdc2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/spawn_agent_test.exs": {
-    "mtime": 1781474497.75914,
-    "ast_hash": "d9de9eed4813efa961f73e2017461e34",
-    "semantic_hash": "d9de9eed4813efa961f73e2017461e34"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/handlers/stop_agent_test.exs": {
-    "mtime": 1781284748.8885038,
-    "ast_hash": "8783593d08eac4083c994e706f132dd2",
-    "semantic_hash": "8783593d08eac4083c994e706f132dd2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/router_test.exs": {
-    "mtime": 1781285109.0831966,
-    "ast_hash": "910272446f198b4713801a2c86c75639",
-    "semantic_hash": "910272446f198b4713801a2c86c75639"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/schema_test.exs": {
-    "mtime": 1780688997.4439726,
-    "ast_hash": "8e4e6f8e668363f357901acf98a7a63c",
-    "semantic_hash": "8e4e6f8e668363f357901acf98a7a63c"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/session_registry_test.exs": {
-    "mtime": 1780537185.1734722,
-    "ast_hash": "8af8ec0e1af39e6991e9c635d5a41c95",
-    "semantic_hash": "8af8ec0e1af39e6991e9c635d5a41c95"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/memory/store_test.exs": {
-    "mtime": 1780935140.3359666,
-    "ast_hash": "28fecaad8daf7a32639fe3fffc9008e2",
-    "semantic_hash": "28fecaad8daf7a32639fe3fffc9008e2"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/node_registry_test.exs": {
+  "test/shem/node_registry_test.exs": {
     "mtime": 1781403896.475651,
     "ast_hash": "a3b9961543db615f98457c472b1af728",
     "semantic_hash": "a3b9961543db615f98457c472b1af728"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/placement_strategy_test.exs": {
+  "test/shem/placement_strategy_test.exs": {
     "mtime": 1781403692.6202245,
     "ast_hash": "fd68b4543c549cf4547c539445a28475",
     "semantic_hash": "fd68b4543c549cf4547c539445a28475"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/process_registry_test.exs": {
-    "mtime": 1780682606.479821,
-    "ast_hash": "de8494287083ed0d703d16e697f0f72c",
-    "semantic_hash": "de8494287083ed0d703d16e697f0f72c"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/agents_test.exs": {
-    "mtime": 1781474124.5073054,
-    "ast_hash": "a78eadd831d5022bb6e2e5f6fb7d365a",
-    "semantic_hash": "a78eadd831d5022bb6e2e5f6fb7d365a"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/health_test.exs": {
-    "mtime": 1781200974.3826902,
-    "ast_hash": "98dae09499eee8ddc26e1a55ca1bd947",
-    "semantic_hash": "98dae09499eee8ddc26e1a55ca1bd947"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/presets_test.exs": {
-    "mtime": 1781051319.2139661,
-    "ast_hash": "c0d1bcf27d94afcf7218eb537953cf0e",
-    "semantic_hash": "c0d1bcf27d94afcf7218eb537953cf0e"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/routes_test.exs": {
-    "mtime": 1780836593.9366906,
-    "ast_hash": "3373955be792c09e576c61255b1207fa",
-    "semantic_hash": "3373955be792c09e576c61255b1207fa"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/sessions_test.exs": {
-    "mtime": 1781309469.7170446,
-    "ast_hash": "2cc702b2c01447d99e5880c736da5326",
-    "semantic_hash": "2cc702b2c01447d99e5880c736da5326"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/shadow_test.exs": {
-    "mtime": 1781094331.9047666,
-    "ast_hash": "52a61d9dc565d115e1f1c767a509b71f",
-    "semantic_hash": "52a61d9dc565d115e1f1c767a509b71f"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/shadow/agent_test.exs": {
-    "mtime": 1781093900.5943327,
-    "ast_hash": "3e87af7ef4beef4f8002fa6b34b52f5a",
-    "semantic_hash": "3e87af7ef4beef4f8002fa6b34b52f5a"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/shadow/prompt_test.exs": {
-    "mtime": 1781057776.2442982,
-    "ast_hash": "7c7faaf85b5ed61c337a21854d8c4de8",
-    "semantic_hash": "7c7faaf85b5ed61c337a21854d8c4de8"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/shadow/supervisor_test.exs": {
-    "mtime": 1781057385.1580791,
-    "ast_hash": "528da061ea780ba105756d9700539b7d",
-    "semantic_hash": "528da061ea780ba105756d9700539b7d"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tool_test.exs": {
-    "mtime": 1781659463.0137634,
-    "ast_hash": "afe813b78fa563c95c83d5fc9f741bcd",
-    "semantic_hash": "afe813b78fa563c95c83d5fc9f741bcd"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/trust/store_test.exs": {
-    "mtime": 1781301962.8464339,
-    "ast_hash": "a30dcdbd6f4dbdabcf6263737e218584",
-    "semantic_hash": "a30dcdbd6f4dbdabcf6263737e218584"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/agent_view_test.exs": {
-    "mtime": 1781294740.693776,
-    "ast_hash": "16ad79c94968cec5dbdb44c1d07f9046",
-    "semantic_hash": "16ad79c94968cec5dbdb44c1d07f9046"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/app_hire_test.exs": {
-    "mtime": 1781131970.869879,
-    "ast_hash": "459300fa870903f9830470fd99a65b87",
-    "semantic_hash": "459300fa870903f9830470fd99a65b87"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/app_test.exs": {
-    "mtime": 1781473986.899494,
-    "ast_hash": "8d022a3d255748a7a7d1f38e169d6a19",
-    "semantic_hash": "8d022a3d255748a7a7d1f38e169d6a19"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/autocomplete_test.exs": {
-    "mtime": 1781293361.6294467,
-    "ast_hash": "380cdf86acba161d094fa3c55a312b57",
-    "semantic_hash": "380cdf86acba161d094fa3c55a312b57"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/command_dispatch_test.exs": {
-    "mtime": 1781136988.075903,
-    "ast_hash": "a230a7d3b34fcd14b949d8a38d0e4730",
-    "semantic_hash": "a230a7d3b34fcd14b949d8a38d0e4730"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/stream_sink_test.exs": {
+  "test/shem/tui/stream_sink_test.exs": {
     "mtime": 1781554700.2492948,
     "ast_hash": "0824088e01c84438b6269be32017b645",
     "semantic_hash": "0824088e01c84438b6269be32017b645"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/system_stats_test.exs": {
-    "mtime": 1781288755.7833204,
-    "ast_hash": "b8420ae95479dbca8fce362a0f3deb52",
-    "semantic_hash": "b8420ae95479dbca8fce362a0f3deb52"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/views/dashboard_test.exs": {
-    "mtime": 1781473970.7593987,
-    "ast_hash": "b683268d25fca3450f347e33373be336",
-    "semantic_hash": "b683268d25fca3450f347e33373be336"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/views/history_test.exs": {
-    "mtime": 1781294793.177463,
-    "ast_hash": "002c7ef8c42d19508ea72294348081fc",
-    "semantic_hash": "002c7ef8c42d19508ea72294348081fc"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/views/interactive_test.exs": {
-    "mtime": 1781473980.9844592,
-    "ast_hash": "4810b42b784f2de71b8cf9df41a7d381",
-    "semantic_hash": "4810b42b784f2de71b8cf9df41a7d381"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem/tui/welcome_test.exs": {
-    "mtime": 1780968855.6772764,
-    "ast_hash": "8068b098812a15ff5c401ed7d27ee1a9",
-    "semantic_hash": "8068b098812a15ff5c401ed7d27ee1a9"
-  },
-  "/home/philip/Downloads/_project/shem/test/shem_test.exs": {
-    "mtime": 1780506616.9774132,
-    "ast_hash": "510870aa6dea090a823e2f184ea44459",
-    "semantic_hash": "510870aa6dea090a823e2f184ea44459"
-  },
-  "/home/philip/Downloads/_project/shem/test/test_helper.exs": {
-    "mtime": 1782065741.2532203,
-    "ast_hash": "6e7dd7d29b6a4f8b3e5985c902681948",
-    "semantic_hash": "6e7dd7d29b6a4f8b3e5985c902681948"
-  },
-  "/home/philip/Downloads/_project/shem/lib/mix/tasks/demo.ex": {
+  "lib/mix/tasks/demo.ex": {
     "mtime": 1782331678.0,
     "ast_hash": "930f8361d1e1a65a26be31d70f3d884b",
     "semantic_hash": "930f8361d1e1a65a26be31d70f3d884b"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/graduation_gate/python.ex": {
+  "lib/shem/lab/graduation_gate/python.ex": {
     "mtime": 1782407678.3571286,
     "ast_hash": "6041359deb72eb522504420636394c9f",
     "semantic_hash": "6041359deb72eb522504420636394c9f"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/port_pool.ex": {
-    "mtime": 1782431983.0203907,
-    "ast_hash": "9d67d89300ecefe4d409091dea3fd9e1",
-    "semantic_hash": "9d67d89300ecefe4d409091dea3fd9e1"
+  "lib/shem/lab/port_pool.ex": {
+    "mtime": 1782568401.8810582,
+    "ast_hash": "1c6f4db26b4c6eca28ab268c006e8b94",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/port_pool/supervisor.ex": {
+  "lib/shem/lab/port_pool/supervisor.ex": {
     "mtime": 1782409414.5851634,
     "ast_hash": "71a045f87305628c37993b3362181fe1",
     "semantic_hash": "71a045f87305628c37993b3362181fe1"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/graduation_gate/python_test.exs": {
+  "test/shem/lab/graduation_gate/python_test.exs": {
     "mtime": 1782065747.6626287,
     "ast_hash": "d46da0b57086fad59b28e1877cfe6429",
     "semantic_hash": "d46da0b57086fad59b28e1877cfe6429"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/port_pool_test.exs": {
-    "mtime": 1782431965.821308,
-    "ast_hash": "6c6ac90f2bbd8c865c70549765ed51af",
-    "semantic_hash": "6c6ac90f2bbd8c865c70549765ed51af"
+  "test/shem/lab/port_pool_test.exs": {
+    "mtime": 1782568386.9453168,
+    "ast_hash": "7dfdbe91fca0153c9bc49b6fdd6f7770",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/lib/mix/tasks/shem.serve.ex": {
+  "lib/mix/tasks/shem.serve.ex": {
     "mtime": 1782097081.1109664,
     "ast_hash": "850d7c3288e61fd57c0d2ee98e97c92b",
     "semantic_hash": "850d7c3288e61fd57c0d2ee98e97c92b"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/graduation_gate/hardening.ex": {
+  "lib/shem/lab/graduation_gate/hardening.ex": {
     "mtime": 1782069048.122168,
     "ast_hash": "0b2370850d87bf7ba9456fc95755736a",
     "semantic_hash": "0b2370850d87bf7ba9456fc95755736a"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/telemetry.ex": {
+  "lib/shem/telemetry.ex": {
     "mtime": 1782072026.2062516,
     "ast_hash": "c688d704d8be9f1f65546409292428b3",
     "semantic_hash": "c688d704d8be9f1f65546409292428b3"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/graduation_gate/hardening_test.exs": {
+  "test/shem/lab/graduation_gate/hardening_test.exs": {
     "mtime": 1782069065.0553582,
     "ast_hash": "d5dc30c229b46670e68f8216c3afe9e1",
     "semantic_hash": "d5dc30c229b46670e68f8216c3afe9e1"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/telemetry_test.exs": {
+  "test/shem/telemetry_test.exs": {
     "mtime": 1782072801.4912698,
     "ast_hash": "7d682d4de97771b661f92a4c085d3bf7",
     "semantic_hash": "7d682d4de97771b661f92a4c085d3bf7"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/graduation_gate/go.ex": {
+  "lib/shem/lab/graduation_gate/go.ex": {
     "mtime": 1782434005.0417337,
     "ast_hash": "a1c01532d578d4e605c8c653109a898d",
     "semantic_hash": "a1c01532d578d4e605c8c653109a898d"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/graduation_gate/js.ex": {
+  "lib/shem/lab/graduation_gate/js.ex": {
     "mtime": 1782410352.290489,
     "ast_hash": "888eed0c2ae963cf7db845437ab69477",
     "semantic_hash": "888eed0c2ae963cf7db845437ab69477"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/languages.ex": {
+  "lib/shem/lab/languages.ex": {
     "mtime": 1782424737.3808246,
     "ast_hash": "8aaa5bc139d4253c9b667dd96cab5e38",
     "semantic_hash": "8aaa5bc139d4253c9b667dd96cab5e38"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/lab/pack.ex": {
-    "mtime": 1782271150.06249,
-    "ast_hash": "0758954baaa22ad95c0251fc6846f967",
-    "semantic_hash": "0758954baaa22ad95c0251fc6846f967"
+  "lib/shem/lab/pack.ex": {
+    "mtime": 1782509374.1013296,
+    "ast_hash": "a8c75d1c3f4185e77838296fca0a1a29",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/llm/middleware/one_shot.ex": {
+  "lib/shem/llm/middleware/one_shot.ex": {
     "mtime": 1782330417.4142807,
     "ast_hash": "8bedc1f26358e1cace80e86d7032b632",
     "semantic_hash": "8bedc1f26358e1cace80e86d7032b632"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/install_pack.ex": {
+  "lib/shem/mcp/handlers/install_pack.ex": {
     "mtime": 1782268288.7553227,
     "ast_hash": "d0f8664fcb015e3212311374b7f9ed9a",
     "semantic_hash": "d0f8664fcb015e3212311374b7f9ed9a"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/list_packs.ex": {
+  "lib/shem/mcp/handlers/list_packs.ex": {
     "mtime": 1782270430.4290533,
     "ast_hash": "caa03c1e645020c73d80468df70668b3",
     "semantic_hash": "caa03c1e645020c73d80468df70668b3"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/provide_turn.ex": {
-    "mtime": 1782332388.738186,
-    "ast_hash": "d2707a58c7e4fc60c49a8c1356d8919d",
-    "semantic_hash": "d2707a58c7e4fc60c49a8c1356d8919d"
+  "lib/shem/mcp/handlers/provide_turn.ex": {
+    "mtime": 1783025612.7073925,
+    "ast_hash": "b54b96bd26521d7c6afae09bf1e5693b",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/mcp/handlers/uninstall_pack.ex": {
+  "lib/shem/mcp/handlers/uninstall_pack.ex": {
     "mtime": 1782268291.6565657,
     "ast_hash": "df7716a9d44d064e7e67cc49531f6d25",
     "semantic_hash": "df7716a9d44d064e7e67cc49531f6d25"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/rest/handlers/packs.ex": {
+  "lib/shem/rest/handlers/packs.ex": {
     "mtime": 1782270450.2364264,
     "ast_hash": "5f0aba2e49a205b468b894f53fc8649c",
     "semantic_hash": "5f0aba2e49a205b468b894f53fc8649c"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/seed_tools.ex": {
+  "lib/shem/seed_tools.ex": {
     "mtime": 1782174383.759644,
     "ast_hash": "7b4c99c85bededbf5042621fc210f033",
     "semantic_hash": "7b4c99c85bededbf5042621fc210f033"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/seed_tools/diff_text.ex": {
+  "lib/shem/seed_tools/diff_text.ex": {
     "mtime": 1782168708.2516286,
     "ast_hash": "81168c1c99d95c5d9e881b578ed71672",
     "semantic_hash": "81168c1c99d95c5d9e881b578ed71672"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/seed_tools/extract_signatures.ex": {
+  "lib/shem/seed_tools/extract_signatures.ex": {
     "mtime": 1782174378.679685,
     "ast_hash": "5d181ff559808b4e711ec4455f6a6883",
     "semantic_hash": "5d181ff559808b4e711ec4455f6a6883"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/seed_tools/graphify_query.ex": {
+  "lib/shem/seed_tools/graphify_query.ex": {
     "mtime": 1782168732.7193985,
     "ast_hash": "2cf738d1f2773e7d01489665f1106c3d",
     "semantic_hash": "2cf738d1f2773e7d01489665f1106c3d"
   },
-  "/home/philip/Downloads/_project/shem/lib/shem/seed_tools/json_query.ex": {
+  "lib/shem/seed_tools/json_query.ex": {
     "mtime": 1782168327.4725022,
     "ast_hash": "3076bf1c097ef325eb153fdae86b79d2",
     "semantic_hash": "3076bf1c097ef325eb153fdae86b79d2"
   },
-  "/home/philip/Downloads/_project/shem/packs/text-tools/pack.json": {
+  "packs/text-tools/pack.json": {
     "mtime": 1782309912.450116,
     "ast_hash": "d80c0eaf5a88c60e466778a89e6e0fa4",
     "semantic_hash": "d80c0eaf5a88c60e466778a89e6e0fa4"
   },
-  "/home/philip/Downloads/_project/shem/packs/text-tools/tools/slugify.ex": {
+  "packs/text-tools/tools/slugify.ex": {
     "mtime": 1782309912.4431002,
     "ast_hash": "302a312f642617cda893baee8df7f4f4",
     "semantic_hash": "302a312f642617cda893baee8df7f4f4"
   },
-  "/home/philip/Downloads/_project/shem/packs/text-tools/tools/slugify.json": {
+  "packs/text-tools/tools/slugify.json": {
     "mtime": 1782309912.4492612,
     "ast_hash": "48960ccb74cfcb7639010e59ba300943",
     "semantic_hash": "48960ccb74cfcb7639010e59ba300943"
   },
-  "/home/philip/Downloads/_project/shem/packs/text-tools/tools/word_count.ex": {
+  "packs/text-tools/tools/word_count.ex": {
     "mtime": 1782309912.4497242,
     "ast_hash": "7d61ebc5800ad1c7a62e93d44282b52e",
     "semantic_hash": "7d61ebc5800ad1c7a62e93d44282b52e"
   },
-  "/home/philip/Downloads/_project/shem/packs/text-tools/tools/word_count.json": {
+  "packs/text-tools/tools/word_count.json": {
     "mtime": 1782309912.4499907,
     "ast_hash": "3008fbd813af3eb9f235bdcb1722b8e6",
     "semantic_hash": "3008fbd813af3eb9f235bdcb1722b8e6"
   },
-  "/home/philip/Downloads/_project/shem/rel/overlays/bin/shem-install": {
+  "rel/overlays/bin/shem-install": {
     "mtime": 1782269945.10488,
     "ast_hash": "ab7c2f1be63677744fa2f14c169608ee",
     "semantic_hash": "ab7c2f1be63677744fa2f14c169608ee"
   },
-  "/home/philip/Downloads/_project/shem/rel/overlays/bin/shem-uninstall": {
+  "rel/overlays/bin/shem-uninstall": {
     "mtime": 1782269948.2641726,
     "ast_hash": "0a52ec99cf34a356fa4c4f91775e7c0a",
     "semantic_hash": "0a52ec99cf34a356fa4c4f91775e7c0a"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/client_brain_replay_test.exs": {
+  "test/shem/agent/client_brain_replay_test.exs": {
     "mtime": 1782353168.9600663,
     "ast_hash": "63149add7d0c78ec3b5c1cccb9151640",
     "semantic_hash": "63149add7d0c78ec3b5c1cccb9151640"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/client_brain_test.exs": {
+  "test/shem/agent/client_brain_test.exs": {
     "mtime": 1782353160.7769344,
     "ast_hash": "32efc5f7c74f47e88dcdfe864ce7fa64",
     "semantic_hash": "32efc5f7c74f47e88dcdfe864ce7fa64"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/client_brain_toolsmith_test.exs": {
+  "test/shem/agent/client_brain_toolsmith_test.exs": {
     "mtime": 1782404368.040259,
     "ast_hash": "f8bfc6876614f0c8d14b2919254a7d1b",
     "semantic_hash": "f8bfc6876614f0c8d14b2919254a7d1b"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/go_toolsmith_e2e_test.exs": {
+  "test/shem/agent/go_toolsmith_e2e_test.exs": {
     "mtime": 1782436337.954743,
     "ast_hash": "ac2886d66df9a2a500c1af42e95b69fd",
     "semantic_hash": "ac2886d66df9a2a500c1af42e95b69fd"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/agent/js_toolsmith_e2e_test.exs": {
+  "test/shem/agent/js_toolsmith_e2e_test.exs": {
     "mtime": 1782409870.1800954,
     "ast_hash": "b41814126873e81728d82a7d4e8772e3",
     "semantic_hash": "b41814126873e81728d82a7d4e8772e3"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/distributed/client_brain_routing_test.exs": {
+  "test/shem/distributed/client_brain_routing_test.exs": {
     "mtime": 1782334141.708278,
     "ast_hash": "32c9aaa2ca5477a1fdfcde39309c4c2a",
     "semantic_hash": "32c9aaa2ca5477a1fdfcde39309c4c2a"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/graduation_gate_go_test.exs": {
-    "mtime": 1782433984.701131,
-    "ast_hash": "d138cae03866b18cbab5cce72e9dced2",
-    "semantic_hash": "d138cae03866b18cbab5cce72e9dced2"
+  "test/shem/lab/graduation_gate_go_test.exs": {
+    "mtime": 1782570942.4962044,
+    "ast_hash": "2b83108ce14a5c3cd90d907eeebb7d57",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/graduation_gate_js_test.exs": {
+  "test/shem/lab/graduation_gate_js_test.exs": {
     "mtime": 1782410391.116469,
     "ast_hash": "59cc724647cb5da4699fab6bb05da9df",
     "semantic_hash": "59cc724647cb5da4699fab6bb05da9df"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/languages_test.exs": {
+  "test/shem/lab/languages_test.exs": {
     "mtime": 1782424720.2974823,
     "ast_hash": "28f6a9fd6012273d569f09df910e221e",
     "semantic_hash": "28f6a9fd6012273d569f09df910e221e"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/lab/pack_test.exs": {
-    "mtime": 1782270419.8350258,
-    "ast_hash": "c1d77953b4b03288901ece631a4e9f1a",
-    "semantic_hash": "c1d77953b4b03288901ece631a4e9f1a"
+  "test/shem/lab/pack_test.exs": {
+    "mtime": 1782509374.1023297,
+    "ast_hash": "c482a0ce7fce0ec52e8d342ab0da2850",
+    "semantic_hash": ""
   },
-  "/home/philip/Downloads/_project/shem/test/shem/llm/middleware/one_shot_test.exs": {
+  "test/shem/llm/middleware/one_shot_test.exs": {
     "mtime": 1782330409.7512546,
     "ast_hash": "4c1b5bb3eb0100a0e76a32d10004f3bf",
     "semantic_hash": "4c1b5bb3eb0100a0e76a32d10004f3bf"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/pack_tools_test.exs": {
+  "test/shem/mcp/pack_tools_test.exs": {
     "mtime": 1782270456.7928545,
     "ast_hash": "16cb12a3415ad5599c018b976a7fb647",
     "semantic_hash": "16cb12a3415ad5599c018b976a7fb647"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/mcp/provide_turn_test.exs": {
+  "test/shem/mcp/provide_turn_test.exs": {
     "mtime": 1782353176.7851934,
     "ast_hash": "ac6b744cd51f4b7d69edde935c681eeb",
     "semantic_hash": "ac6b744cd51f4b7d69edde935c681eeb"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/rest/packs_test.exs": {
+  "test/shem/rest/packs_test.exs": {
     "mtime": 1782270461.7918804,
     "ast_hash": "85fc04deb92e8e39356b898878d5baa3",
     "semantic_hash": "85fc04deb92e8e39356b898878d5baa3"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/seed_tools/diff_text_test.exs": {
+  "test/shem/seed_tools/diff_text_test.exs": {
     "mtime": 1782168745.6258042,
     "ast_hash": "6a5c5ad484f2f30471d61688a4d0c314",
     "semantic_hash": "6a5c5ad484f2f30471d61688a4d0c314"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/seed_tools/extract_signatures_test.exs": {
+  "test/shem/seed_tools/extract_signatures_test.exs": {
     "mtime": 1782174416.3203962,
     "ast_hash": "f6bedc1be577d41e097955b8364bd8e8",
     "semantic_hash": "f6bedc1be577d41e097955b8364bd8e8"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/seed_tools/graphify_query_test.exs": {
+  "test/shem/seed_tools/graphify_query_test.exs": {
     "mtime": 1782168754.8850951,
     "ast_hash": "9ba48635e72849e0a672448b65b07e0e",
     "semantic_hash": "9ba48635e72849e0a672448b65b07e0e"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/seed_tools/json_query_test.exs": {
+  "test/shem/seed_tools/json_query_test.exs": {
     "mtime": 1782168315.062101,
     "ast_hash": "64024a6789881af186ed6c8a3b48e97b",
     "semantic_hash": "64024a6789881af186ed6c8a3b48e97b"
   },
-  "/home/philip/Downloads/_project/shem/test/shem/seed_tools_test.exs": {
+  "test/shem/seed_tools_test.exs": {
     "mtime": 1782174391.171585,
     "ast_hash": "8de4b5d31235fe33ea16854e3afce712",
     "semantic_hash": "8de4b5d31235fe33ea16854e3afce712"
   },
-  "/home/philip/Downloads/_project/shem/test/support/fixtures/graph.json": {
+  "test/support/fixtures/graph.json": {
     "mtime": 1782168345.5370853,
     "ast_hash": "a6cdb4321429ae9cac3e6169f168c80f",
     "semantic_hash": "a6cdb4321429ae9cac3e6169f168c80f"
+  },
+  ".impeccable/config.local.json": {
+    "mtime": 1782584727.0930953,
+    "ast_hash": "d9242cdb0e8a2f25b7645e2a4ceead1c",
+    "semantic_hash": ""
+  },
+  ".impeccable/hook.cache.json": {
+    "mtime": 1783025829.1017537,
+    "ast_hash": "941ac9d1c11ac48f07b0437ab7b80082",
+    "semantic_hash": ""
+  },
+  "lib/shem/http/host_guard.ex": {
+    "mtime": 1783023969.3522036,
+    "ast_hash": "7e8bfc84d2fc7cfbee7f14ea8951f1e0",
+    "semantic_hash": ""
+  },
+  "lib/shem/lab/sandbox.ex": {
+    "mtime": 1782566849.2460907,
+    "ast_hash": "4e0339221c743e5c222845b412645023",
+    "semantic_hash": ""
+  },
+  "lib/shem/lab/source_scan.ex": {
+    "mtime": 1783023649.3502476,
+    "ast_hash": "e33365686ca698c74dda0d66e167dcc9",
+    "semantic_hash": ""
+  },
+  "lib/shem/rest/handlers/tools.ex": {
+    "mtime": 1783025484.4851964,
+    "ast_hash": "1eb69edfc0e32815f9f5b4ae6c884860",
+    "semantic_hash": ""
+  },
+  "rel/overlays/shem": {
+    "mtime": 1783004418.3645046,
+    "ast_hash": "ce23dfd05aee85a2d0f57cd64fc4ba2d",
+    "semantic_hash": ""
+  },
+  "test/shem/http/host_guard_test.exs": {
+    "mtime": 1783024014.7020473,
+    "ast_hash": "c39f26b4d6da2f1470f756e4fde181c1",
+    "semantic_hash": ""
+  },
+  "test/shem/lab/container_runtime_test.exs": {
+    "mtime": 1782570348.5002131,
+    "ast_hash": "86d952678328705750d9e31ea8dca219",
+    "semantic_hash": ""
+  },
+  "test/shem/lab/executor_scan_test.exs": {
+    "mtime": 1783023724.1476402,
+    "ast_hash": "3bdbc278f8b3d8b4c35553622a3ea228",
+    "semantic_hash": ""
+  },
+  "test/shem/lab/load_site_scan_test.exs": {
+    "mtime": 1783023835.6257153,
+    "ast_hash": "e60e2bc3d1c313f81786e5a5745dae35",
+    "semantic_hash": ""
+  },
+  "test/shem/lab/sandbox_test.exs": {
+    "mtime": 1782569077.914508,
+    "ast_hash": "fb51d4862ec218ae64687c32a9da3ce7",
+    "semantic_hash": ""
+  },
+  "test/shem/lab/source_scan_test.exs": {
+    "mtime": 1783023608.7534916,
+    "ast_hash": "f22036ea408eee22902d30b372795800",
+    "semantic_hash": ""
+  },
+  "test/shem/mcp/server_boot_test.exs": {
+    "mtime": 1783024038.070482,
+    "ast_hash": "dbe4f4b055dbf2cef552b9fd8f95e663",
+    "semantic_hash": ""
+  },
+  "test/shem/rest/tools_test.exs": {
+    "mtime": 1783025829.0097528,
+    "ast_hash": "6302e0921bba0ee71b4283908afa0eca",
+    "semantic_hash": ""
+  },
+  "test/shem_cli_test.sh": {
+    "mtime": 1782476526.8867695,
+    "ast_hash": "d8e5e98a31e3245d74ebde38635368a0",
+    "semantic_hash": ""
   }
 }

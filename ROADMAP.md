@@ -39,7 +39,7 @@ security review, and fix fresh-clone first impressions.
 - README claims survive a skeptical read.
 - **Gates the Dogfood track** (see below).
 
-## Phase 2 — Human Co-Driver `next`
+## Phase 2 — Human Co-Driver `done`
 
 Execute the existing co-driver design (2026-07-02 spec + plan): a human at the
 WebUI injects a running agent's next turn; the fork-lane co-driver rail ships
@@ -49,7 +49,7 @@ starting (its own stated note).
 **Exit criteria:** inject a turn from the browser into a live client-brain
 agent; the agent acts on it; the event is in the log like any other turn.
 
-## Phase 3 — Agent Regression Testing `pending`
+## Phase 3 — Agent Regression Testing `next`
 
 `shem replay --check`: golden sessions from recorded runs. Re-run a session
 against a new model / prompt / tool version, report *where* it diverged,
