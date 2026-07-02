@@ -159,4 +159,80 @@ defmodule Shem.Replay.Check do
       findings: diverged ++ extra ++ unused ++ errors
     }
   end
+
+  # ── Presentation + CLI ──────────────────────────────────────────────────────
+
+  @tail 160
+
+  @spec format(Report.t()) :: String.t()
+  def format(%Report{} = r) do
+    header = "replaying #{r.golden_sid} (#{r.recorded_calls} LLM calls recorded)"
+
+    body = Enum.map(r.findings, &format_finding/1)
+
+    result =
+      if Report.clean?(r) do
+        "result: CLEAN — replay matches the recording"
+      else
+        "result: DIVERGED — #{length(r.findings)} finding(s) across #{r.recorded_calls} recorded calls"
+      end
+
+    footer = "replay session: #{r.replay_sid} (inspect at /timeline)"
+
+    Enum.join([header] ++ body ++ [result, footer], "\n")
+  end
+
+  # Call indexes are 0-based internally, 1-based for humans.
+  defp format_finding(%{class: :prompt_diverged, call_index: i, recorded: rec, replayed: rep}) do
+    "✕ call #{i + 1}: prompt diverged\n" <>
+      "    recorded  …#{tail(rec)}\n" <>
+      "    replayed  …#{tail(rep)}"
+  end
+
+  defp format_finding(%{class: :extra_calls, detail: d}), do: "✕ extra calls: #{d}"
+  defp format_finding(%{class: :unused_calls, detail: d}), do: "✕ unused calls: #{d}"
+  defp format_finding(%{class: :replay_error, detail: d}), do: "✕ replay error: #{d}"
+
+  defp tail(s) when byte_size(s) <= @tail, do: s
+  defp tail(s), do: binary_part(s, byte_size(s) - @tail, @tail)
+
+  @spec format_error(String.t(), term()) :: String.t()
+  def format_error(sid, :not_found) do
+    data_dir = Application.get_env(:shem, :event_log_path, Path.join([System.user_home!(), ".config", "shem", "lab", "events"]))
+    "session #{sid} not found (data dir: #{data_dir})"
+  end
+
+  def format_error(sid, :not_replayable),
+    do: "session #{sid} was recorded before replay-check support — re-record the golden"
+
+  def format_error(sid, {:chain_broken, detail}),
+    do: "session #{sid}: hash chain broken (#{inspect(detail)}) — golden is not trustworthy"
+
+  def format_error(sid, :not_an_agent_session), do: "session #{sid} has no agent_started event"
+  def format_error(sid, :no_llm_events), do: "session #{sid} has no recorded LLM calls"
+  def format_error(_sid, {:preset_unknown, name}), do: "preset #{inspect(name)} no longer exists"
+  def format_error(sid, other), do: "replay of #{sid} failed: #{inspect(other)}"
+
+  @doc """
+  One-shot entry for `shem replay --check` / `mix shem.replay`.
+  Boots the app headless and RETURNS the exit code — callers halt.
+  """
+  @spec cli(String.t()) :: 0 | 1 | 2
+  def cli(golden_sid) do
+    Application.put_env(:shem, :start_tui, false)
+    Application.put_env(:shem, :start_cluster, false)
+    # Ephemeral port: this instance exists only for the replay.
+    Application.put_env(:shem, :mcp_port, 0)
+    {:ok, _} = Application.ensure_all_started(:shem)
+
+    case run(golden_sid) do
+      {:ok, report} ->
+        IO.puts(format(report))
+        if Report.clean?(report), do: 0, else: 1
+
+      {:error, reason} ->
+        IO.puts(:stderr, format_error(golden_sid, reason))
+        2
+    end
+  end
 end
