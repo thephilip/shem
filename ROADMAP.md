@@ -10,7 +10,7 @@ bottom run in parallel and never block a phase.
 
 ---
 
-## Phase 1 — Trust the Front Door `next`
+## Phase 1 — Trust the Front Door `done`
 
 Close the request-origin and Elixir-execution gaps found in the 2026-07-02
 security review, and fix fresh-clone first impressions.
@@ -39,7 +39,7 @@ security review, and fix fresh-clone first impressions.
 - README claims survive a skeptical read.
 - **Gates the Dogfood track** (see below).
 
-## Phase 2 — Human Co-Driver `pending`
+## Phase 2 — Human Co-Driver `next`
 
 Execute the existing co-driver design (2026-07-02 spec + plan): a human at the
 WebUI injects a running agent's next turn; the fork-lane co-driver rail ships
