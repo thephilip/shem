@@ -406,36 +406,6 @@
       "norm_label": "fixed_tool()"
     },
     {
-      "label": "shem.replay.ex",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.replay.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tasks_shem_replay",
-      "community": 260,
-      "norm_label": "shem.replay.ex"
-    },
-    {
-      "label": "Mix.Tasks.Shem.Replay",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.replay.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tasks_shem_replay_mix_tasks_shem_replay",
-      "community": 260,
-      "norm_label": "mix.tasks.shem.replay"
-    },
-    {
-      "label": "run()",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.replay.ex",
-      "source_location": "L14",
-      "_origin": "ast",
-      "id": "tasks_shem_replay_mix_tasks_shem_replay_run",
-      "community": 260,
-      "norm_label": "run()"
-    },
-    {
       "label": "shem.serve.ex",
       "file_type": "code",
       "source_file": "lib/mix/tasks/shem.serve.ex",
@@ -729,7 +699,7 @@
       "label": "start()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L34",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_start",
       "community": 7,
@@ -739,7 +709,7 @@
       "label": "stop()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L44",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_stop",
       "community": 7,
@@ -749,7 +719,7 @@
       "label": "status()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L52",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_status",
       "community": 7,
@@ -759,7 +729,7 @@
       "label": "await()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L68",
+      "source_location": "L66",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_await",
       "community": 7,
@@ -769,7 +739,7 @@
       "label": "send_message()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L82",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_send_message",
       "community": 7,
@@ -779,7 +749,7 @@
       "label": "session_id()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L97",
+      "source_location": "L95",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_session_id",
       "community": 7,
@@ -789,7 +759,7 @@
       "label": "set_fence()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L105",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_set_fence",
       "community": 7,
@@ -799,7 +769,7 @@
       "label": "info()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L113",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_info",
       "community": 7,
@@ -809,7 +779,7 @@
       "label": "provide_turn()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L122",
+      "source_location": "L120",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_provide_turn",
       "community": 7,
@@ -819,7 +789,7 @@
       "label": "pause()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L125",
+      "source_location": "L123",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_pause",
       "community": 7,
@@ -829,7 +799,7 @@
       "label": "steer()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L128",
+      "source_location": "L126",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_steer",
       "community": 7,
@@ -839,7 +809,7 @@
       "label": "unpause()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L131",
+      "source_location": "L129",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_unpause",
       "community": 7,
@@ -849,7 +819,7 @@
       "label": "agent_call()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L133",
+      "source_location": "L131",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_agent_call",
       "community": 7,
@@ -859,7 +829,7 @@
       "label": "start_with_preset()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L148",
+      "source_location": "L146",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_start_with_preset",
       "community": 7,
@@ -869,7 +839,7 @@
       "label": "await_result()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L168",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_await_result",
       "community": 7,
@@ -879,7 +849,7 @@
       "label": "resume()",
       "file_type": "code",
       "source_file": "lib/shem/agent.ex",
-      "source_location": "L186",
+      "source_location": "L183",
       "_origin": "ast",
       "id": "shem_agent_shem_agent_resume",
       "community": 7,
@@ -1179,7 +1149,7 @@
       "label": "handle_info()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L181",
+      "source_location": "L175",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_handle_info",
       "community": 9,
@@ -1189,7 +1159,7 @@
       "label": "park()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L224",
+      "source_location": "L218",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_park",
       "community": 9,
@@ -1199,7 +1169,7 @@
       "label": "apply_turn_result()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L234",
+      "source_location": "L228",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_apply_turn_result",
       "community": 9,
@@ -1209,7 +1179,7 @@
       "label": "execute_tool_calls()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L260",
+      "source_location": "L254",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_execute_tool_calls",
       "community": 9,
@@ -1219,7 +1189,7 @@
       "label": "finish()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L278",
+      "source_location": "L272",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_finish",
       "community": 9,
@@ -1229,7 +1199,7 @@
       "label": "broadcast_stream_done()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L316",
+      "source_location": "L310",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_broadcast_stream_done",
       "community": 9,
@@ -1239,7 +1209,7 @@
       "label": "emit_thinking()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L323",
+      "source_location": "L317",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_emit_thinking",
       "community": 9,
@@ -1249,7 +1219,7 @@
       "label": "prepend_project_context()",
       "file_type": "code",
       "source_file": "lib/shem/agent/server.ex",
-      "source_location": "L330",
+      "source_location": "L324",
       "_origin": "ast",
       "id": "agent_server_shem_agent_server_prepend_project_context",
       "community": 9,
@@ -2599,7 +2569,7 @@
       "label": "genesis()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L20",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_genesis",
       "community": 51,
@@ -2609,7 +2579,7 @@
       "label": "next()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L25",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_next",
       "community": 51,
@@ -2619,7 +2589,7 @@
       "label": "verify()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L32",
+      "source_location": "L30",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_verify",
       "community": 51,
@@ -2629,7 +2599,7 @@
       "label": "walk()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L41",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_walk",
       "community": 51,
@@ -2639,7 +2609,7 @@
       "label": "canonical()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L54",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_canonical",
       "community": 51,
@@ -4642,7 +4612,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lab_workspace",
-      "community": 44,
+      "community": 0,
       "norm_label": "workspace.ex"
     },
     {
@@ -5709,7 +5679,7 @@
       "label": "extract_call_summaries()",
       "file_type": "code",
       "source_file": "lib/shem/llm/replay.ex",
-      "source_location": "L51",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "llm_replay_shem_llm_replay_extract_call_summaries",
       "community": 69,
@@ -5719,7 +5689,7 @@
       "label": "compare_calls()",
       "file_type": "code",
       "source_file": "lib/shem/llm/replay.ex",
-      "source_location": "L65",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "llm_replay_shem_llm_replay_compare_calls",
       "community": 69,
@@ -7654,156 +7624,6 @@
       "id": "shem_process_registry_shem_processregistry_lookup_meta",
       "community": 75,
       "norm_label": "lookup_meta()"
-    },
-    {
-      "label": "check.ex",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check",
-      "community": 254,
-      "norm_label": "check.ex"
-    },
-    {
-      "label": "Shem.Replay.Check",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check",
-      "community": 254,
-      "norm_label": "shem.replay.check"
-    },
-    {
-      "label": "Report",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "replay_check_report",
-      "community": 254,
-      "norm_label": "report"
-    },
-    {
-      "label": "clean?()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "replay_check_report_clean",
-      "community": 254,
-      "norm_label": "clean?()"
-    },
-    {
-      "label": "run()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_run",
-      "community": 254,
-      "norm_label": "run()"
-    },
-    {
-      "label": "verify()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L49",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_verify",
-      "community": 254,
-      "norm_label": "verify()"
-    },
-    {
-      "label": "replay_fields()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L57",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_replay_fields",
-      "community": 254,
-      "norm_label": "replay_fields()"
-    },
-    {
-      "label": "build_config()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L82",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_build_config",
-      "community": 254,
-      "norm_label": "build_config()"
-    },
-    {
-      "label": "replay_agent()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L102",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_replay_agent",
-      "community": 254,
-      "norm_label": "replay_agent()"
-    },
-    {
-      "label": "build_report()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L123",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_build_report",
-      "community": 254,
-      "norm_label": "build_report()"
-    },
-    {
-      "label": "format()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L177",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_format",
-      "community": 254,
-      "norm_label": "format()"
-    },
-    {
-      "label": "format_finding()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L195",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_format_finding",
-      "community": 254,
-      "norm_label": "format_finding()"
-    },
-    {
-      "label": "tail()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L206",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_tail",
-      "community": 254,
-      "norm_label": "tail()"
-    },
-    {
-      "label": "format_error()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L209",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_format_error",
-      "community": 254,
-      "norm_label": "format_error()"
-    },
-    {
-      "label": "cli()",
-      "file_type": "code",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L232",
-      "_origin": "ast",
-      "id": "replay_check_shem_replay_check_cli",
-      "community": 254,
-      "norm_label": "cli()"
     },
     {
       "label": "agents.ex",
@@ -10360,7 +10180,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test",
-      "community": 257,
+      "community": 18,
       "norm_label": "client_brain_replay_test.exs"
     },
     {
@@ -10370,7 +10190,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test_shem_agent_clientbrainreplaytest",
-      "community": 257,
+      "community": 18,
       "norm_label": "shem.agent.clientbrainreplaytest"
     },
     {
@@ -10380,7 +10200,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test_shem_agent_clientbrainreplaytest_wait_for_awaiting",
-      "community": 257,
+      "community": 18,
       "norm_label": "wait_for_awaiting()"
     },
     {
@@ -10390,7 +10210,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_test",
-      "community": 258,
+      "community": 18,
       "norm_label": "client_brain_test.exs"
     },
     {
@@ -10400,7 +10220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_test_shem_agent_clientbraintest",
-      "community": 258,
+      "community": 18,
       "norm_label": "shem.agent.clientbraintest"
     },
     {
@@ -10410,7 +10230,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "agent_client_brain_test_shem_agent_clientbraintest_wait_for_awaiting",
-      "community": 258,
+      "community": 18,
       "norm_label": "wait_for_awaiting()"
     },
     {
@@ -10594,26 +10414,6 @@
       "norm_label": "shem.agent.presettest"
     },
     {
-      "label": "replay_config_test.exs",
-      "file_type": "code",
-      "source_file": "test/shem/agent/replay_config_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "agent_replay_config_test",
-      "community": 18,
-      "norm_label": "replay_config_test.exs"
-    },
-    {
-      "label": "Shem.Agent.ReplayConfigTest",
-      "file_type": "code",
-      "source_file": "test/shem/agent/replay_config_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "agent_replay_config_test_shem_agent_replayconfigtest",
-      "community": 18,
-      "norm_label": "shem.agent.replayconfigtest"
-    },
-    {
       "label": "server_test.exs",
       "file_type": "code",
       "source_file": "test/shem/agent/server_test.exs",
@@ -10710,7 +10510,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_turn_test",
-      "community": 259,
+      "community": 18,
       "norm_label": "turn_test.exs"
     },
     {
@@ -10720,7 +10520,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "agent_turn_test_shem_agent_turntest",
-      "community": 259,
+      "community": 18,
       "norm_label": "shem.agent.turntest"
     },
     {
@@ -10730,7 +10530,7 @@
       "source_location": "L325",
       "_origin": "ast",
       "id": "agent_turn_test_shem_agent_turntest_stream_stub",
-      "community": 259,
+      "community": 18,
       "norm_label": "stream_stub()"
     },
     {
@@ -13060,7 +12860,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "handlers_list_agents_test",
-      "community": 256,
+      "community": 18,
       "norm_label": "list_agents_test.exs"
     },
     {
@@ -13070,7 +12870,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "handlers_list_agents_test_shem_mcp_handlers_listagentstest",
-      "community": 256,
+      "community": 18,
       "norm_label": "shem.mcp.handlers.listagentstest"
     },
     {
@@ -13080,7 +12880,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "handlers_list_agents_test_shem_mcp_handlers_listagentstest_stub",
-      "community": 256,
+      "community": 18,
       "norm_label": "stub()"
     },
     {
@@ -13090,7 +12890,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "handlers_list_agents_test_shem_mcp_handlers_listagentstest_eventually",
-      "community": 256,
+      "community": 18,
       "norm_label": "eventually()"
     },
     {
@@ -13432,86 +13232,6 @@
       "id": "shem_process_registry_test_shem_processregistrytest",
       "community": 223,
       "norm_label": "shem.processregistrytest"
-    },
-    {
-      "label": "check_format_test.exs",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_format_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check_format_test",
-      "community": 261,
-      "norm_label": "check_format_test.exs"
-    },
-    {
-      "label": "Shem.Replay.CheckFormatTest",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_format_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check_format_test_shem_replay_checkformattest",
-      "community": 261,
-      "norm_label": "shem.replay.checkformattest"
-    },
-    {
-      "label": "check_test.exs",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check_test",
-      "community": 255,
-      "norm_label": "check_test.exs"
-    },
-    {
-      "label": "Shem.Replay.CheckTest",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "replay_check_test_shem_replay_checktest",
-      "community": 255,
-      "norm_label": "shem.replay.checktest"
-    },
-    {
-      "label": "record_golden()",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "replay_check_test_shem_replay_checktest_record_golden",
-      "community": 255,
-      "norm_label": "record_golden()"
-    },
-    {
-      "label": "craft_golden()",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "replay_check_test_shem_replay_checktest_craft_golden",
-      "community": 255,
-      "norm_label": "craft_golden()"
-    },
-    {
-      "label": "craft_golden_with_failure()",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L61",
-      "_origin": "ast",
-      "id": "replay_check_test_shem_replay_checktest_craft_golden_with_failure",
-      "community": 255,
-      "norm_label": "craft_golden_with_failure()"
-    },
-    {
-      "label": "classes()",
-      "file_type": "code",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L78",
-      "_origin": "ast",
-      "id": "replay_check_test_shem_replay_checktest_classes",
-      "community": 255,
-      "norm_label": "classes()"
     },
     {
       "label": "agents_test.exs",
@@ -15239,26 +14959,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "lib/mix/tasks/shem.replay.ex",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "tasks_shem_replay",
-      "target": "tasks_shem_replay_mix_tasks_shem_replay",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/mix/tasks/shem.replay.ex",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "tasks_shem_replay_mix_tasks_shem_replay",
-      "target": "tasks_shem_replay_mix_tasks_shem_replay_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "lib/mix/tasks/shem.serve.ex",
       "source_location": "L1",
       "weight": 1.0,
@@ -15655,17 +15355,6 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "test/shem/agent/replay_config_test.exs",
-      "source_location": "L4",
-      "weight": 1.0,
-      "context": "import",
-      "source": "agent_replay_config_test",
-      "target": "shem_agent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "confidence": "EXTRACTED",
       "source_file": "test/shem/agent/server_test.exs",
       "source_location": "L4",
       "weight": 1.0,
@@ -15934,17 +15623,6 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "test/shem/agent/replay_config_test.exs",
-      "source_location": "L5",
-      "weight": 1.0,
-      "context": "import",
-      "source": "agent_replay_config_test",
-      "target": "shem_agent_config",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "confidence": "EXTRACTED",
       "source_file": "lib/shem/agent/tool_dispatch.ex",
       "source_location": "L3",
       "weight": 1.0,
@@ -16068,9 +15746,9 @@
       "source_file": "lib/shem/agent/checkpoint.ex",
       "source_location": "L42",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_checkpoint_shem_agent_checkpoint",
-      "target": "agent_checkpoint_shem_agent_checkpoint_fold_tail"
+      "target": "agent_checkpoint_shem_agent_checkpoint_fold_tail",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -16099,9 +15777,9 @@
       "source_location": "L29",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "agent_checkpoint_shem_agent_checkpoint_reconstruct",
-      "target": "agent_checkpoint_shem_agent_checkpoint_fold_tail"
+      "target": "agent_checkpoint_shem_agent_checkpoint_fold_tail",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -16595,9 +16273,9 @@
       "source_file": "lib/shem/agent/tool_dispatch.ex",
       "source_location": "L512",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_tool_dispatch_shem_agent_tooldispatch",
-      "target": "agent_tool_dispatch_shem_agent_tooldispatch_compile_and_load"
+      "target": "agent_tool_dispatch_shem_agent_tooldispatch_compile_and_load",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -16785,9 +16463,9 @@
       "source_location": "L504",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "agent_tool_dispatch_shem_agent_tooldispatch_ensure_loaded",
-      "target": "agent_tool_dispatch_shem_agent_tooldispatch_compile_and_load"
+      "target": "agent_tool_dispatch_shem_agent_tooldispatch_compile_and_load",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18144,9 +17822,9 @@
       "source_file": "lib/shem/cluster.ex",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_cluster_shem_cluster",
-      "target": "shem_cluster_shem_cluster_child_spec"
+      "target": "shem_cluster_shem_cluster_child_spec",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18451,9 +18129,9 @@
       "source_file": "lib/shem/event_log.ex",
       "source_location": "L28",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_finalize"
+      "target": "shem_event_log_shem_eventlog_finalize",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18874,9 +18552,9 @@
       "source_location": "L31",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "event_log_dets_store_shem_eventlog_detsstore_read_all",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_get"
+      "target": "event_log_dets_store_shem_eventlog_detsstore_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19007,9 +18685,9 @@
       "source_location": "L26",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "event_log_fake_store_shem_eventlog_fakestore_read_all",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_get"
+      "target": "event_log_fake_store_shem_eventlog_fakestore_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19265,9 +18943,9 @@
       "source_location": "L102",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "event_log_mnesia_store_shem_eventlog_mnesiastore_read_all",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_get"
+      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19459,9 +19137,9 @@
       "source_file": "lib/shem/http/host_guard.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard",
-      "target": "http_host_guard_shem_http_hostguard"
+      "target": "http_host_guard_shem_http_hostguard",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19469,9 +19147,9 @@
       "source_file": "lib/shem/http/host_guard.ex",
       "source_location": "L22",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard",
-      "target": "http_host_guard_shem_http_hostguard_call"
+      "target": "http_host_guard_shem_http_hostguard_call",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19479,9 +19157,9 @@
       "source_file": "lib/shem/http/host_guard.ex",
       "source_location": "L34",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard",
-      "target": "http_host_guard_shem_http_hostguard_check_host"
+      "target": "http_host_guard_shem_http_hostguard_check_host",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19489,9 +19167,9 @@
       "source_file": "lib/shem/http/host_guard.ex",
       "source_location": "L43",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard",
-      "target": "http_host_guard_shem_http_hostguard_check_token"
+      "target": "http_host_guard_shem_http_hostguard_check_token",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19499,9 +19177,9 @@
       "source_file": "lib/shem/http/host_guard.ex",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard",
-      "target": "http_host_guard_shem_http_hostguard_init"
+      "target": "http_host_guard_shem_http_hostguard_init",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19510,9 +19188,9 @@
       "source_location": "L23",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard_call",
-      "target": "http_host_guard_shem_http_hostguard_check_host"
+      "target": "http_host_guard_shem_http_hostguard_check_host",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19521,9 +19199,9 @@
       "source_location": "L23",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "http_host_guard_shem_http_hostguard_call",
-      "target": "http_host_guard_shem_http_hostguard_check_token"
+      "target": "http_host_guard_shem_http_hostguard_check_token",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19571,9 +19249,9 @@
       "source_file": "lib/shem/lab/executor.ex",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_executor_shem_lab_executor",
-      "target": "lab_executor_shem_lab_executor_maybe_scan"
+      "target": "lab_executor_shem_lab_executor_maybe_scan",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19622,9 +19300,9 @@
       "source_location": "L17",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_executor_shem_lab_executor_run",
-      "target": "lab_executor_shem_lab_executor_maybe_scan"
+      "target": "lab_executor_shem_lab_executor_maybe_scan",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20924,9 +20602,9 @@
       "source_file": "lib/shem/lab/port_pool.ex",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_port_pool_shem_lab_portpool",
-      "target": "lab_port_pool_shem_lab_portpool_maybe_warn_unsandboxed"
+      "target": "lab_port_pool_shem_lab_portpool_maybe_warn_unsandboxed",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -20964,9 +20642,9 @@
       "source_file": "lib/shem/lab/port_pool.ex",
       "source_location": "L122",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_port_pool_shem_lab_portpool",
-      "target": "lab_port_pool_shem_lab_portpool_terminate"
+      "target": "lab_port_pool_shem_lab_portpool_terminate",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20975,9 +20653,9 @@
       "source_location": "L41",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_port_pool_shem_lab_portpool_init",
-      "target": "lab_port_pool_shem_lab_portpool_maybe_warn_unsandboxed"
+      "target": "lab_port_pool_shem_lab_portpool_maybe_warn_unsandboxed",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21338,9 +21016,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox"
+      "target": "lab_sandbox_shem_lab_sandbox",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21348,9 +21026,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L65",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_cleanup_tool"
+      "target": "lab_sandbox_shem_lab_sandbox_cleanup_tool",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21358,9 +21036,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_container_argv"
+      "target": "lab_sandbox_shem_lab_sandbox_container_argv",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21368,9 +21046,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L60",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_env_args"
+      "target": "lab_sandbox_shem_lab_sandbox_env_args",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21378,9 +21056,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_image"
+      "target": "lab_sandbox_shem_lab_sandbox_image",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21388,9 +21066,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L82",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter"
+      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21398,9 +21076,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L33",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_spawn_spec"
+      "target": "lab_sandbox_shem_lab_sandbox_spawn_spec",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21408,9 +21086,9 @@
       "source_file": "lib/shem/lab/sandbox.ex",
       "source_location": "L76",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox",
-      "target": "lab_sandbox_shem_lab_sandbox_sweep_orphans"
+      "target": "lab_sandbox_shem_lab_sandbox_sweep_orphans",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21419,9 +21097,9 @@
       "source_location": "L56",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox_container_argv",
-      "target": "lab_sandbox_shem_lab_sandbox_image"
+      "target": "lab_sandbox_shem_lab_sandbox_image",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21430,9 +21108,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox_spawn_spec",
-      "target": "lab_sandbox_shem_lab_sandbox_container_argv"
+      "target": "lab_sandbox_shem_lab_sandbox_container_argv",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21441,9 +21119,9 @@
       "source_location": "L56",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox_container_argv",
-      "target": "lab_sandbox_shem_lab_sandbox_env_args"
+      "target": "lab_sandbox_shem_lab_sandbox_env_args",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21452,9 +21130,9 @@
       "source_location": "L66",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox_cleanup_tool",
-      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter"
+      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21463,9 +21141,9 @@
       "source_location": "L78",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "lab_sandbox_shem_lab_sandbox_sweep_orphans",
-      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter"
+      "target": "lab_sandbox_shem_lab_sandbox_rm_by_filter",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -21473,9 +21151,9 @@
       "source_file": "lib/shem/lab/source_scan.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_source_scan",
-      "target": "lab_source_scan_shem_lab_sourcescan"
+      "target": "lab_source_scan_shem_lab_sourcescan",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21483,9 +21161,9 @@
       "source_file": "lib/shem/lab/source_scan.ex",
       "source_location": "L87",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_source_scan_shem_lab_sourcescan",
-      "target": "lab_source_scan_shem_lab_sourcescan_check"
+      "target": "lab_source_scan_shem_lab_sourcescan_check",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21493,9 +21171,9 @@
       "source_file": "lib/shem/lab/source_scan.ex",
       "source_location": "L89",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_source_scan_shem_lab_sourcescan",
-      "target": "lab_source_scan_shem_lab_sourcescan_line"
+      "target": "lab_source_scan_shem_lab_sourcescan_line",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -21503,9 +21181,9 @@
       "source_file": "lib/shem/lab/source_scan.ex",
       "source_location": "L18",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_source_scan_shem_lab_sourcescan",
-      "target": "lab_source_scan_shem_lab_sourcescan_scan"
+      "target": "lab_source_scan_shem_lab_sourcescan_scan",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -21604,9 +21282,9 @@
       "source_file": "lib/shem/lab/workspace.ex",
       "source_location": "L10",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_workspace_shem_lab_workspace",
-      "target": "lab_workspace_shem_lab_workspace_own_file"
+      "target": "lab_workspace_shem_lab_workspace_own_file",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -24399,9 +24077,9 @@
       "source_file": "lib/shem/mcp/router.ex",
       "source_location": "L126",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mcp_router_shem_mcp_router",
-      "target": "mcp_router_shem_mcp_router_server_instructions"
+      "target": "mcp_router_shem_mcp_router_server_instructions",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -24496,9 +24174,9 @@
       "source_location": "L85",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "mcp_router_shem_mcp_router_dispatch_method",
-      "target": "mcp_router_shem_mcp_router_server_instructions"
+      "target": "mcp_router_shem_mcp_router_server_instructions",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -24578,9 +24256,9 @@
       "source_file": "lib/shem/mcp/server.ex",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mcp_server_shem_mcp_server",
-      "target": "mcp_server_shem_mcp_server_loopback"
+      "target": "mcp_server_shem_mcp_server_loopback",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -24599,9 +24277,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "mcp_server_shem_mcp_server_init",
-      "target": "mcp_server_shem_mcp_server_loopback"
+      "target": "mcp_server_shem_mcp_server_loopback",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -25073,267 +24751,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L15",
-      "weight": 1.0,
-      "source": "replay_check",
-      "target": "replay_check_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "replay_check",
-      "target": "replay_check_shem_replay_check",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L82",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_build_config",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L123",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_build_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L232",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_cli",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L177",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L225",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format_error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L203",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format_finding",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L102",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_replay_agent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_replay_fields",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L26",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L206",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_tail",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L49",
-      "weight": 1.0,
-      "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_verify",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "replay_check_report",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L242",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L183",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_format",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L239",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L32",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_build_config",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L39",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_build_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L36",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_replay_agent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L31",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_replay_fields",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L29",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_verify",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L241",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_format",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L197",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_format_finding",
-      "target": "replay_check_shem_replay_check_tail",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/replay/check.ex",
-      "source_location": "L245",
-      "weight": 1.0,
-      "context": "call",
-      "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_format_error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "lib/shem/rest/handlers/agents.ex",
       "source_location": "L1",
       "weight": 1.0,
@@ -25367,9 +24784,9 @@
       "source_file": "lib/shem/rest/handlers/agents.ex",
       "source_location": "L298",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "handlers_agents_shem_rest_handlers_agents",
-      "target": "handlers_agents_shem_rest_handlers_agents_resolve_agent"
+      "target": "handlers_agents_shem_rest_handlers_agents_resolve_agent",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -25527,9 +24944,9 @@
       "source_file": "lib/shem/rest/handlers/sessions.ex",
       "source_location": "L173",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "handlers_sessions_shem_rest_handlers_sessions",
-      "target": "handlers_sessions_shem_rest_handlers_sessions_fork_response"
+      "target": "handlers_sessions_shem_rest_handlers_sessions_fork_response",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -25597,9 +25014,9 @@
       "source_file": "lib/shem/rest/handlers/sessions.ex",
       "source_location": "L186",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "handlers_sessions_shem_rest_handlers_sessions",
-      "target": "handlers_sessions_shem_rest_handlers_sessions_task_from_events"
+      "target": "handlers_sessions_shem_rest_handlers_sessions_task_from_events",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -25619,9 +25036,9 @@
       "source_location": "L174",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "handlers_sessions_shem_rest_handlers_sessions_fork_response",
-      "target": "handlers_sessions_shem_rest_handlers_sessions_task_from_events"
+      "target": "handlers_sessions_shem_rest_handlers_sessions_task_from_events",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -25629,9 +25046,9 @@
       "source_file": "lib/shem/rest/handlers/tools.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "handlers_tools",
-      "target": "handlers_tools_shem_rest_handlers_tools"
+      "target": "handlers_tools_shem_rest_handlers_tools",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -26372,9 +25789,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "import",
-      "confidence_score": 1.0,
       "source": "lab_load_site_scan_test",
-      "target": "shem_tool"
+      "target": "shem_tool",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -28407,9 +27824,9 @@
       "source_file": "mix.exs",
       "source_location": "L16",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mix_shem_mixproject",
-      "target": "mix_shem_mixproject_cli"
+      "target": "mix_shem_mixproject_cli",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -28457,9 +27874,9 @@
       "source_file": "mix.exs",
       "source_location": "L52",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mix_shem_mixproject",
-      "target": "mix_shem_mixproject_test_dist"
+      "target": "mix_shem_mixproject_test_dist",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -28784,16 +28201,6 @@
       "confidence_score": 1.0,
       "source": "agent_preset_test",
       "target": "agent_preset_test_shem_agent_presettest"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/agent/replay_config_test.exs",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "agent_replay_config_test",
-      "target": "agent_replay_config_test_shem_agent_replayconfigtest",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29458,9 +28865,9 @@
       "source_file": "test/shem/http/host_guard_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_test",
-      "target": "http_host_guard_test_shem_http_hostguardtest"
+      "target": "http_host_guard_test_shem_http_hostguardtest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -29468,9 +28875,9 @@
       "source_file": "test/shem/http/host_guard_test.exs",
       "source_location": "L12",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "http_host_guard_test_shem_http_hostguardtest",
-      "target": "http_host_guard_test_shem_http_hostguardtest_req"
+      "target": "http_host_guard_test_shem_http_hostguardtest_req",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29488,9 +28895,9 @@
       "source_file": "test/shem/lab/container_runtime_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_container_runtime_test",
-      "target": "lab_container_runtime_test_shem_lab_containerruntimetest"
+      "target": "lab_container_runtime_test_shem_lab_containerruntimetest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29518,9 +28925,9 @@
       "source_file": "test/shem/lab/executor_scan_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_executor_scan_test",
-      "target": "lab_executor_scan_test_shem_lab_executorscantest"
+      "target": "lab_executor_scan_test_shem_lab_executorscantest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -29528,9 +28935,9 @@
       "source_file": "test/shem/lab/executor_scan_test.exs",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_executor_scan_test_shem_lab_executorscantest",
-      "target": "lab_executor_scan_test_shem_lab_executorscantest_security_event_count"
+      "target": "lab_executor_scan_test_shem_lab_executorscantest_security_event_count",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29638,9 +29045,9 @@
       "source_file": "test/shem/lab/load_site_scan_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_load_site_scan_test",
-      "target": "lab_load_site_scan_test_shem_lab_loadsitescantest"
+      "target": "lab_load_site_scan_test_shem_lab_loadsitescantest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29698,9 +29105,9 @@
       "source_file": "test/shem/lab/sandbox_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_sandbox_test",
-      "target": "lab_sandbox_test_shem_lab_sandboxtest"
+      "target": "lab_sandbox_test_shem_lab_sandboxtest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -29708,9 +29115,9 @@
       "source_file": "test/shem/lab/source_scan_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lab_source_scan_test",
-      "target": "lab_source_scan_test_shem_lab_sourcescantest"
+      "target": "lab_source_scan_test_shem_lab_sourcescantest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30761,9 +30168,9 @@
       "source_file": "test/shem/mcp/server_boot_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mcp_server_boot_test",
-      "target": "mcp_server_boot_test_shem_mcp_serverboottest"
+      "target": "mcp_server_boot_test_shem_mcp_serverboottest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30814,66 +30221,6 @@
       "confidence_score": 1.0,
       "source": "shem_process_registry_test",
       "target": "shem_process_registry_test_shem_processregistrytest"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_format_test.exs",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "replay_check_format_test",
-      "target": "replay_check_format_test_shem_replay_checkformattest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "replay_check_test",
-      "target": "replay_check_test_shem_replay_checktest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L78",
-      "weight": 1.0,
-      "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_classes",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_craft_golden",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L61",
-      "weight": 1.0,
-      "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_craft_golden_with_failure",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/replay/check_test.exs",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_record_golden",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30931,9 +30278,9 @@
       "source_file": "test/shem/rest/agents_test.exs",
       "source_location": "L296",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "rest_agents_test_shem_rest_agentstest",
-      "target": "rest_agents_test_shem_rest_agentstest_wait_for_awaiting"
+      "target": "rest_agents_test_shem_rest_agentstest_wait_for_awaiting",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -31021,9 +30368,9 @@
       "source_file": "test/shem/rest/tools_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "rest_tools_test",
-      "target": "rest_tools_test_shem_rest_toolstest"
+      "target": "rest_tools_test_shem_rest_toolstest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -31401,9 +30748,9 @@
       "source_file": "test/shem_cli_test.sh",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "test_shem_cli_test",
-      "target": "home_philip_downloads_project_shem_test_shem_cli_test_sh__entry"
+      "target": "home_philip_downloads_project_shem_test_shem_cli_test_sh__entry",
+      "confidence_score": 1.0
     },
     {
       "relation": "defines",
@@ -31411,9 +30758,9 @@
       "source_file": "test/shem_cli_test.sh",
       "source_location": "L22",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "test_shem_cli_test",
-      "target": "test_shem_cli_test_fail"
+      "target": "test_shem_cli_test_fail",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -31422,9 +30769,9 @@
       "source_location": "L25",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "home_philip_downloads_project_shem_test_shem_cli_test_sh__entry",
-      "target": "test_shem_cli_test_fail"
+      "target": "test_shem_cli_test_fail",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -31438,5 +30785,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "875d74bf41b555ab7fadb929146ab7a01dc9c513"
+  "built_at_commit": "58da2bed1f5798c689079d054246762b5ca5badc"
 }

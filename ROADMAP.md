@@ -49,7 +49,7 @@ starting (its own stated note).
 **Exit criteria:** inject a turn from the browser into a live client-brain
 agent; the agent acts on it; the event is in the log like any other turn.
 
-## Phase 3 — Agent Regression Testing `next`
+## Phase 3 — Agent Regression Testing `done`
 
 `shem replay --check`: golden sessions from recorded runs. Re-run a session
 against a new model / prompt / tool version, report *where* it diverged,
@@ -61,7 +61,7 @@ detection).
 replays with a divergence report; a deliberate prompt change is caught; the
 exit code is usable in CI.
 
-## Phase 4 — Verifiable Ops `pending`
+## Phase 4 — Verifiable Ops `next`
 
 - **`shem attest <session>`** — export a self-verifying bundle: events, chain
   head, exact tool sources by sha256, and a standalone verifier that runs on a
@@ -126,7 +126,10 @@ development is a Phase-5+ aspiration, not a near-term claim.
 **Friction log** (anything that made Shem awkward to reach for — one line
 each; this is the live stickiness measurement):
 
-- _(empty — opens with the Dogfood track)_
+- 2026-07-03 (Phase 3): recording a golden outside a running `shem` is awkward —
+  `mix run` exits without graceful shutdown so DETS never flushes, and PresetStore
+  doesn't persist cross-process. Goldens must come from a real `shem start` session,
+  not an ad-hoc script. (`shem attest`, Phase 4, is the intended portable path.)
 
 ## Parked (explicitly not scheduled)
 
