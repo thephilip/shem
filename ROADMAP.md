@@ -131,6 +131,12 @@ each; this is the live stickiness measurement):
   doesn't persist cross-process. Goldens must come from a real `shem start` session,
   not an ad-hoc script. (`shem attest`, Phase 4, is the intended portable path.)
 
+- 2026-07-03 (browser-tools pack): container executor hardcodes `--network=none` and
+  `python:3.12-slim`, which is correct for most tools but blocks browser-automation
+  tools that need network + playwright browsers. Workaround: `executor.backend: local`.
+  Per-tool sandbox profiles (network mode, container image per runtime) needed.
+  Filed by big-pickle.
+
 ## Parked (explicitly not scheduled)
 
 Distributed `:port`-tool artifact locality · EventLog pattern miner (measure
