@@ -17,7 +17,7 @@ PORT_FILE="$RELEASE_TMP/shem.port"
 # status/stop display the port a previous `start` chose (start re-derives its own below).
 [ -f "$PORT_FILE" ] && PORT="$(cat "$PORT_FILE" 2>/dev/null || printf %s "$PORT")"
 
-usage() { echo "usage: shem {start [--port N] | stop | status | install <repo> [path]}"; }
+usage() { echo "usage: shem {start [--port N] | stop | status | install <repo> [path] | replay --check <session_id>}"; }
 
 running() { "$LAUNCHER" pid >/dev/null 2>&1; }   # node up? dependency-free
 
@@ -119,11 +119,29 @@ cmd_install() {  # bin/shem-install validates the URL and does the rpc; we add t
   exec "$REL_DIR/bin/shem-install" "$@"
 }
 
+cmd_replay() {
+  [ "${1:-}" = "--check" ] || { echo "usage: shem replay --check <session_id>" >&2; exit 2; }
+  SID="${2:-}"
+  # Session ids are ses_ + hex; the id is interpolated into Elixir source, so
+  # reject anything else (quoting/injection safety).
+  case "$SID" in
+    ses_[A-Za-z0-9_]*) ;;
+    *) echo "shem replay: '$SID' does not look like a session id (ses_...)" >&2; exit 2 ;;
+  esac
+  if running; then
+    echo "Shem is running — replay boots its own instance and would collide with the live data dir." >&2
+    echo "Stop it first:  shem stop" >&2
+    exit 2
+  fi
+  "$LAUNCHER" eval "System.halt(Shem.Replay.Check.cli(\"$SID\"))"
+}
+
 case "${1:-}" in
   start)   shift; cmd_start "$@" ;;
   stop)    shift; cmd_stop ;;
   status)  shift; cmd_status ;;
   install) shift; cmd_install "$@" ;;
+  replay)  shift; cmd_replay "$@" ;;
   ""|-h|--help|help) usage ;;
   *) echo "shem: unknown command '$1'" >&2; usage >&2; exit 2 ;;
 esac
