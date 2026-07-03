@@ -27,7 +27,7 @@ defmodule Shem.Replay.Check do
     timeout = Keyword.get(opts, :timeout, @await_timeout)
 
     with :ok <- verify(golden_sid),
-         {:ok, events} <- Shem.EventLog.events(golden_sid),
+         {:ok, events} <- Shem.EventLog.read_session_events(golden_sid),
          {:ok, task, preset_name, ctx} <- replay_fields(events),
          {:ok, config} <- build_config(task, preset_name, ctx) do
       recorded = length(Utils.extract_llm_pairs(events))

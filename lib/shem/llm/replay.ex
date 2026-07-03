@@ -23,7 +23,9 @@ defmodule Shem.LLM.Replay do
   # ── Private ──────────────────────────────────────────────────────────────────
 
   defp extract_queue(session_id) do
-    case Shem.EventLog.events(session_id) do
+    # read_session_events (not events/1) so a golden recorded in a PRIOR process
+    # — no active handle, only its DETS/Mnesia record — still replays.
+    case Shem.EventLog.read_session_events(session_id) do
       {:error, reason} ->
         {:error, reason}
 

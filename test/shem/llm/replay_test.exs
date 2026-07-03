@@ -102,8 +102,10 @@ defmodule Shem.LLM.ReplayTest do
   end
 
   describe "with_replay/2 — error cases" do
-    test "returns {:error, :session_not_found} for unknown session" do
-      assert {:error, :session_not_found} =
+    test "returns {:error, :not_found} for unknown session" do
+      # with_replay reads via read_session_events (so historical, non-active
+      # goldens replay); its missing-session error atom is :not_found.
+      assert {:error, :not_found} =
                Replay.with_replay("ses_doesnotexist00", fn _sid -> :ok end)
     end
 
