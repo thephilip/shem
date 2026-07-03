@@ -322,9 +322,13 @@ defmodule Shem.EventLog do
 
       case :dets.open_file(table, file: file_charlist, type: :set) do
         {:ok, tab} ->
+          # Sort by :seq (the hash chain's append order), matching
+          # DETSStore.read_all — timestamp alone reorders same-microsecond
+          # events and breaks chain verification. Legacy events (no :seq) fall
+          # back to timestamp.
           events =
             :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], tab)
-            |> Enum.sort_by(& &1.timestamp, DateTime)
+            |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
 
           :dets.close(tab)
           {:ok, events}
