@@ -125,8 +125,13 @@ cmd_replay() {
   # Session ids are ses_ + hex; the id is interpolated into Elixir source, so
   # reject anything else (quoting/injection safety).
   case "$SID" in
-    ses_[A-Za-z0-9_]*) ;;
-    *) echo "shem replay: '$SID' does not look like a session id (ses_...)" >&2; exit 2 ;;
+    ses_*)
+      case "$SID" in
+        *[!A-Za-z0-9_]*) echo "shem replay: '$SID' has invalid characters (expected ses_ + [A-Za-z0-9_])" >&2; exit 2 ;;
+      esac
+      ;;
+    *)
+      echo "shem replay: '$SID' does not look like a session id (ses_...)" >&2; exit 2 ;;
   esac
   if running; then
     echo "Shem is running — replay boots its own instance and would collide with the live data dir." >&2
