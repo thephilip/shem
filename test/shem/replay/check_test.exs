@@ -156,6 +156,28 @@ defmodule Shem.Replay.CheckTest do
     assert {:error, :not_replayable} = Check.run(sid)
   end
 
+  test "raw-Config golden (preset: nil) is not replayable — system_prompt was not recorded" do
+    # start_with_preset records a preset; a raw Agent.start records preset: nil.
+    # Its own system_prompt is not in agent_started, so replaying against
+    # "general" would spuriously diverge — refuse instead.
+    {:ok, sid} = Shem.EventLog.start_session()
+
+    Shem.EventLog.append(sid, :agent_started, %{
+      task: "raw",
+      model: :default,
+      max_turns: 20,
+      preset: nil,
+      project_context: nil
+    })
+
+    StubServer.push_response(
+      {:ok, %Response{content: "x", tokens_used: 1, model: :default, latency_ms: 1}}
+    )
+
+    Shem.LLM.complete(%Request{prompt: "p", model: :default, session_id: sid})
+    assert {:error, :not_replayable} = Check.run(sid)
+  end
+
   test "agent session with no LLM calls is an error" do
     {:ok, sid} = Shem.EventLog.start_session()
 

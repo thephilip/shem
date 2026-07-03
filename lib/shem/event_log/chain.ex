@@ -10,6 +10,8 @@ defmodule Shem.EventLog.Chain do
 
   Canonical form uses `:erlang.term_to_binary/2` with `:deterministic`; chains
   are local-only and not guaranteed stable across major OTP version upgrades.
+  Chains recorded before the `:deterministic` canonicalization (pre-2026-07-03)
+  do not re-verify and read as broken — re-record such sessions.
   """
 
   alias Shem.EventLog.Event

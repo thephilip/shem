@@ -60,12 +60,21 @@ defmodule Shem.Replay.Check do
         {:error, :not_an_agent_session}
 
       %{payload: payload} ->
-        if Map.has_key?(payload, :preset) do
-          ctx = payload[:project_context] && struct(Shem.Context.Project, payload[:project_context])
-          {:ok, payload[:task], payload[:preset], ctx}
-        else
-          # Recorded before replay-check support — cannot reconstruct the run.
-          {:error, :not_replayable}
+        cond do
+          # Recorded before replay-check support — no preset field at all.
+          not Map.has_key?(payload, :preset) ->
+            {:error, :not_replayable}
+
+          # Raw-Config start (preset: nil): the agent ran with its own
+          # system_prompt, which agent_started does NOT record, so we can't
+          # reconstruct the prompt — replaying against "general" would spuriously
+          # diverge. Refuse rather than mislead.
+          is_nil(payload[:preset]) ->
+            {:error, :not_replayable}
+
+          true ->
+            ctx = payload[:project_context] && struct(Shem.Context.Project, payload[:project_context])
+            {:ok, payload[:task], payload[:preset], ctx}
         end
     end
   end
@@ -203,7 +212,9 @@ defmodule Shem.Replay.Check do
   end
 
   def format_error(sid, :not_replayable),
-    do: "session #{sid} was recorded before replay-check support — re-record the golden"
+    do:
+      "session #{sid} is not replayable (recorded before replay-check support, or " <>
+        "started from a raw Config with no preset) — re-record the golden via a preset"
 
   def format_error(sid, {:chain_broken, detail}),
     do: "session #{sid}: hash chain broken (#{inspect(detail)}) — golden is not trustworthy"
