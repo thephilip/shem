@@ -8,8 +8,8 @@ defmodule Shem.EventLog.Chain do
   are tolerated as an unverifiable prefix; a nil hash appearing AFTER a
   hashed event is a break.
 
-  Canonical form uses `:erlang.term_to_binary/1`; chains are local-only and
-  not guaranteed stable across major OTP version upgrades.
+  Canonical form uses `:erlang.term_to_binary/2` with `:deterministic`; chains
+  are local-only and not guaranteed stable across major OTP version upgrades.
   """
 
   alias Shem.EventLog.Event
@@ -50,8 +50,14 @@ defmodule Shem.EventLog.Chain do
   end
 
   defp canonical(%Event{} = e) do
+    # `:deterministic` is REQUIRED: without it, a payload map built in memory and
+    # the same map reconstructed via binary_to_term (a DETS/Mnesia read) can
+    # serialize to different bytes, so a hash committed at append time fails to
+    # re-verify from a cold read in another process. That breaks cross-process
+    # chain verification (e.g. `shem replay --check` on a stored golden).
     :erlang.term_to_binary(
-      {e.id, e.session_id, e.type, e.payload, DateTime.to_iso8601(e.timestamp), e.parent_id}
+      {e.id, e.session_id, e.type, e.payload, DateTime.to_iso8601(e.timestamp), e.parent_id},
+      [:deterministic]
     )
   end
 end

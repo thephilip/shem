@@ -74,4 +74,10 @@ defmodule Shem.EventLog.ChainTest do
     assert {:error, {:broken_at, broken_id}} = Chain.verify([e1, relinked], @sid)
     assert broken_id == e2.id
   end
+
+  # NOTE: the cross-process chain-stability fix (`:deterministic` in
+  # Chain.canonical) is not unit-testable here — the bug is a >32-key HAMT whose
+  # term_to_binary order depends on the per-VM-boot map seed, so it only diverges
+  # ACROSS OS processes; within one test VM equal maps always share internal
+  # order. Validated by cross-process live replay (see the Phase 3 SDD ledger).
 end
