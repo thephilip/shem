@@ -87,6 +87,45 @@ defmodule Shem.AttestTest do
     assert head == manifest["portable_head"]
   end
 
+  test "build refilters covered leftover rows from a crash-window digest", %{out: out} do
+    {:ok, sid} = Shem.EventLog.start_session()
+    for i <- 0..9, do: {:ok, _} = Shem.EventLog.append(sid, :test, %{i: i})
+
+    state = :sys.get_state(Shem.EventLog)
+    {handle, _session} = Map.fetch!(state.sessions, sid)
+    {:ok, events} = Shem.EventLog.events(sid)
+
+    # Crash window: digest written covering seq 0..5, prune never ran — all 10
+    # rows are still on disk (mirrors do_gc's crash-safety ordering).
+    {leftover, kept} = Enum.split(events, 6)
+    last = List.last(leftover)
+
+    portable =
+      Enum.reduce(leftover, Attest.portable_genesis(sid), fn e, acc ->
+        Attest.portable_next(acc, Shem.Attest.CanonicalJSON.encode(Attest.event_view(e)))
+      end)
+
+    digest = %{
+      covers_to_seq: last.seq,
+      count: length(leftover),
+      beam_anchor: last.hash,
+      portable_anchor: portable,
+      pruned_at: DateTime.utc_now()
+    }
+
+    :ok = state.store.put_digest(handle, digest)
+
+    assert {:ok, dir} = Attest.build(sid, out: out)
+    manifest = dir |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    assert manifest["event_count"] == length(kept)
+
+    lines = dir |> Path.join("events.jsonl") |> File.read!() |> String.split("\n", trim: true)
+    assert length(lines) == length(kept)
+
+    head = Enum.reduce(lines, digest.portable_anchor, &Attest.portable_next(&2, &1))
+    assert head == manifest["portable_head"]
+  end
+
   test "un-GC'd bundle has no gc block", %{sid: sid, out: out} do
     assert {:ok, dir} = Attest.build(sid, out: out)
     manifest = dir |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()

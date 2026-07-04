@@ -37,6 +37,49 @@ defmodule Shem.EventLog.GCTest do
     assert {:ok, :verified_gc, %{pruned: 25, replayable: 5}} = EventLog.verify_chain(sid)
   end
 
+  test "gc after a crash-window digest (leftover covered rows) does not double-fold" do
+    sid = seed(30)
+    state = :sys.get_state(Shem.EventLog)
+    {handle, _session} = Map.fetch!(state.sessions, sid)
+    {:ok, events} = EventLog.events(sid)
+
+    # Simulate the crash window: a digest covering seq 0..24 is durable, but
+    # the matching prune never ran — all 30 rows are still in the store, same
+    # as if the process died between store.put_digest and store.prune in do_gc.
+    {leaked, _kept} = Enum.split(events, 25)
+    last = List.last(leaked)
+
+    portable =
+      Enum.reduce(leaked, Shem.Attest.portable_genesis(sid), fn e, acc ->
+        Shem.Attest.portable_next(acc, Shem.Attest.CanonicalJSON.encode(Shem.Attest.event_view(e)))
+      end)
+
+    crash_digest = %{
+      covers_to_seq: last.seq,
+      count: length(leaked),
+      beam_anchor: last.hash,
+      portable_anchor: portable,
+      pruned_at: DateTime.utc_now()
+    }
+
+    :ok = state.store.put_digest(handle, crash_digest)
+
+    # A correct implementation only folds the truly-new tail (seq 25..27) on
+    # top of the existing anchor. The buggy version re-reads all 30 raw rows,
+    # re-splits on `keep`, and folds rows 0..27 (including the 25 already
+    # covered by crash_digest) onto an anchor that already covers them.
+    expected_new_pruned = Enum.filter(events, &(&1.seq > crash_digest.covers_to_seq and &1.seq <= 27))
+    expected_portable =
+      Enum.reduce(expected_new_pruned, crash_digest.portable_anchor, fn e, acc ->
+        Shem.Attest.portable_next(acc, Shem.Attest.CanonicalJSON.encode(Shem.Attest.event_view(e)))
+      end)
+
+    assert {:ok, %{pruned: 3, total_pruned: 28, kept: 2}} = EventLog.gc(sid, 2)
+    assert {:ok, %{count: 28, covers_to_seq: 27, portable_anchor: ^expected_portable}} =
+             EventLog.get_digest(sid)
+    assert {:ok, :verified_gc, %{pruned: 28, replayable: 2}} = EventLog.verify_chain(sid)
+  end
+
   test "gc below keep is a noop" do
     sid = seed(3)
     assert {:ok, :noop} = EventLog.gc(sid, 5)
@@ -88,6 +131,35 @@ defmodule Shem.EventLog.GCTest do
       # length(stored) after gc keep=3 is 3 → old code would mint seq=3
       assert e.seq == 10
       assert {:ok, :verified_gc, _} = EventLog.verify_chain(sid)
+    end
+
+    test "get_digest falls back to the historical DETS file when the active store misses" do
+      # Controlled restart (terminate_child/restart_child), not GenServer.stop —
+      # a raw stop is an unplanned exit the supervisor counts against its
+      # restart intensity, and this describe block's other test already spends
+      # some of that budget.
+      Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+      Supervisor.restart_child(Shem.Supervisor, Shem.EventLog)
+
+      sid = seed(10)
+      {:ok, _} = EventLog.gc(sid, 3)
+      :ok = EventLog.end_session(sid)
+
+      # Simulate the node's active store no longer being the one this session's
+      # digest lives under (e.g. MnesiaStore in a cluster, DETS from a historical
+      # single-node run). FakeStore's ETS-table read_all raises on a bare string
+      # handle, so store_has_session? for it returns false — this pins the
+      # "session not in active state, store read misses → DETS fallback" branch
+      # of get_digest, not a real cross-store cluster scenario.
+      Application.put_env(:shem, :event_log_store, Shem.EventLog.FakeStore)
+      Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+      Supervisor.restart_child(Shem.Supervisor, Shem.EventLog)
+
+      # No start_session — sessions map is empty, forcing the non-active path
+      # for both read_session_events (existing DETS fallback) and get_digest
+      # (this fix). Without the fix, get_digest returns {:error, :none} and
+      # verify_chain walks from genesis, reporting a false chain break.
+      assert {:ok, :verified_gc, %{pruned: 7, replayable: 3}} = EventLog.verify_chain(sid)
     end
   end
 
@@ -144,6 +216,7 @@ defmodule Shem.EventLog.GCTest do
     assert {:error, :pruned} = EventLog.reconstruct_at(sid, first.id, fn s, _ -> s end, nil)
     assert {:error, :pruned} = EventLog.scrub(sid, first.id)
     # unknown id on a GC'd session also reads :pruned (id could have been pruned — honest ambiguity)
+    assert {:error, :pruned} = EventLog.event(sid, "evt_NOPE")
     # unknown id on an un-GC'd session stays :not_found
     sid2 = seed(3)
     assert {:error, :not_found} = EventLog.event(sid2, "evt_NOPE")
@@ -174,6 +247,14 @@ defmodule Shem.EventLog.GCTest do
       sid = seed(30)
       {:ok, events} = EventLog.events(sid)
       assert length(events) == 30
+    end
+
+    test "keep_events: 0 clamps to 1 inside do_gc — auto-GC bypasses the public gc/2 clamp" do
+      Application.put_env(:shem, :gc, keep_events: 0)
+      sid = seed(5)
+      {:ok, events} = EventLog.events(sid)
+      assert length(events) >= 1
+      assert {:ok, :verified_gc, _} = EventLog.verify_chain(sid)
     end
   end
 end

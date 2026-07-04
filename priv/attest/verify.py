@@ -21,9 +21,14 @@ def main(argv):
             head = sha256_hex(head.encode("utf-8") + line)
             n += 1
 
+    if gc:
+        range_str = f'{gc["pruned_count"] + 1}-{gc["pruned_count"] + n}'
+    else:
+        range_str = f"1-{n}"
+
     ok = True
     if head == manifest["portable_head"]:
-        print(f"events 1-{n} OK · portable head {head[:12]}… matches")
+        print(f"events {range_str} OK · portable head {head[:12]}… matches")
     else:
         ok = False
         print(f"CHAIN MISMATCH: recomputed {head[:12]}… != manifest {manifest['portable_head'][:12]}…")

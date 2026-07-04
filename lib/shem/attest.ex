@@ -17,11 +17,23 @@ defmodule Shem.Attest do
     out = Keyword.get(opts, :out, File.cwd!())
 
     with {:ok, _kind, _n} <- verify(session_id),
-         {:ok, events} <- EventLog.read_session_events(session_id) do
+         {:ok, all_events} <- EventLog.read_session_events(session_id) do
       digest =
         case EventLog.get_digest(session_id) do
           {:ok, d} -> d
           _ -> nil
+        end
+
+      # Rows with seq <= digest.covers_to_seq can survive a crash between
+      # put_digest and prune; they're already committed to by the digest
+      # anchor, so exclude them here too — otherwise they'd be double-written
+      # into events.jsonl and double-folded into the portable head on top of
+      # the anchor that already covers them.
+      events =
+        if digest do
+          Enum.filter(all_events, fn e -> (Map.get(e, :seq) || -1) > digest.covers_to_seq end)
+        else
+          all_events
         end
 
       lines = Enum.map(events, &CanonicalJSON.encode(event_view(&1)))

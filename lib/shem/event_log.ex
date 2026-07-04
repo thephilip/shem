@@ -380,7 +380,12 @@ defmodule Shem.EventLog do
           state.store.close(handle)
           {:reply, result, state}
         else
-          {:reply, {:error, :none}, state}
+          # store_has_session? missed (e.g. this node runs MnesiaStore but the
+          # session's digest only ever lived in a historical .dets file from
+          # before cluster join) — mirror read_session_events' DETS fallback so
+          # a store mismatch doesn't masquerade as "no digest" and send
+          # verify_chain walking from genesis (false tamper alarm).
+          {:reply, read_dets_digest(session_id), state}
         end
     end
   end
@@ -446,12 +451,36 @@ defmodule Shem.EventLog do
   # any delete, so a crash leaves extra events (harmless — Chain.verify/3 skips
   # rows at or below the boundary), never a broken chain.
   defp do_gc(store, handle, session_id, keep) do
-    {:ok, events} = store.read_all(handle)
+    # clamp here too, not just in the public gc/2 — maybe_auto_gc passes raw
+    # config through, and keep_events: 0 would prune everything and break the
+    # chain after restart.
+    keep = max(keep, 1)
+    {:ok, raw_events} = store.read_all(handle)
+
+    prior =
+      case store.get_digest(handle) do
+        {:ok, d} -> d
+        _ -> nil
+      end
+
+    # Rows with seq <= prior.covers_to_seq can legitimately still be present
+    # (a crash between put_digest and prune leaves them — Chain.verify already
+    # skips them). Refilter here so a re-run doesn't fold them into
+    # portable_anchor/count a SECOND time (they're already committed to by
+    # `prior`'s anchor). Note: the prune below (to `last.seq`) deletes any
+    # leftovers too, so this is self-healing even without the filter — this is
+    # belt-and-suspenders against double-counting before that prune runs.
+    events =
+      if prior do
+        Enum.filter(raw_events, fn e -> (Map.get(e, :seq) || -1) > prior.covers_to_seq end)
+      else
+        raw_events
+      end
 
     cond do
       # Map.get, not .seq — records stored before the :seq field exists can load
       # without the key (same defensive read as the stores' sort).
-      Enum.any?(events, &is_nil(Map.get(&1, :seq))) ->
+      Enum.any?(raw_events, &is_nil(Map.get(&1, :seq))) ->
         # pre-:seq sessions can't express a seq boundary and are documented as
         # "re-record" since v0.5.0 — refuse rather than half-prune.
         {:error, :legacy_session}
@@ -461,12 +490,6 @@ defmodule Shem.EventLog do
 
       true ->
         {pruned, kept} = Enum.split(events, length(events) - keep)
-
-        prior =
-          case store.get_digest(handle) do
-            {:ok, d} -> d
-            _ -> nil
-          end
 
         seed = (prior && prior.portable_anchor) || Shem.Attest.portable_genesis(session_id)
 
@@ -536,6 +559,35 @@ defmodule Shem.EventLog do
       end
     else
       {:error, :not_found}
+    end
+  end
+
+  # Same open/lookup/close pattern as read_dets_file/1, but for the reserved
+  # :gc_digest row — the historical-file fallback for get_digest.
+  defp read_dets_digest(session_id) do
+    path = event_log_path()
+    dets_path = Path.join(path, "#{session_id}.dets")
+
+    if File.exists?(dets_path) do
+      table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
+      file_charlist = String.to_charlist(dets_path)
+
+      case :dets.open_file(table, file: file_charlist, type: :set) do
+        {:ok, tab} ->
+          result =
+            case :dets.lookup(tab, :gc_digest) do
+              [{:gc_digest, digest}] -> {:ok, digest}
+              _ -> {:error, :none}
+            end
+
+          :dets.close(tab)
+          result
+
+        {:error, _} ->
+          {:error, :none}
+      end
+    else
+      {:error, :none}
     end
   end
 end

@@ -55,6 +55,9 @@ defmodule Shem.AttestE2ETest do
 
     assert {out, 0} = verify(dir)
     assert out =~ "pruned"
+    # true logical range (pruned+1..pruned+n), not 1-n — the bundle's surviving
+    # events are seq 6..9, not a fresh 1..4.
+    assert out =~ "events 7-10 OK"
 
     m = Jason.decode!(File.read!(Path.join(dir, "manifest.json")))
     m = put_in(m["gc"]["portable_anchor"], String.duplicate("0", 64))

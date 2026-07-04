@@ -73,7 +73,7 @@ exit code is usable in CI.
   a coalescing rollup digest that stays in the hash chain, triggered
   automatically on append (`keep_events`, default 100k) or manually
   (`shem gc <session>` / `mix shem.gc`); verification and attest bundles stay
-  intact across a prune. Suite 1257.
+  intact across a prune. Suite 1266.
 
 **Exit criteria:** disk usage bounded under continuous use; chain verification
 passes across a GC; an attest bundle verifies offline on a clean machine.

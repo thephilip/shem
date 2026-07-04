@@ -30,4 +30,23 @@ defmodule Shem.GCCliTest do
     assert String.starts_with?(out, "SHEM_GC_OK")
     assert out =~ "nothing to prune"
   end
+
+  test "daemon_running? is true when something answers 200 on the port" do
+    {:ok, listen} = :gen_tcp.listen(0, [:binary, packet: :raw, active: false, reuseaddr: true])
+    {:ok, port} = :inet.port(listen)
+
+    spawn(fn ->
+      {:ok, sock} = :gen_tcp.accept(listen)
+      :gen_tcp.recv(sock, 0, 1_000)
+      :gen_tcp.send(sock, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+      :gen_tcp.close(sock)
+    end)
+
+    assert Shem.GC.daemon_running?(port)
+    :gen_tcp.close(listen)
+  end
+
+  test "daemon_running? is false when nothing listens on the port" do
+    refute Shem.GC.daemon_running?(59_999)
+  end
 end
