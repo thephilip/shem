@@ -17,4 +17,13 @@ defmodule Shem.EventLog.Store do
 
   @callback scrub(handle :: term(), after_event_id :: String.t()) ::
               :ok | {:error, :event_not_found}
+
+  @callback prune(handle :: term(), up_to_seq :: integer()) ::
+              :ok | {:error, term()}
+
+  @callback get_digest(handle :: term()) ::
+              {:ok, map()} | {:error, :none}
+
+  @callback put_digest(handle :: term(), digest :: map()) ::
+              :ok | {:error, term()}
 end

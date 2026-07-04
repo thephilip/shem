@@ -69,4 +69,34 @@ defmodule Shem.EventLog.DETSStoreTest do
   test "get/2 returns :not_found for an unknown id", %{handle: handle} do
     assert {:error, :not_found} = DETSStore.get(handle, "evt_0000000000000000")
   end
+
+  describe "gc digest + prune" do
+    test "put_digest/get_digest round-trips and is invisible to read_all", %{handle: handle} do
+      digest = %{covers_to_seq: 4, count: 5, beam_anchor: "AB", portable_anchor: "cd", pruned_at: DateTime.utc_now()}
+      assert :ok = DETSStore.put_digest(handle, digest)
+      assert {:ok, ^digest} = DETSStore.get_digest(handle)
+      {:ok, events} = DETSStore.read_all(handle)
+      assert Enum.all?(events, &match?(%Shem.EventLog.Event{}, &1))
+    end
+
+    test "get_digest with no digest", %{handle: handle} do
+      assert {:error, :none} = DETSStore.get_digest(handle)
+    end
+
+    test "prune deletes rows up to seq, keeps the rest and the digest", %{handle: handle} do
+      events =
+        for i <- 0..9 do
+          e = %{Shem.EventLog.Event.new("ses_X", :test, %{i: i}) | seq: i, hash: "H#{i}"}
+          :ok = DETSStore.append(handle, e)
+          e
+        end
+
+      :ok = DETSStore.put_digest(handle, %{covers_to_seq: 4, count: 5, beam_anchor: "H4", portable_anchor: "p", pruned_at: DateTime.utc_now()})
+      assert :ok = DETSStore.prune(handle, 4)
+      {:ok, remaining} = DETSStore.read_all(handle)
+      assert Enum.map(remaining, & &1.seq) == [5, 6, 7, 8, 9]
+      assert {:ok, _} = DETSStore.get_digest(handle)
+      assert {:error, :not_found} = DETSStore.get(handle, Enum.at(events, 0).id)
+    end
+  end
 end

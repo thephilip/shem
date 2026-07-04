@@ -22,7 +22,7 @@ defmodule Shem.EventLog.FakeStore do
     events =
       table
       |> :ets.tab2list()
-      |> Enum.map(fn {_id, event} -> event end)
+      |> Enum.flat_map(fn {_id, %Shem.EventLog.Event{} = e} -> [e]; _ -> [] end)
       |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
     {:ok, events}
   end
@@ -59,6 +59,29 @@ defmodule Shem.EventLog.FakeStore do
     rescue
       ArgumentError -> :ok
     end
+    :ok
+  end
+
+  @impl true
+  def prune(table, up_to_seq) do
+    {:ok, events} = read_all(table)
+    events
+    |> Enum.filter(fn e -> (Map.get(e, :seq) || -1) <= up_to_seq end)
+    |> Enum.each(fn e -> :ets.delete(table, e.id) end)
+    :ok
+  end
+
+  @impl true
+  def get_digest(table) do
+    case :ets.lookup(table, :gc_digest) do
+      [{:gc_digest, digest}] -> {:ok, digest}
+      _ -> {:error, :none}
+    end
+  end
+
+  @impl true
+  def put_digest(table, digest) do
+    :ets.insert(table, {:gc_digest, digest})
     :ok
   end
 end

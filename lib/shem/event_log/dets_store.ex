@@ -23,11 +23,19 @@ defmodule Shem.EventLog.DETSStore do
 
   @impl true
   def read_all(table) do
+    # Skip the reserved :gc_digest row — only Event structs are events.
     # DETS :set has no insertion order, so sort by the per-event append index
     # (:seq) — the hash chain's true order. Legacy events (no :seq) fall back to
     # timestamp. Map.get keeps pre-:seq records from raising on the missing key.
     events =
-      :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], table)
+      :dets.foldl(
+        fn
+          {_id, %Shem.EventLog.Event{} = event}, acc -> [event | acc]
+          _other, acc -> acc
+        end,
+        [],
+        table
+      )
       |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
     {:ok, events}
   end
@@ -61,6 +69,32 @@ defmodule Shem.EventLog.DETSStore do
   @impl true
   def close(table) do
     :dets.close(table)
+    :ok
+  end
+
+  @impl true
+  def prune(table, up_to_seq) do
+    {:ok, events} = read_all(table)
+    events
+    |> Enum.filter(fn e -> (Map.get(e, :seq) || -1) <= up_to_seq end)
+    |> Enum.each(fn e -> :dets.delete(table, e.id) end)
+    # make the deletes + digest durable now, not at close (GC is rare; crash-safety wins)
+    :dets.sync(table)
+    :ok
+  end
+
+  @impl true
+  def get_digest(table) do
+    case :dets.lookup(table, :gc_digest) do
+      [{:gc_digest, digest}] -> {:ok, digest}
+      _ -> {:error, :none}
+    end
+  end
+
+  @impl true
+  def put_digest(table, digest) do
+    :ok = :dets.insert(table, {:gc_digest, digest})
+    :dets.sync(table)
     :ok
   end
 end
