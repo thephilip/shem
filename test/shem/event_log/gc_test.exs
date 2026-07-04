@@ -115,4 +115,17 @@ defmodule Shem.EventLog.GCTest do
       wait_until_registered(attempts - 1)
     end
   end
+
+  test "pruned ids are :pruned, not :not_found" do
+    sid = seed(10)
+    {:ok, [first | _]} = EventLog.events(sid)
+    {:ok, _} = EventLog.gc(sid, 3)
+    assert {:error, :pruned} = EventLog.event(sid, first.id)
+    assert {:error, :pruned} = EventLog.reconstruct_at(sid, first.id, fn s, _ -> s end, nil)
+    assert {:error, :pruned} = EventLog.scrub(sid, first.id)
+    # unknown id on a GC'd session also reads :pruned (id could have been pruned — honest ambiguity)
+    # unknown id on an un-GC'd session stays :not_found
+    sid2 = seed(3)
+    assert {:error, :not_found} = EventLog.event(sid2, "evt_NOPE")
+  end
 end

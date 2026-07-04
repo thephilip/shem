@@ -47,12 +47,12 @@ defmodule Shem.EventLog do
   def events(session_id), do: GenServer.call(__MODULE__, {:events, session_id})
 
   @spec scrub(String.t(), String.t()) ::
-          :ok | {:error, :session_not_found | :session_ended | :event_not_found}
+          :ok | {:error, :session_not_found | :session_ended | :event_not_found | :pruned}
   def scrub(session_id, after_event_id),
     do: GenServer.call(__MODULE__, {:scrub, session_id, after_event_id})
 
   @spec event(String.t(), String.t()) ::
-          {:ok, Event.t()} | {:error, :session_not_found | :session_ended | :not_found}
+          {:ok, Event.t()} | {:error, :session_not_found | :session_ended | :not_found | :pruned}
   def event(session_id, event_id),
     do: GenServer.call(__MODULE__, {:event, session_id, event_id})
 
@@ -93,7 +93,7 @@ defmodule Shem.EventLog do
     do: GenServer.call(__MODULE__, {:reconstruct, session_id, reducer, initial})
 
   @spec reconstruct_at(String.t(), String.t(), (term(), Event.t() -> term()), term()) ::
-          {:ok, term()} | {:error, :session_not_found | :session_ended | :event_not_found}
+          {:ok, term()} | {:error, :session_not_found | :session_ended | :event_not_found | :pruned}
   def reconstruct_at(session_id, event_id, reducer, initial),
     do: GenServer.call(__MODULE__, {:reconstruct_at, session_id, event_id, reducer, initial})
 
@@ -265,16 +265,34 @@ defmodule Shem.EventLog do
   @impl true
   def handle_call({:scrub, session_id, after_event_id}, _from, state) do
     case get_active_handle(state, session_id) do
-      {:ok, handle} -> {:reply, state.store.scrub(handle, after_event_id), state}
-      error -> {:reply, error, state}
+      {:ok, handle} ->
+        reply =
+          case state.store.scrub(handle, after_event_id) do
+            {:error, :event_not_found} -> missing_kind(state.store, handle, :event_not_found)
+            other -> other
+          end
+
+        {:reply, reply, state}
+
+      error ->
+        {:reply, error, state}
     end
   end
 
   @impl true
   def handle_call({:event, session_id, event_id}, _from, state) do
     case get_active_handle(state, session_id) do
-      {:ok, handle} -> {:reply, state.store.get(handle, event_id), state}
-      error -> {:reply, error, state}
+      {:ok, handle} ->
+        reply =
+          case state.store.get(handle, event_id) do
+            {:error, :not_found} -> missing_kind(state.store, handle, :not_found)
+            other -> other
+          end
+
+        {:reply, reply, state}
+
+      error ->
+        {:reply, error, state}
     end
   end
 
@@ -296,7 +314,13 @@ defmodule Shem.EventLog do
     case get_active_handle(state, session_id) do
       {:ok, handle} ->
         with {:ok, events} <- state.store.read_all(handle) do
-          {:reply, Shem.EventLog.Replay.state_at(events, event_id, initial, reducer), state}
+          reply =
+            case Shem.EventLog.Replay.state_at(events, event_id, initial, reducer) do
+              {:error, :event_not_found} -> missing_kind(state.store, handle, :event_not_found)
+              other -> other
+            end
+
+          {:reply, reply, state}
         end
 
       error ->
@@ -361,6 +385,15 @@ defmodule Shem.EventLog do
   end
 
   # ── Helpers ─────────────────────────────────────────────────────────────────
+
+  # an id missing from a GC'd session is indistinguishable from a pruned one —
+  # report :pruned whenever a digest exists so callers get an honest signal.
+  defp missing_kind(store, handle, miss) do
+    case store.get_digest(handle) do
+      {:ok, _} -> {:error, :pruned}
+      _ -> {:error, miss}
+    end
+  end
 
   defp get_active_handle(state, session_id) do
     case Map.fetch(state.sessions, session_id) do
