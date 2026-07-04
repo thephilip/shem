@@ -260,5 +260,23 @@ defmodule Shem.REST.SessionsTest do
       conn = get_path("/sessions/ses_NO_SUCH/verify")
       assert conn.status == 404
     end
+
+    test "GC'd session reports pruned and replayable" do
+      {:ok, sid} = Shem.EventLog.start_session()
+      {:ok, _} = Shem.EventLog.append(sid, :x, %{n: 1})
+      {:ok, _} = Shem.EventLog.append(sid, :x, %{n: 2})
+      {:ok, _} = Shem.EventLog.append(sid, :x, %{n: 3})
+
+      # GC with keep=2 should prune the first event, leaving 2 replayable
+      {:ok, _} = Shem.EventLog.gc(sid, 2)
+
+      conn = get_path("/sessions/#{sid}/verify")
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["verified"] == true
+      assert body["events"] == 2
+      assert is_integer(body["pruned"])
+      assert body["pruned"] == 1
+    end
   end
 end

@@ -48,7 +48,12 @@ defmodule Shem.REST.Handlers.Sessions do
       {:ok, :verified, n} ->
         send_json(conn, 200, %{verified: true, events: n})
 
+      {:ok, :verified_gc, %{pruned: pruned, replayable: m}} ->
+        send_json(conn, 200, %{verified: true, events: m, pruned: pruned,
+          note: "events 1-#{pruned} pruned, digest intact; remainder fully replayable"})
+
       {:ok, :legacy, n} ->
+        n = if is_map(n), do: n.replayable, else: n
         send_json(conn, 200, %{verified: "legacy", events: n})
 
       {:error, {:broken_at, event_id}} ->
