@@ -17,7 +17,7 @@ PORT_FILE="$RELEASE_TMP/shem.port"
 # status/stop display the port a previous `start` chose (start re-derives its own below).
 [ -f "$PORT_FILE" ] && PORT="$(cat "$PORT_FILE" 2>/dev/null || printf %s "$PORT")"
 
-usage() { echo "usage: shem {start [--port N] | stop | status | install <repo> [path] | replay --check <session_id>}"; }
+usage() { echo "usage: shem {start [--port N] | stop | status | install <repo> [path] | replay --check <session_id> | attest <session_id> [out_dir]}"; }
 
 running() { "$LAUNCHER" pid >/dev/null 2>&1; }   # node up? dependency-free
 
@@ -141,12 +141,36 @@ cmd_replay() {
   "$LAUNCHER" eval "System.halt(Shem.Replay.Check.cli(\"$SID\"))"
 }
 
+cmd_attest() {
+  SID="${1:-}"
+  case "$SID" in
+    ses_*)
+      case "$SID" in
+        *[!A-Za-z0-9_]*) echo "shem attest: '$SID' has invalid characters (expected ses_ + [A-Za-z0-9_])" >&2; exit 2 ;;
+      esac ;;
+    *) echo "shem attest: '$SID' does not look like a session id (ses_...)" >&2; exit 2 ;;
+  esac
+  OUT="${2:-$PWD}"
+  # $OUT is interpolated into Elixir source: reject quotes, backslashes, and
+  # #{...} interpolation syntax (injection safety — same rationale as $SID above).
+  case "$OUT" in
+    *'"'*|*'\'*|*'#{'*) echo "shem attest: output dir may not contain quotes, backslashes, or '#{'" >&2; exit 2 ;;
+  esac
+  if running; then
+    # read-only: run inside the live node — no DETS-lock collision, no need to stop.
+    "$LAUNCHER" rpc "Elixir.Shem.Attest.build(\"$SID\", [out: \"$OUT\"]) |> IO.inspect(label: :attest)"
+  else
+    "$LAUNCHER" eval "System.halt(Shem.Attest.cli(\"$SID\", \"$OUT\"))"
+  fi
+}
+
 case "${1:-}" in
   start)   shift; cmd_start "$@" ;;
   stop)    shift; cmd_stop ;;
   status)  shift; cmd_status ;;
   install) shift; cmd_install "$@" ;;
   replay)  shift; cmd_replay "$@" ;;
+  attest)  shift; cmd_attest "$@" ;;
   ""|-h|--help|help) usage ;;
   *) echo "shem: unknown command '$1'" >&2; usage >&2; exit 2 ;;
 esac

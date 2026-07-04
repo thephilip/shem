@@ -119,4 +119,28 @@ defmodule Shem.Attest do
   end
 
   defp priv(name), do: Path.join(:code.priv_dir(:shem) |> to_string(), "attest/#{name}")
+
+  @doc """
+  Ephemeral entry for `shem attest` when Shem is STOPPED (and `mix shem.attest`).
+  Boots the app headless, writes the bundle, returns an exit code. The live
+  (`rpc`) path calls `build/2` directly and must NOT use this (no halt/boot).
+  """
+  @spec cli(String.t(), String.t()) :: 0 | 2
+  def cli(session_id, out) do
+    Application.put_env(:shem, :start_tui, false)
+    Application.put_env(:shem, :start_cluster, false)
+    Application.put_env(:shem, :mcp_port, 0)
+    {:ok, _} = Application.ensure_all_started(:shem)
+
+    case build(session_id, out: out) do
+      {:ok, dir} ->
+        IO.puts("attest bundle written: #{dir}")
+        IO.puts("verify with:  python3 #{Path.join(dir, "verify.py")} #{dir}")
+        0
+
+      {:error, reason} ->
+        IO.puts(:stderr, "attest of #{session_id} failed: #{inspect(reason)}")
+        2
+    end
+  end
 end
