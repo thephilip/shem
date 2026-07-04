@@ -7,7 +7,7 @@ defmodule Shem.AttestTest do
     {:ok, sid} = Shem.EventLog.start_session()
     # Minimal replayable-shaped session: a start event + a tool call by name.
     {:ok, _} = Shem.EventLog.append(sid, :agent_started, %{task: "t", preset: "general"})
-    {:ok, _} = Shem.EventLog.append(sid, :agent_tool_called, %{tool: "diff_text", args: %{}})
+    {:ok, _} = Shem.EventLog.append(sid, :agent_tool_called, %{tool: "DiffText", args: %{}})
     {:ok, _} = Shem.EventLog.append(sid, :agent_tool_called, %{tool: "no_such_tool", args: %{}})
     out = Path.join(System.tmp_dir!(), "attest_test_#{System.unique_integer([:positive])}")
     on_exit(fn -> File.rm_rf(out) end)
@@ -25,12 +25,12 @@ defmodule Shem.AttestTest do
     assert manifest["portable_head"] == String.downcase(manifest["portable_head"])
 
     tools = Map.new(manifest["tools"], &{&1["name"], &1})
-    assert tools["diff_text"]["status"] == "present"
+    assert tools["DiffText"]["status"] == "present"
     assert tools["no_such_tool"]["status"] == "missing"
     assert tools["no_such_tool"]["sha256"] == nil
 
     # the present tool's file exists and its sha256 matches the manifest
-    present = tools["diff_text"]
+    present = tools["DiffText"]
     tool_file = Path.join([dir, "tools", "#{present["sha256"]}.#{tool_ext(present["runtime"])}"])
     assert File.exists?(tool_file)
     computed = :crypto.hash(:sha256, File.read!(tool_file)) |> Base.encode16(case: :lower)

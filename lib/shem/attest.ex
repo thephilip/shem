@@ -66,8 +66,10 @@ defmodule Shem.Attest do
     |> Enum.map(&resolve_tool/1)
   end
 
+  # Events record the model-facing tool NAME (the manifest `name`), not the
+  # tool id, so resolve by name, not id.
   defp resolve_tool(name) do
-    case Registry.lookup(name) do
+    case Registry.lookup_by_name(name) do
       {:ok, tool} ->
         sha = :crypto.hash(:sha256, tool.source) |> Base.encode16(case: :lower)
         %{name: name, sha256: sha, runtime: runtime_tag(tool.runtime),
