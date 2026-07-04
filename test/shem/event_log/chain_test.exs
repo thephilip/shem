@@ -80,4 +80,59 @@ defmodule Shem.EventLog.ChainTest do
   # term_to_binary order depends on the per-VM-boot map seed, so it only diverges
   # ACROSS OS processes; within one test VM equal maps always share internal
   # order. Validated by cross-process live replay (see the Phase 3 SDD ledger).
+
+  defp chained(session_id, n) do
+    {events, _} =
+      Enum.map_reduce(0..(n - 1), Chain.genesis(session_id), fn i, prev ->
+        e = %{Event.new(session_id, :test, %{i: i}) | seq: i}
+        e = %{e | hash: Chain.next(prev, e)}
+        {e, e.hash}
+      end)
+    events
+  end
+
+  describe "verify/3 with digest" do
+    test "verifies tail seeded at beam_anchor and reports pruned/replayable" do
+      sid = "ses_GC1"
+      events = chained(sid, 10)
+      {pruned, kept} = Enum.split(events, 6)
+      digest = %{covers_to_seq: 5, count: 6, beam_anchor: List.last(pruned).hash,
+                 portable_anchor: "p", pruned_at: DateTime.utc_now()}
+      assert {:ok, :verified_gc, %{pruned: 6, replayable: 4}} = Chain.verify(kept, sid, digest)
+    end
+
+    test "drops already-covered rows (crash between digest write and delete)" do
+      sid = "ses_GC2"
+      events = chained(sid, 10)
+      digest = %{covers_to_seq: 5, count: 6, beam_anchor: Enum.at(events, 5).hash,
+                 portable_anchor: "p", pruned_at: DateTime.utc_now()}
+      # full list still present — verify must skip seq <= 5 and still pass
+      assert {:ok, :verified_gc, %{pruned: 6, replayable: 4}} = Chain.verify(events, sid, digest)
+    end
+
+    test "tampered tail is caught" do
+      sid = "ses_GC3"
+      events = chained(sid, 10)
+      {pruned, kept} = Enum.split(events, 6)
+      digest = %{covers_to_seq: 5, count: 6, beam_anchor: List.last(pruned).hash,
+                 portable_anchor: "p", pruned_at: DateTime.utc_now()}
+      [first | rest] = kept
+      tampered = [%{first | payload: %{i: 666}} | rest]
+      assert {:error, {:broken_at, _}} = Chain.verify(tampered, sid, digest)
+    end
+
+    test "nil beam_anchor degrades to legacy" do
+      sid = "ses_GC4"
+      kept = chained(sid, 4)
+      digest = %{covers_to_seq: -1, count: 3, beam_anchor: nil,
+                 portable_anchor: "p", pruned_at: DateTime.utc_now()}
+      assert {:ok, :legacy, %{pruned: 3, replayable: 4}} = Chain.verify(kept, sid, digest)
+    end
+
+    test "nil digest is exactly the old behavior" do
+      sid = "ses_GC5"
+      events = chained(sid, 3)
+      assert {:ok, :verified, 3} = Chain.verify(events, sid, nil)
+    end
+  end
 end

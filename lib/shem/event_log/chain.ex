@@ -12,6 +12,8 @@ defmodule Shem.EventLog.Chain do
   are local-only and not guaranteed stable across major OTP version upgrades.
   Chains recorded before the `:deterministic` canonicalization (pre-2026-07-03)
   do not re-verify and read as broken — re-record such sessions.
+
+  After GC, verification anchors at the digest instead of genesis.
   """
 
   alias Shem.EventLog.Event
@@ -26,15 +28,38 @@ defmodule Shem.EventLog.Chain do
     Base.encode16(:crypto.hash(:sha256, prev_hash <> canonical(event)))
   end
 
-  @spec verify([Event.t()], String.t()) ::
+  @spec verify([Event.t()], String.t(), map() | nil) ::
           {:ok, :verified | :legacy, non_neg_integer()}
+          | {:ok, :verified_gc | :legacy, %{pruned: non_neg_integer(), replayable: non_neg_integer()}}
           | {:error, {:broken_at, String.t()}}
-  def verify(events, session_id) do
+  def verify(events, session_id, digest \\ nil)
+
+  def verify(events, session_id, nil) do
     {_legacy_prefix, hashed} = Enum.split_while(events, &is_nil(&1.hash))
 
     case hashed do
       [] -> {:ok, :legacy, length(events)}
       _ -> walk(hashed, genesis(session_id), length(events))
+    end
+  end
+
+  def verify(events, _session_id, %{covers_to_seq: cut, count: pruned, beam_anchor: anchor}) do
+    # rows at or below the digest boundary are already committed to by the anchor;
+    # normally none survive — nonempty only after a crash between digest write and delete.
+    tail = Enum.filter(events, fn e -> (Map.get(e, :seq) || -1) > cut end)
+    report = %{pruned: pruned, replayable: length(tail)}
+
+    case anchor do
+      nil ->
+        # defensive: digests are never written with a nil anchor (GC refuses
+        # legacy sessions), but degrade honestly rather than crash.
+        {:ok, :legacy, report}
+
+      _ ->
+        case walk(tail, anchor, length(tail)) do
+          {:ok, :verified, _} -> {:ok, :verified_gc, report}
+          error -> error
+        end
     end
   end
 
