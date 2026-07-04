@@ -1,16 +1,16 @@
-# Graph Report - shem  (2026-07-04)
+# Graph Report - shem  (2026-07-03)
 
 ## Corpus Check
-- 302 files · ~118,717 words
+- 298 files · ~113,903 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1508 nodes · 1753 edges · 271 communities (97 shown, 174 thin omitted)
+- 1470 nodes · 1695 edges · 267 communities (96 shown, 171 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d7015f94`
+- Built from commit: `b1204a8b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -273,16 +273,12 @@
 - [[_COMMUNITY_Community 264|Community 264]]
 - [[_COMMUNITY_Community 265|Community 265]]
 - [[_COMMUNITY_Community 266|Community 266]]
-- [[_COMMUNITY_Community 267|Community 267]]
-- [[_COMMUNITY_Community 268|Community 268]]
-- [[_COMMUNITY_Community 269|Community 269]]
-- [[_COMMUNITY_Community 270|Community 270]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Shem.TUI.App` - 33 edges
-2. `Shem.EventLog` - 29 edges
-3. `update()` - 24 edges
-4. `Mix.Tasks.Demo` - 22 edges
+2. `update()` - 24 edges
+3. `Mix.Tasks.Demo` - 22 edges
+4. `Shem.EventLog` - 22 edges
 5. `Shem.Agent` - 17 edges
 6. `Shem.TUI.Views.Interactive` - 17 edges
 7. `Shem.Lab.Registry` - 16 edges
@@ -296,11 +292,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (271 total, 174 thin omitted)
+## Communities (267 total, 171 thin omitted)
 
 ### Community 0 - "Tool Hardening & Graduation"
 Cohesion: 0.06
-Nodes (38): Shem.Lab.GraduationGate.Go, build_and_register(), extract_name(), hardening_score(), run(), seed_trust(), unique_id(), Shem.Lab.GraduationGate.HardeningTest (+30 more)
+Nodes (37): Shem.Lab.GraduationGate.Go, build_and_register(), extract_name(), hardening_score(), run(), seed_trust(), unique_id(), Shem.Lab.GraduationGate.HardeningTest (+29 more)
 
 ### Community 1 - "TUI App Shell"
 Cohesion: 0.09
@@ -311,8 +307,8 @@ Cohesion: 0.11
 Nodes (31): Shem.TUI.App, current_suggestions(), cycle_focus(), focused_paused?(), format_presets(), format_routes(), format_tools(), format_trust() (+23 more)
 
 ### Community 3 - "Event Log"
-Cohesion: 0.11
-Nodes (18): Shem.EventLog, append(), do_gc(), event_log_path(), get_active_handle(), get_digest(), handle_call(), init() (+10 more)
+Cohesion: 0.12
+Nodes (12): Shem.EventLog, append(), event_log_path(), get_active_handle(), handle_call(), init(), read_dets_file(), read_session_events() (+4 more)
 
 ### Community 4 - "Launch Demo"
 Cohesion: 0.27
@@ -323,7 +319,7 @@ Cohesion: 0.22
 Nodes (17): Shem.TUI.Views.Interactive, agent_status_color(), agent_status_dot(), autocomplete_rows(), content_row(), prompt_color(), prompt_lines(), prompt_row() (+9 more)
 
 ### Community 6 - "Adversarial Hardening Job"
-Cohesion: 0.18
+Cohesion: 0.19
 Nodes (10): Shem.Lab.Registry, build_tool_from_manifest(), extract_module(), handle_call(), init(), load_all(), lookup(), parse_dt() (+2 more)
 
 ### Community 7 - "Agent API"
@@ -431,8 +427,8 @@ Cohesion: 0.36
 Nodes (11): Shem.Agent.ToolDispatch, build_manifest(), compile_and_load(), dispatch_builtin(), dispatch_lab(), dispatch_mcp(), ensure_loaded(), execute() (+3 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.21
-Nodes (5): Shem.EventLog.MnesiaStore, get(), prune(), read_all(), scrub()
+Cohesion: 0.24
+Nodes (4): Shem.EventLog.MnesiaStore, get(), read_all(), scrub()
 
 ### Community 34 - "Community 34"
 Cohesion: 0.29
@@ -467,20 +463,20 @@ Cohesion: 0.25
 Nodes (3): Shem.Lab.Languages, dir_files(), go_main_wrapper()
 
 ### Community 44 - "Community 44"
-Cohesion: 0.39
-Nodes (7): Shem.GC, cli(), daemon_running?(), guard_port(), keep(), report(), rpc_report()
+Cohesion: 0.31
+Nodes (8): Shem.Lab.Workspace, build_manifest(), graduate(), graduated_path(), lab_dir(), list_graduated(), manifest_path(), runtime_path()
 
 ### Community 45 - "Community 45"
 Cohesion: 0.39
 Nodes (7): Shem.Context.Project, detect(), detect_type(), format_contents(), list_entries(), to_prompt(), type_label()
 
 ### Community 46 - "Community 46"
-Cohesion: 0.25
-Nodes (5): Shem.EventLog.DETSStore, get(), prune(), read_all(), scrub()
+Cohesion: 0.32
+Nodes (4): Shem.EventLog.DETSStore, get(), read_all(), scrub()
 
 ### Community 47 - "Community 47"
-Cohesion: 0.25
-Nodes (5): Shem.EventLog.FakeStore, get(), prune(), read_all(), scrub()
+Cohesion: 0.32
+Nodes (4): Shem.EventLog.FakeStore, get(), read_all(), scrub()
 
 ### Community 48 - "Community 48"
 Cohesion: 0.46
@@ -646,29 +642,25 @@ Nodes (14): Report, clean?(), Shem.Replay.Check, build_config(), build_report(),
 Cohesion: 0.19
 Nodes (15): Shem.Attest, build(), cli(), collect_tools(), event_view(), ext_for(), portable_genesis(), portable_next() (+7 more)
 
-### Community 267 - "Community 267"
-Cohesion: 0.43
-Nodes (7): Shem.Lab.GraduationGate.Python, build_and_register(), extract_name(), hardening_score(), run(), seed_trust(), unique_id()
-
 ## Knowledge Gaps
-- **91 isolated node(s):** `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend`, `Shem.LLM.Middleware`, `Shem.LLM.Request` (+86 more)
+- **89 isolated node(s):** `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend`, `Shem.LLM.Middleware`, `Shem.LLM.Request` (+84 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **174 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **171 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Config` connect `Community 18` to `TUI App Shell`, `Community 83`, `Community 259`, `Community 63`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Why does `Shem.Adversarial.HardeningJob` connect `Trust Store` to `Community 18`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `Shem.EventLog.Store`, `Shem.HTTP.Router`, `Shem.Lab.Executor.Backend` to the rest of the system?**
-  _91 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _89 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Tool Hardening & Graduation` be split into smaller, more focused modules?**
-  _Cohesion score 0.05520614954577219 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05656108597285068 - nodes in this community are weakly interconnected._
 - **Should `TUI App Shell` be split into smaller, more focused modules?**
   _Cohesion score 0.08571428571428572 - nodes in this community are weakly interconnected._
 - **Should `Agent Turn Loop` be split into smaller, more focused modules?**
   _Cohesion score 0.1140819964349376 - nodes in this community are weakly interconnected._
 - **Should `Event Log` be split into smaller, more focused modules?**
-  _Cohesion score 0.11494252873563218 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1225296442687747 - nodes in this community are weakly interconnected._

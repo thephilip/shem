@@ -436,36 +436,6 @@
       "norm_label": "run()"
     },
     {
-      "label": "shem.gc.ex",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.gc.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tasks_shem_gc",
-      "community": 270,
-      "norm_label": "shem.gc.ex"
-    },
-    {
-      "label": "Mix.Tasks.Shem.Gc",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.gc.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "tasks_shem_gc_mix_tasks_shem_gc",
-      "community": 270,
-      "norm_label": "mix.tasks.shem.gc"
-    },
-    {
-      "label": "run()",
-      "file_type": "code",
-      "source_file": "lib/mix/tasks/shem.gc.ex",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "tasks_shem_gc_mix_tasks_shem_gc_run",
-      "community": 270,
-      "norm_label": "run()"
-    },
-    {
       "label": "shem.replay.ex",
       "file_type": "code",
       "source_file": "lib/mix/tasks/shem.replay.ex",
@@ -1829,7 +1799,7 @@
       "label": "verify()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L51",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_verify",
       "community": 257,
@@ -1839,7 +1809,7 @@
       "label": "event_view()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L61",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_event_view",
       "community": 257,
@@ -1849,7 +1819,7 @@
       "label": "portable_genesis()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L73",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_portable_genesis",
       "community": 257,
@@ -1859,7 +1829,7 @@
       "label": "portable_next()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L77",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_portable_next",
       "community": 257,
@@ -1869,7 +1839,7 @@
       "label": "collect_tools()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L80",
+      "source_location": "L60",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_collect_tools",
       "community": 257,
@@ -1879,7 +1849,7 @@
       "label": "resolve_tool()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L91",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_resolve_tool",
       "community": 257,
@@ -1889,7 +1859,7 @@
       "label": "runtime_tag()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L103",
+      "source_location": "L83",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_runtime_tag",
       "community": 257,
@@ -1899,7 +1869,7 @@
       "label": "ext_for()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L106",
+      "source_location": "L86",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_ext_for",
       "community": 257,
@@ -1909,7 +1879,7 @@
       "label": "write_bundle()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L109",
+      "source_location": "L89",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_write_bundle",
       "community": 257,
@@ -1919,7 +1889,7 @@
       "label": "priv()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L154",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_priv",
       "community": 257,
@@ -1929,7 +1899,7 @@
       "label": "rpc_report()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L164",
+      "source_location": "L131",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_rpc_report",
       "community": 257,
@@ -1939,7 +1909,7 @@
       "label": "cli()",
       "file_type": "code",
       "source_file": "lib/shem/attest.ex",
-      "source_location": "L183",
+      "source_location": "L150",
       "_origin": "ast",
       "id": "shem_attest_shem_attest_cli",
       "community": 257,
@@ -1989,7 +1959,7 @@
       "label": "to_string_key()",
       "file_type": "code",
       "source_file": "lib/shem/attest/canonical_json.ex",
-      "source_location": "L38",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "attest_canonical_json_shem_attest_canonicaljson_to_string_key",
       "community": 262,
@@ -1999,7 +1969,7 @@
       "label": "to_iodata()",
       "file_type": "code",
       "source_file": "lib/shem/attest/canonical_json.ex",
-      "source_location": "L54",
+      "source_location": "L48",
       "_origin": "ast",
       "id": "attest_canonical_json_shem_attest_canonicaljson_to_iodata",
       "community": 262,
@@ -2749,37 +2719,17 @@
       "label": "verify_chain()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L67",
+      "source_location": "L66",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_verify_chain",
       "community": 3,
       "norm_label": "verify_chain()"
     },
     {
-      "label": "gc()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L85",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_gc",
-      "community": 3,
-      "norm_label": "gc()"
-    },
-    {
-      "label": "get_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L88",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_get_digest",
-      "community": 3,
-      "norm_label": "get_digest()"
-    },
-    {
       "label": "reconstruct()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L92",
+      "source_location": "L75",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_reconstruct",
       "community": 3,
@@ -2789,7 +2739,7 @@
       "label": "reconstruct_at()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L97",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_reconstruct_at",
       "community": 3,
@@ -2799,7 +2749,7 @@
       "label": "init()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L103",
+      "source_location": "L86",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_init",
       "community": 3,
@@ -2809,7 +2759,7 @@
       "label": "select_store()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L108",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_select_store",
       "community": 3,
@@ -2819,27 +2769,17 @@
       "label": "handle_call()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L120",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_handle_call",
       "community": 3,
       "norm_label": "handle_call()"
     },
     {
-      "label": "missing_kind()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L397",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_missing_kind",
-      "community": 3,
-      "norm_label": "missing_kind()"
-    },
-    {
       "label": "get_active_handle()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L404",
+      "source_location": "L289",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_get_active_handle",
       "community": 3,
@@ -2849,7 +2789,7 @@
       "label": "event_log_path()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L412",
+      "source_location": "L297",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_event_log_path",
       "community": 3,
@@ -2859,61 +2799,21 @@
       "label": "try_store_read()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L422",
+      "source_location": "L307",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_try_store_read",
       "community": 3,
       "norm_label": "try_store_read()"
     },
     {
-      "label": "maybe_auto_gc()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L434",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_maybe_auto_gc",
-      "community": 3,
-      "norm_label": "maybe_auto_gc()"
-    },
-    {
-      "label": "do_gc()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L453",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_do_gc",
-      "community": 3,
-      "norm_label": "do_gc()"
-    },
-    {
-      "label": "store_has_session?()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L518",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_store_has_session",
-      "community": 3,
-      "norm_label": "store_has_session?()"
-    },
-    {
       "label": "read_dets_file()",
       "file_type": "code",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L529",
+      "source_location": "L315",
       "_origin": "ast",
       "id": "shem_event_log_shem_eventlog_read_dets_file",
       "community": 3,
       "norm_label": "read_dets_file()"
-    },
-    {
-      "label": "read_dets_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L567",
-      "_origin": "ast",
-      "id": "shem_event_log_shem_eventlog_read_dets_digest",
-      "community": 3,
-      "norm_label": "read_dets_digest()"
     },
     {
       "label": "chain.ex",
@@ -2939,7 +2839,7 @@
       "label": "genesis()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L22",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_genesis",
       "community": 51,
@@ -2949,7 +2849,7 @@
       "label": "next()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L27",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_next",
       "community": 51,
@@ -2959,7 +2859,7 @@
       "label": "verify()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L35",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_verify",
       "community": 51,
@@ -2969,7 +2869,7 @@
       "label": "walk()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L66",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_walk",
       "community": 51,
@@ -2979,7 +2879,7 @@
       "label": "canonical()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/chain.ex",
-      "source_location": "L79",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "event_log_chain_shem_eventlog_chain_canonical",
       "community": 51,
@@ -3039,7 +2939,7 @@
       "label": "get()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L44",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "event_log_dets_store_shem_eventlog_detsstore_get",
       "community": 46,
@@ -3049,7 +2949,7 @@
       "label": "scrub()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L53",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "event_log_dets_store_shem_eventlog_detsstore_scrub",
       "community": 46,
@@ -3059,41 +2959,11 @@
       "label": "close()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L70",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "event_log_dets_store_shem_eventlog_detsstore_close",
       "community": 46,
       "norm_label": "close()"
-    },
-    {
-      "label": "prune()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L76",
-      "_origin": "ast",
-      "id": "event_log_dets_store_shem_eventlog_detsstore_prune",
-      "community": 46,
-      "norm_label": "prune()"
-    },
-    {
-      "label": "get_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L87",
-      "_origin": "ast",
-      "id": "event_log_dets_store_shem_eventlog_detsstore_get_digest",
-      "community": 46,
-      "norm_label": "get_digest()"
-    },
-    {
-      "label": "put_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L95",
-      "_origin": "ast",
-      "id": "event_log_dets_store_shem_eventlog_detsstore_put_digest",
-      "community": 46,
-      "norm_label": "put_digest()"
     },
     {
       "label": "event.ex",
@@ -3214,36 +3084,6 @@
       "id": "event_log_fake_store_shem_eventlog_fakestore_close",
       "community": 47,
       "norm_label": "close()"
-    },
-    {
-      "label": "prune()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L66",
-      "_origin": "ast",
-      "id": "event_log_fake_store_shem_eventlog_fakestore_prune",
-      "community": 47,
-      "norm_label": "prune()"
-    },
-    {
-      "label": "get_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L75",
-      "_origin": "ast",
-      "id": "event_log_fake_store_shem_eventlog_fakestore_get_digest",
-      "community": 47,
-      "norm_label": "get_digest()"
-    },
-    {
-      "label": "put_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L83",
-      "_origin": "ast",
-      "id": "event_log_fake_store_shem_eventlog_fakestore_put_digest",
-      "community": 47,
-      "norm_label": "put_digest()"
     },
     {
       "label": "history_scanner.ex",
@@ -3436,36 +3276,6 @@
       "norm_label": "close()"
     },
     {
-      "label": "prune()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L138",
-      "_origin": "ast",
-      "id": "event_log_mnesia_store_shem_eventlog_mnesiastore_prune",
-      "community": 33,
-      "norm_label": "prune()"
-    },
-    {
-      "label": "get_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L149",
-      "_origin": "ast",
-      "id": "event_log_mnesia_store_shem_eventlog_mnesiastore_get_digest",
-      "community": 33,
-      "norm_label": "get_digest()"
-    },
-    {
-      "label": "put_digest()",
-      "file_type": "code",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L157",
-      "_origin": "ast",
-      "id": "event_log_mnesia_store_shem_eventlog_mnesiastore_put_digest",
-      "community": 33,
-      "norm_label": "put_digest()"
-    },
-    {
       "label": "replay.ex",
       "file_type": "code",
       "source_file": "lib/shem/event_log/replay.ex",
@@ -3549,7 +3359,7 @@
       "label": "new()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/session.ex",
-      "source_location": "L15",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "event_log_session_shem_eventlog_session_new",
       "community": 65,
@@ -3559,7 +3369,7 @@
       "label": "generate_id()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/session.ex",
-      "source_location": "L23",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "event_log_session_shem_eventlog_session_generate_id",
       "community": 65,
@@ -3569,7 +3379,7 @@
       "label": "increment()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/session.ex",
-      "source_location": "L26",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "event_log_session_shem_eventlog_session_increment",
       "community": 65,
@@ -3579,7 +3389,7 @@
       "label": "close()",
       "file_type": "code",
       "source_file": "lib/shem/event_log/session.ex",
-      "source_location": "L30",
+      "source_location": "L29",
       "_origin": "ast",
       "id": "event_log_session_shem_eventlog_session_close",
       "community": 65,
@@ -3604,96 +3414,6 @@
       "id": "event_log_store_shem_eventlog_store",
       "community": 178,
       "norm_label": "shem.eventlog.store"
-    },
-    {
-      "label": "gc.ex",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "shem_gc",
-      "community": 44,
-      "norm_label": "gc.ex"
-    },
-    {
-      "label": "Shem.GC",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc",
-      "community": 44,
-      "norm_label": "shem.gc"
-    },
-    {
-      "label": "keep()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_keep",
-      "community": 44,
-      "norm_label": "keep()"
-    },
-    {
-      "label": "default_keep()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L18",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_default_keep",
-      "community": 44,
-      "norm_label": "default_keep()"
-    },
-    {
-      "label": "report()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_report",
-      "community": 44,
-      "norm_label": "report()"
-    },
-    {
-      "label": "rpc_report()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L44",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_rpc_report",
-      "community": 44,
-      "norm_label": "rpc_report()"
-    },
-    {
-      "label": "cli()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L59",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_cli",
-      "community": 44,
-      "norm_label": "cli()"
-    },
-    {
-      "label": "guard_port()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L87",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_guard_port",
-      "community": 44,
-      "norm_label": "guard_port()"
-    },
-    {
-      "label": "daemon_running?()",
-      "file_type": "code",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L96",
-      "_origin": "ast",
-      "id": "shem_gc_shem_gc_daemon_running",
-      "community": 44,
-      "norm_label": "daemon_running?()"
     },
     {
       "label": "guardrails.ex",
@@ -4342,7 +4062,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "graduation_gate_python",
-      "community": 267,
+      "community": 0,
       "norm_label": "python.ex"
     },
     {
@@ -4352,7 +4072,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python",
-      "community": 267,
+      "community": 0,
       "norm_label": "shem.lab.graduationgate.python"
     },
     {
@@ -4362,7 +4082,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_run",
-      "community": 267,
+      "community": 0,
       "norm_label": "run()"
     },
     {
@@ -4372,7 +4092,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_extract_name",
-      "community": 267,
+      "community": 0,
       "norm_label": "extract_name()"
     },
     {
@@ -4382,7 +4102,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_unique_id",
-      "community": 267,
+      "community": 0,
       "norm_label": "unique_id()"
     },
     {
@@ -4392,7 +4112,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_build_and_register",
-      "community": 267,
+      "community": 0,
       "norm_label": "build_and_register()"
     },
     {
@@ -4402,7 +4122,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_hardening_score",
-      "community": 267,
+      "community": 0,
       "norm_label": "hardening_score()"
     },
     {
@@ -4412,7 +4132,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "graduation_gate_python_shem_lab_graduationgate_python_seed_trust",
-      "community": 267,
+      "community": 0,
       "norm_label": "seed_trust()"
     },
     {
@@ -4852,7 +4572,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lab_registry",
-      "community": 6,
+      "community": 0,
       "norm_label": "registry.ex"
     },
     {
@@ -5162,7 +4882,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lab_workspace",
-      "community": 0,
+      "community": 44,
       "norm_label": "workspace.ex"
     },
     {
@@ -5172,7 +4892,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace",
-      "community": 0,
+      "community": 44,
       "norm_label": "shem.lab.workspace"
     },
     {
@@ -5182,7 +4902,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_messy_path",
-      "community": 0,
+      "community": 44,
       "norm_label": "messy_path()"
     },
     {
@@ -5192,7 +4912,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_graduated_path",
-      "community": 0,
+      "community": 44,
       "norm_label": "graduated_path()"
     },
     {
@@ -5202,7 +4922,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_manifest_path",
-      "community": 0,
+      "community": 44,
       "norm_label": "manifest_path()"
     },
     {
@@ -5212,7 +4932,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_own_file",
-      "community": 0,
+      "community": 44,
       "norm_label": "own_file?()"
     },
     {
@@ -5222,7 +4942,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_runtime_path",
-      "community": 0,
+      "community": 44,
       "norm_label": "runtime_path()"
     },
     {
@@ -5232,7 +4952,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_graduate",
-      "community": 0,
+      "community": 44,
       "norm_label": "graduate()"
     },
     {
@@ -5242,7 +4962,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_list_graduated",
-      "community": 0,
+      "community": 44,
       "norm_label": "list_graduated()"
     },
     {
@@ -5252,7 +4972,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_build_manifest",
-      "community": 0,
+      "community": 44,
       "norm_label": "build_manifest()"
     },
     {
@@ -5262,7 +4982,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "lab_workspace_shem_lab_workspace_lab_dir",
-      "community": 0,
+      "community": 44,
       "norm_label": "lab_dir()"
     },
     {
@@ -8569,7 +8289,7 @@
       "label": "list_all_sessions()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L73",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_list_all_sessions",
       "community": 35,
@@ -8579,7 +8299,7 @@
       "label": "format_active_session()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L100",
+      "source_location": "L95",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_format_active_session",
       "community": 35,
@@ -8589,7 +8309,7 @@
       "label": "format_historical_session()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L129",
+      "source_location": "L124",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_format_historical_session",
       "community": 35,
@@ -8599,7 +8319,7 @@
       "label": "format_event()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L149",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_format_event",
       "community": 35,
@@ -8609,7 +8329,7 @@
       "label": "sanitize_payload()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L173",
+      "source_location": "L168",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_sanitize_payload",
       "community": 35,
@@ -8619,7 +8339,7 @@
       "label": "fork_response()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L176",
+      "source_location": "L171",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_fork_response",
       "community": 35,
@@ -8629,7 +8349,7 @@
       "label": "task_from_events()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L191",
+      "source_location": "L186",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_task_from_events",
       "community": 35,
@@ -8639,7 +8359,7 @@
       "label": "find_fork_event()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L198",
+      "source_location": "L193",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_find_fork_event",
       "community": 35,
@@ -8649,7 +8369,7 @@
       "label": "build_fork()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L206",
+      "source_location": "L201",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_build_fork",
       "community": 35,
@@ -8659,7 +8379,7 @@
       "label": "send_json()",
       "file_type": "code",
       "source_file": "lib/shem/rest/handlers/sessions.ex",
-      "source_location": "L241",
+      "source_location": "L236",
       "_origin": "ast",
       "id": "handlers_sessions_shem_rest_handlers_sessions_send_json",
       "community": 35,
@@ -11394,16 +11114,6 @@
       "norm_label": "shem.attest.canonicaljsontest"
     },
     {
-      "label": "Widget",
-      "file_type": "code",
-      "source_file": "test/shem/attest/canonical_json_test.exs",
-      "source_location": "L27",
-      "_origin": "ast",
-      "id": "attest_canonical_json_test_widget",
-      "community": 266,
-      "norm_label": "widget"
-    },
-    {
       "label": "attest_e2e_test.exs",
       "file_type": "code",
       "source_file": "test/shem/attest_e2e_test.exs",
@@ -11457,7 +11167,7 @@
       "label": "tool_ext()",
       "file_type": "code",
       "source_file": "test/shem/attest_test.exs",
-      "source_location": "L135",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "shem_attest_test_shem_attesttest_tool_ext",
       "community": 257,
@@ -11954,66 +11664,6 @@
       "norm_label": "shem.eventlog.fakestoretest"
     },
     {
-      "label": "gc_test.exs",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "event_log_gc_test",
-      "community": 268,
-      "norm_label": "gc_test.exs"
-    },
-    {
-      "label": "Shem.EventLog.GCTest",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "event_log_gc_test_shem_eventlog_gctest",
-      "community": 268,
-      "norm_label": "shem.eventlog.gctest"
-    },
-    {
-      "label": "seed()",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L6",
-      "_origin": "ast",
-      "id": "event_log_gc_test_shem_eventlog_gctest_seed",
-      "community": 268,
-      "norm_label": "seed()"
-    },
-    {
-      "label": "store_append()",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L16",
-      "_origin": "ast",
-      "id": "event_log_gc_test_shem_eventlog_gctest_store_append",
-      "community": 268,
-      "norm_label": "store_append()"
-    },
-    {
-      "label": "Widget",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L178",
-      "_origin": "ast",
-      "id": "event_log_gc_test_widget",
-      "community": 268,
-      "norm_label": "widget"
-    },
-    {
-      "label": "wait_until_registered()",
-      "file_type": "code",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L198",
-      "_origin": "ast",
-      "id": "event_log_gc_test_shem_eventlog_gctest_wait_until_registered",
-      "community": 268,
-      "norm_label": "wait_until_registered()"
-    },
-    {
       "label": "history_scanner_test.exs",
       "file_type": "code",
       "source_file": "test/shem/event_log/history_scanner_test.exs",
@@ -12132,36 +11782,6 @@
       "id": "shem_event_log_test_shem_eventlogtest",
       "community": 220,
       "norm_label": "shem.eventlogtest"
-    },
-    {
-      "label": "gc_cli_test.exs",
-      "file_type": "code",
-      "source_file": "test/shem/gc_cli_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "shem_gc_cli_test",
-      "community": 269,
-      "norm_label": "gc_cli_test.exs"
-    },
-    {
-      "label": "Shem.GCCliTest",
-      "file_type": "code",
-      "source_file": "test/shem/gc_cli_test.exs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "shem_gc_cli_test_shem_gcclitest",
-      "community": 269,
-      "norm_label": "shem.gcclitest"
-    },
-    {
-      "label": "seed()",
-      "file_type": "code",
-      "source_file": "test/shem/gc_cli_test.exs",
-      "source_location": "L8",
-      "_origin": "ast",
-      "id": "shem_gc_cli_test_shem_gcclitest_seed",
-      "community": 269,
-      "norm_label": "seed()"
     },
     {
       "label": "guardrails_test.exs",
@@ -15972,9 +15592,9 @@
       "source_file": "lib/mix/tasks/shem.attest.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "tasks_shem_attest",
-      "target": "tasks_shem_attest_mix_tasks_shem_attest"
+      "target": "tasks_shem_attest_mix_tasks_shem_attest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -15982,28 +15602,8 @@
       "source_file": "lib/mix/tasks/shem.attest.ex",
       "source_location": "L22",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "tasks_shem_attest_mix_tasks_shem_attest",
-      "target": "tasks_shem_attest_mix_tasks_shem_attest_run"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/mix/tasks/shem.gc.ex",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "tasks_shem_gc",
-      "target": "tasks_shem_gc_mix_tasks_shem_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/mix/tasks/shem.gc.ex",
-      "source_location": "L26",
-      "weight": 1.0,
-      "source": "tasks_shem_gc_mix_tasks_shem_gc",
-      "target": "tasks_shem_gc_mix_tasks_shem_gc_run",
+      "target": "tasks_shem_attest_mix_tasks_shem_attest_run",
       "confidence_score": 1.0
     },
     {
@@ -18214,9 +17814,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest",
-      "target": "shem_attest_shem_attest"
+      "target": "shem_attest_shem_attest",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -18225,9 +17825,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "context": "import",
-      "confidence_score": 1.0,
       "source": "shem_attest_test",
-      "target": "shem_attest"
+      "target": "shem_attest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18235,9 +17835,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L16",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_build"
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18245,9 +17845,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L150",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_cli"
+      "target": "shem_attest_shem_attest_cli",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18255,9 +17855,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L60",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_collect_tools"
+      "target": "shem_attest_shem_attest_collect_tools",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18265,9 +17865,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L41",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_event_view"
+      "target": "shem_attest_shem_attest_event_view",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18275,9 +17875,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L87",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_ext_for"
+      "target": "shem_attest_shem_attest_ext_for",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18285,9 +17885,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L53",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_portable_genesis"
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18295,9 +17895,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L57",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_portable_next"
+      "target": "shem_attest_shem_attest_portable_next",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18305,9 +17905,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L121",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_priv"
+      "target": "shem_attest_shem_attest_priv",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18315,9 +17915,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L71",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_resolve_tool"
+      "target": "shem_attest_shem_attest_resolve_tool",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18325,9 +17925,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L131",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_rpc_report"
+      "target": "shem_attest_shem_attest_rpc_report",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18335,9 +17935,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L84",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_runtime_tag"
+      "target": "shem_attest_shem_attest_runtime_tag",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18345,9 +17945,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L32",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_verify"
+      "target": "shem_attest_shem_attest_verify",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18355,9 +17955,9 @@
       "source_file": "lib/shem/attest.ex",
       "source_location": "L89",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest",
-      "target": "shem_attest_shem_attest_write_bundle"
+      "target": "shem_attest_shem_attest_write_bundle",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18366,9 +17966,9 @@
       "source_location": "L24",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_collect_tools"
+      "target": "shem_attest_shem_attest_collect_tools",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18377,9 +17977,9 @@
       "source_location": "L21",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_event_view"
+      "target": "shem_attest_shem_attest_event_view",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18388,9 +17988,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_portable_genesis"
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18399,9 +17999,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_portable_next"
+      "target": "shem_attest_shem_attest_portable_next",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18410,9 +18010,9 @@
       "source_location": "L19",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_verify"
+      "target": "shem_attest_shem_attest_verify",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18421,9 +18021,9 @@
       "source_location": "L27",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_build",
-      "target": "shem_attest_shem_attest_write_bundle"
+      "target": "shem_attest_shem_attest_write_bundle",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18432,9 +18032,9 @@
       "source_location": "L156",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_cli",
-      "target": "shem_attest_shem_attest_build"
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18443,9 +18043,9 @@
       "source_location": "L132",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_rpc_report",
-      "target": "shem_attest_shem_attest_build"
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18454,9 +18054,9 @@
       "source_location": "L109",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_write_bundle",
-      "target": "shem_attest_shem_attest_portable_genesis"
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18465,9 +18065,9 @@
       "source_location": "L76",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_resolve_tool",
-      "target": "shem_attest_shem_attest_ext_for"
+      "target": "shem_attest_shem_attest_ext_for",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18476,9 +18076,9 @@
       "source_location": "L75",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_resolve_tool",
-      "target": "shem_attest_shem_attest_runtime_tag"
+      "target": "shem_attest_shem_attest_runtime_tag",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18487,9 +18087,9 @@
       "source_location": "L117",
       "weight": 1.0,
       "context": "call",
-      "confidence_score": 1.0,
       "source": "shem_attest_shem_attest_write_bundle",
-      "target": "shem_attest_shem_attest_priv"
+      "target": "shem_attest_shem_attest_priv",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18497,9 +18097,9 @@
       "source_file": "lib/shem/attest/canonical_json.ex",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json",
-      "target": "attest_canonical_json_shem_attest_canonicaljson"
+      "target": "attest_canonical_json_shem_attest_canonicaljson",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18507,9 +18107,9 @@
       "source_file": "lib/shem/attest/canonical_json.ex",
       "source_location": "L18",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json_shem_attest_canonicaljson",
-      "target": "attest_canonical_json_shem_attest_canonicaljson_encode"
+      "target": "attest_canonical_json_shem_attest_canonicaljson_encode",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18517,9 +18117,9 @@
       "source_file": "lib/shem/attest/canonical_json.ex",
       "source_location": "L28",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json_shem_attest_canonicaljson",
-      "target": "attest_canonical_json_shem_attest_canonicaljson_normalize"
+      "target": "attest_canonical_json_shem_attest_canonicaljson_normalize",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18527,9 +18127,9 @@
       "source_file": "lib/shem/attest/canonical_json.ex",
       "source_location": "L48",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json_shem_attest_canonicaljson",
-      "target": "attest_canonical_json_shem_attest_canonicaljson_to_iodata"
+      "target": "attest_canonical_json_shem_attest_canonicaljson_to_iodata",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -18537,9 +18137,9 @@
       "source_file": "lib/shem/attest/canonical_json.ex",
       "source_location": "L32",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json_shem_attest_canonicaljson",
-      "target": "attest_canonical_json_shem_attest_canonicaljson_to_string_key"
+      "target": "attest_canonical_json_shem_attest_canonicaljson_to_string_key",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19512,16 +19112,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L453",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_do_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L19",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19572,31 +19162,11 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L85",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L255",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog",
       "target": "shem_event_log_shem_eventlog_get_active_handle"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L88",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_get_digest",
-      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19627,36 +19197,6 @@
       "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog",
       "target": "shem_event_log_shem_eventlog_list_sessions"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L434",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_maybe_auto_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L397",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_missing_kind",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L567",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_read_dets_digest",
-      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -19752,16 +19292,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L522",
-      "weight": 1.0,
-      "source": "shem_event_log_shem_eventlog",
-      "target": "shem_event_log_shem_eventlog_store_has_session",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L273",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19815,67 +19345,12 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L71",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_verify_chain",
-      "target": "shem_event_log_shem_eventlog_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L461",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_do_gc",
-      "target": "shem_event_log_shem_eventlog_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L139",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L398",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_missing_kind",
-      "target": "shem_event_log_shem_eventlog_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L78",
       "weight": 1.0,
       "context": "call",
       "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog_init",
       "target": "shem_event_log_shem_eventlog_select_store"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L347",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_do_gc",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19903,56 +19378,12 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L220",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_maybe_auto_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L272",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_missing_kind",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L388",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_read_dets_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L195",
       "weight": 1.0,
       "context": "call",
       "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog_handle_call",
       "target": "shem_event_log_shem_eventlog_read_dets_file"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L359",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_handle_call",
-      "target": "shem_event_log_shem_eventlog_store_has_session",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19969,45 +19400,12 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log.ex",
-      "source_location": "L568",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_read_dets_digest",
-      "target": "shem_event_log_shem_eventlog_event_log_path",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
       "source_location": "L282",
       "weight": 1.0,
       "context": "call",
       "confidence_score": 1.0,
       "source": "shem_event_log_shem_eventlog_read_dets_file",
       "target": "shem_event_log_shem_eventlog_event_log_path"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L523",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_store_has_session",
-      "target": "shem_event_log_shem_eventlog_try_store_read",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log.ex",
-      "source_location": "L439",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_event_log_shem_eventlog_maybe_auto_gc",
-      "target": "shem_event_log_shem_eventlog_do_gc",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20146,41 +19544,11 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L87",
-      "weight": 1.0,
-      "source": "event_log_dets_store_shem_eventlog_detsstore",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/dets_store.ex",
       "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "event_log_dets_store_shem_eventlog_detsstore",
       "target": "event_log_dets_store_shem_eventlog_detsstore_open"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "event_log_dets_store_shem_eventlog_detsstore",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_prune",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L95",
-      "weight": 1.0,
-      "source": "event_log_dets_store_shem_eventlog_detsstore",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_put_digest",
-      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -20206,17 +19574,6 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L77",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_dets_store_shem_eventlog_detsstore_prune",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_read_all",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/dets_store.ex",
       "source_location": "L31",
       "weight": 1.0,
       "context": "call",
@@ -20234,17 +19591,6 @@
       "confidence_score": 1.0,
       "source": "event_log_dets_store_shem_eventlog_detsstore_scrub",
       "target": "event_log_dets_store_shem_eventlog_detsstore_read_all"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/dets_store.ex",
-      "source_location": "L79",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_dets_store_shem_eventlog_detsstore_prune",
-      "target": "event_log_dets_store_shem_eventlog_detsstore_get",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20331,41 +19677,11 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "event_log_fake_store_shem_eventlog_fakestore",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/fake_store.ex",
       "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "event_log_fake_store_shem_eventlog_fakestore",
       "target": "event_log_fake_store_shem_eventlog_fakestore_open"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L66",
-      "weight": 1.0,
-      "source": "event_log_fake_store_shem_eventlog_fakestore",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_prune",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L83",
-      "weight": 1.0,
-      "source": "event_log_fake_store_shem_eventlog_fakestore",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_put_digest",
-      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -20391,17 +19707,6 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L67",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_fake_store_shem_eventlog_fakestore_prune",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_read_all",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/fake_store.ex",
       "source_location": "L26",
       "weight": 1.0,
       "context": "call",
@@ -20419,17 +19724,6 @@
       "confidence_score": 1.0,
       "source": "event_log_fake_store_shem_eventlog_fakestore_scrub",
       "target": "event_log_fake_store_shem_eventlog_fakestore_read_all"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/fake_store.ex",
-      "source_location": "L69",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_fake_store_shem_eventlog_fakestore_prune",
-      "target": "event_log_fake_store_shem_eventlog_fakestore_get",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20621,16 +19915,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L149",
-      "weight": 1.0,
-      "source": "event_log_mnesia_store_shem_eventlog_mnesiastore",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_get_digest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
       "source_location": "L45",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20646,26 +19930,6 @@
       "confidence_score": 1.0,
       "source": "event_log_mnesia_store_shem_eventlog_mnesiastore",
       "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_open"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L138",
-      "weight": 1.0,
-      "source": "event_log_mnesia_store_shem_eventlog_mnesiastore",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_prune",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L157",
-      "weight": 1.0,
-      "source": "event_log_mnesia_store_shem_eventlog_mnesiastore",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_put_digest",
-      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -20701,17 +19965,6 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L139",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_mnesia_store_shem_eventlog_mnesiastore_prune",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_read_all",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
       "source_location": "L102",
       "weight": 1.0,
       "context": "call",
@@ -20729,17 +19982,6 @@
       "confidence_score": 1.0,
       "source": "event_log_mnesia_store_shem_eventlog_mnesiastore_scrub",
       "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_read_all"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/event_log/mnesia_store.ex",
-      "source_location": "L142",
-      "weight": 1.0,
-      "context": "call",
-      "source": "event_log_mnesia_store_shem_eventlog_mnesiastore_prune",
-      "target": "event_log_mnesia_store_shem_eventlog_mnesiastore_get",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20872,152 +20114,6 @@
       "confidence_score": 1.0,
       "source": "event_log_store",
       "target": "event_log_store_shem_eventlog_store"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "shem_gc",
-      "target": "shem_gc_shem_gc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L59",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_cli",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L96",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_daemon_running",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_default_keep",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L87",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_guard_port",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_keep",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "shem_gc_shem_gc",
-      "target": "shem_gc_shem_gc_rpc_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L75",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_cli",
-      "target": "shem_gc_shem_gc_keep",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L45",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_rpc_report",
-      "target": "shem_gc_shem_gc_keep",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L75",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_cli",
-      "target": "shem_gc_shem_gc_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L45",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_rpc_report",
-      "target": "shem_gc_shem_gc_report",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L62",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_cli",
-      "target": "shem_gc_shem_gc_daemon_running",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/shem/gc.ex",
-      "source_location": "L60",
-      "weight": 1.0,
-      "context": "call",
-      "source": "shem_gc_shem_gc_cli",
-      "target": "shem_gc_shem_gc_guard_port",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30127,9 +29223,9 @@
       "source_file": "priv/attest/verify.py",
       "source_location": "L8",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_verify",
-      "target": "attest_verify_main"
+      "target": "attest_verify_main",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30137,9 +29233,9 @@
       "source_file": "priv/attest/verify.py",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_verify",
-      "target": "attest_verify_sha256_hex"
+      "target": "attest_verify_sha256_hex",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -30148,9 +29244,9 @@
       "source_file": "priv/attest/verify.py",
       "source_location": "L13",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_verify_main",
-      "target": "attest_verify_sha256_hex"
+      "target": "attest_verify_sha256_hex",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30579,18 +29675,8 @@
       "source_file": "test/shem/attest/canonical_json_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "attest_canonical_json_test",
-      "target": "attest_canonical_json_test_shem_attest_canonicaljsontest"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/attest/canonical_json_test.exs",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "attest_canonical_json_test",
-      "target": "attest_canonical_json_test_widget",
+      "target": "attest_canonical_json_test_shem_attest_canonicaljsontest",
       "confidence_score": 1.0
     },
     {
@@ -30599,9 +29685,9 @@
       "source_file": "test/shem/attest_e2e_test.exs",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_e2e_test",
-      "target": "shem_attest_e2e_test_shem_atteste2etest"
+      "target": "shem_attest_e2e_test_shem_atteste2etest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -30609,9 +29695,9 @@
       "source_file": "test/shem/attest_e2e_test.exs",
       "source_location": "L24",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_e2e_test_shem_atteste2etest",
-      "target": "shem_attest_e2e_test_shem_atteste2etest_verify"
+      "target": "shem_attest_e2e_test_shem_atteste2etest_verify",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30619,9 +29705,9 @@
       "source_file": "test/shem/attest_test.exs",
       "source_location": "L2",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_test",
-      "target": "shem_attest_test_shem_attesttest"
+      "target": "shem_attest_test_shem_attesttest",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -30629,9 +29715,9 @@
       "source_file": "test/shem/attest_test.exs",
       "source_location": "L76",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "shem_attest_test_shem_attesttest",
-      "target": "shem_attest_test_shem_attesttest_tool_ext"
+      "target": "shem_attest_test_shem_attesttest_tool_ext",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -31073,56 +30159,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "event_log_gc_test",
-      "target": "event_log_gc_test_shem_eventlog_gctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L178",
-      "weight": 1.0,
-      "source": "event_log_gc_test",
-      "target": "event_log_gc_test_widget",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "event_log_gc_test_shem_eventlog_gctest",
-      "target": "event_log_gc_test_shem_eventlog_gctest_seed",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "event_log_gc_test_shem_eventlog_gctest",
-      "target": "event_log_gc_test_shem_eventlog_gctest_store_append",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/event_log/gc_test.exs",
-      "source_location": "L202",
-      "weight": 1.0,
-      "source": "event_log_gc_test_shem_eventlog_gctest",
-      "target": "event_log_gc_test_shem_eventlog_gctest_wait_until_registered",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "test/shem/event_log/history_scanner_test.exs",
       "source_location": "L1",
       "weight": 1.0,
@@ -31189,26 +30225,6 @@
       "confidence_score": 1.0,
       "source": "shem_event_log_test",
       "target": "shem_event_log_test_shem_eventlogtest"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/gc_cli_test.exs",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "shem_gc_cli_test",
-      "target": "shem_gc_cli_test_shem_gcclitest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "test/shem/gc_cli_test.exs",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "shem_gc_cli_test_shem_gcclitest",
-      "target": "shem_gc_cli_test_shem_gcclitest_seed",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -33206,5 +32222,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d7015f94d74660b474507bc78ce11562d5e7b041"
+  "built_at_commit": "b1204a8b146c69839c414db787133dd6d4ab3958"
 }
