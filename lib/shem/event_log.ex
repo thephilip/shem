@@ -217,6 +217,7 @@ defmodule Shem.EventLog do
           case state.store.append(handle, event) do
             :ok ->
               updated = %{Session.increment(session) | last_hash: event.hash}
+              {updated, handle} = maybe_auto_gc(state, session_id, handle, updated)
               sessions = Map.put(state.sessions, session_id, {handle, updated})
               {:reply, {:ok, event}, %{state | sessions: sessions}}
 
@@ -418,6 +419,26 @@ defmodule Shem.EventLog do
       store.read_all(session_id)
     catch
       _, _ -> {:error, :not_found}
+    end
+  end
+
+  # ponytail: GC runs inline in this GenServer call — 2x hysteresis means once
+  # per keep_events appends, and blocking the append is what makes
+  # digest-before-delete trivially ordered. Move to a Task if the tick ever
+  # shows up in append p99.
+  defp maybe_auto_gc(state, session_id, handle, session) do
+    keep = Application.get_env(:shem, :gc, [])[:keep_events] || 100_000
+    in_store = session.event_count - session.pruned_count
+
+    if is_integer(keep) and in_store > 2 * keep do
+      case do_gc(state.store, handle, session_id, keep) do
+        {:ok, %{total_pruned: total}} -> {%{session | pruned_count: total}, handle}
+        # :legacy_session or store errors: skip silently, disk keeps growing —
+        # exactly the pre-GC status quo for that session.
+        _ -> {session, handle}
+      end
+    else
+      {session, handle}
     end
   end
 

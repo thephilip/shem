@@ -49,3 +49,5 @@ config :shem, progressive_hardening: false
 
 config :shem, shadow_agent_enabled: false
 config :shem, start_port_pool: false
+
+config :shem, gc: [keep_events: :infinity]

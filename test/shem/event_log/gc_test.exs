@@ -128,4 +128,32 @@ defmodule Shem.EventLog.GCTest do
     sid2 = seed(3)
     assert {:error, :not_found} = EventLog.event(sid2, "evt_NOPE")
   end
+
+  describe "auto-GC" do
+    setup do
+      prev = Application.get_env(:shem, :gc)
+      Application.put_env(:shem, :gc, keep_events: 10)
+      on_exit(fn -> Application.put_env(:shem, :gc, prev || [keep_events: :infinity]) end)
+    end
+
+    test "fires past 2x keep_events, prunes to keep_events" do
+      sid = seed(21)   # 21st append crosses 2*10
+      {:ok, events} = EventLog.events(sid)
+      assert length(events) == 10
+      assert {:ok, %{count: 11}} = EventLog.get_digest(sid)
+      assert {:ok, :verified_gc, _} = EventLog.verify_chain(sid)
+      # hysteresis: 5 more appends stay under 2x — no second pass
+      for i <- 21..25, do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+      {:ok, events} = EventLog.events(sid)
+      assert length(events) == 15
+      assert {:ok, %{count: 11}} = EventLog.get_digest(sid)
+    end
+
+    test ":infinity disables" do
+      Application.put_env(:shem, :gc, keep_events: :infinity)
+      sid = seed(30)
+      {:ok, events} = EventLog.events(sid)
+      assert length(events) == 30
+    end
+  end
 end

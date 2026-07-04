@@ -4,6 +4,7 @@ config :shem, trust_gate_enabled: true
 config :shem, progressive_hardening: true
 config :shem, spawn_agent_timeout_ms: 300_000
 config :shem, spawn_agent_max_depth: 3
+config :shem, gc: [keep_events: 100_000]
 
 config :shem,
   executor_backend: :auto,
