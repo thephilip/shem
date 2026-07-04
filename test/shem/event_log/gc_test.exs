@@ -1,0 +1,118 @@
+defmodule Shem.EventLog.GCTest do
+  use ExUnit.Case, async: false
+
+  alias Shem.EventLog
+
+  defp seed(n) do
+    {:ok, sid} = EventLog.start_session()
+    for i <- 0..(n - 1), do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+    sid
+  end
+
+  # Reaches into the FakeStore ETS table backing an active session to insert
+  # an event straight (bypassing EventLog.append), to forge a legacy (nil-seq)
+  # row. There is no public accessor for the handle, so we go through
+  # :sys.get_state/1 on the named EventLog process.
+  defp store_append(sid, event) do
+    state = :sys.get_state(Shem.EventLog)
+    {handle, _session} = Map.fetch!(state.sessions, sid)
+    :ets.insert(handle, {event.id, event})
+    :ok
+  end
+
+  test "gc prunes to keep, verify_chain reports verified_gc" do
+    sid = seed(20)
+    assert {:ok, %{pruned: 15, total_pruned: 15, kept: 5}} = EventLog.gc(sid, 5)
+    {:ok, events} = EventLog.events(sid)
+    assert length(events) == 5
+    assert {:ok, :verified_gc, %{pruned: 15, replayable: 5}} = EventLog.verify_chain(sid)
+    assert {:ok, %{count: 15, covers_to_seq: 14}} = EventLog.get_digest(sid)
+  end
+
+  test "gc coalesces across passes" do
+    sid = seed(20)
+    {:ok, _} = EventLog.gc(sid, 10)
+    for i <- 20..29, do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+    assert {:ok, %{pruned: 15, total_pruned: 25, kept: 5}} = EventLog.gc(sid, 5)
+    assert {:ok, :verified_gc, %{pruned: 25, replayable: 5}} = EventLog.verify_chain(sid)
+  end
+
+  test "gc below keep is a noop" do
+    sid = seed(3)
+    assert {:ok, :noop} = EventLog.gc(sid, 5)
+    assert {:ok, :verified, 3} = EventLog.verify_chain(sid)
+  end
+
+  test "keep clamps to 1" do
+    sid = seed(5)
+    assert {:ok, %{kept: 1}} = EventLog.gc(sid, 0)
+  end
+
+  test "appends after gc continue the chain and still verify" do
+    sid = seed(10)
+    {:ok, _} = EventLog.gc(sid, 3)
+    for i <- 10..14, do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+    assert {:ok, :verified_gc, %{pruned: 7, replayable: 8}} = EventLog.verify_chain(sid)
+  end
+
+  describe "resumed GC'd session (DETS)" do
+    setup do
+      dir = Path.join(System.tmp_dir!(), "shem_gc_dets_#{:erlang.unique_integer([:positive])}")
+      Application.put_env(:shem, :event_log_store, Shem.EventLog.DETSStore)
+      Application.put_env(:shem, :event_log_path, dir)
+
+      on_exit(fn ->
+        Application.put_env(:shem, :event_log_store, Shem.EventLog.FakeStore)
+        Application.delete_env(:shem, :event_log_path)
+        Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+        Supervisor.restart_child(Shem.Supervisor, Shem.EventLog)
+        File.rm_rf!(dir)
+      end)
+
+      :ok
+    end
+
+    test "resumed GC'd session continues seq past the pruned range" do
+      GenServer.stop(Shem.EventLog)
+      wait_until_registered()
+
+      sid = seed(10)
+      {:ok, _} = EventLog.gc(sid, 3)
+      :ok = EventLog.end_session(sid)
+
+      GenServer.stop(Shem.EventLog)
+      wait_until_registered()
+
+      {:ok, ^sid} = EventLog.start_session(sid)
+      {:ok, e} = EventLog.append(sid, :test, %{i: 10})
+      # length(stored) after gc keep=3 is 3 → old code would mint seq=3
+      assert e.seq == 10
+      assert {:ok, :verified_gc, _} = EventLog.verify_chain(sid)
+    end
+  end
+
+  test "legacy session (nil seq) is refused" do
+    sid = seed(3)
+    {:ok, events} = EventLog.events(sid)
+    legacy = %{List.first(events) | id: "evt_LEGACY", seq: nil, hash: nil}
+    store_append(sid, legacy)
+    assert {:error, :legacy_session} = EventLog.gc(sid, 1)
+  end
+
+  test "unknown session" do
+    assert {:error, :not_found} = EventLog.gc("ses_NOPE", 5)
+  end
+
+  defp wait_until_registered(attempts \\ 100)
+
+  defp wait_until_registered(0), do: flunk("Shem.EventLog did not re-register")
+
+  defp wait_until_registered(attempts) do
+    if Process.whereis(Shem.EventLog) do
+      :ok
+    else
+      Process.sleep(10)
+      wait_until_registered(attempts - 1)
+    end
+  end
+end

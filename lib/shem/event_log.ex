@@ -62,13 +62,30 @@ defmodule Shem.EventLog do
 
   @spec verify_chain(String.t()) ::
           {:ok, :verified | :legacy, non_neg_integer()}
+          | {:ok, :verified_gc | :legacy, %{pruned: non_neg_integer(), replayable: non_neg_integer()}}
           | {:error, {:broken_at, String.t()} | :not_found}
   def verify_chain(session_id) do
     case read_session_events(session_id) do
-      {:ok, events} -> Chain.verify(events, session_id)
-      {:error, _} -> {:error, :not_found}
+      {:ok, events} ->
+        digest =
+          case get_digest(session_id) do
+            {:ok, d} -> d
+            _ -> nil
+          end
+
+        Chain.verify(events, session_id, digest)
+
+      {:error, _} ->
+        {:error, :not_found}
     end
   end
+
+  @spec gc(String.t(), pos_integer()) ::
+          {:ok, map() | :noop} | {:error, :legacy_session | :not_found | term()}
+  def gc(session_id, keep), do: GenServer.call(__MODULE__, {:gc, session_id, max(keep, 1)})
+
+  @spec get_digest(String.t()) :: {:ok, map()} | {:error, :none}
+  def get_digest(session_id), do: GenServer.call(__MODULE__, {:get_digest, session_id})
 
   @spec reconstruct(String.t(), (term(), Event.t() -> term()), term()) ::
           {:ok, term()} | {:error, :session_not_found | :session_ended}
@@ -116,19 +133,33 @@ defmodule Shem.EventLog do
       :error ->
         {:ok, handle} = state.store.open(session_id, event_log_path())
 
-        {last_hash, count} =
-          case state.store.read_all(handle) do
-            {:ok, [_ | _] = events} -> {List.last(events).hash, length(events)}
-            _ -> {nil, 0}
+        {:ok, existing} = state.store.read_all(handle)
+
+        pruned_count =
+          case state.store.get_digest(handle) do
+            {:ok, d} -> d.count
+            _ -> 0
+          end
+
+        {last_hash, next_seq} =
+          case List.last(existing) do
+            nil ->
+              {nil, pruned_count}
+
+            last ->
+              # seq counter must continue past PRUNED history too — length(events)
+              # alone would mint duplicate seqs after a GC. Trust the last stored seq.
+              {last.hash, (last.seq || length(existing) - 1) + 1}
           end
 
         session = %Session{
           id: session_id,
           started_at: DateTime.utc_now(),
           last_hash: last_hash,
-          # continue the append index after existing events so a resumed session
-          # doesn't restart seq at 0 (which would collide on read-ordering).
-          event_count: count
+          # continue the append index after existing (and pruned) events so a
+          # resumed session doesn't restart seq at 0 or replay a pruned index.
+          event_count: next_seq,
+          pruned_count: pruned_count
         }
 
         sessions = Map.put(state.sessions, session_id, {handle, session})
@@ -284,6 +315,51 @@ defmodule Shem.EventLog do
     {:reply, %{sessions: map_size(state.sessions), total_events: total_events}, state}
   end
 
+  @impl true
+  def handle_call({:gc, session_id, keep}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, session}} when handle != nil ->
+        case do_gc(state.store, handle, session_id, keep) do
+          {:ok, %{total_pruned: total}} = ok ->
+            sessions = Map.put(state.sessions, session_id, {handle, %{session | pruned_count: total}})
+            {:reply, ok, %{state | sessions: sessions}}
+
+          other ->
+            {:reply, other, state}
+        end
+
+      _ ->
+        # not active (never loaded, or ended): temp-open the store for the pass.
+        # DETS creates a file on open, so require an existing one first.
+        if store_has_session?(state.store, session_id) do
+          {:ok, handle} = state.store.open(session_id, event_log_path())
+          result = do_gc(state.store, handle, session_id, keep)
+          state.store.close(handle)
+          {:reply, result, state}
+        else
+          {:reply, {:error, :not_found}, state}
+        end
+    end
+  end
+
+  @impl true
+  def handle_call({:get_digest, session_id}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, _}} when handle != nil ->
+        {:reply, state.store.get_digest(handle), state}
+
+      _ ->
+        if store_has_session?(state.store, session_id) do
+          {:ok, handle} = state.store.open(session_id, event_log_path())
+          result = state.store.get_digest(handle)
+          state.store.close(handle)
+          {:reply, result, state}
+        else
+          {:reply, {:error, :none}, state}
+        end
+    end
+  end
+
   # ── Helpers ─────────────────────────────────────────────────────────────────
 
   defp get_active_handle(state, session_id) do
@@ -312,6 +388,67 @@ defmodule Shem.EventLog do
     end
   end
 
+  # The GC pass. Ordering is the crash-safety story: digest is durable BEFORE
+  # any delete, so a crash leaves extra events (harmless — Chain.verify/3 skips
+  # rows at or below the boundary), never a broken chain.
+  defp do_gc(store, handle, session_id, keep) do
+    {:ok, events} = store.read_all(handle)
+
+    cond do
+      # Map.get, not .seq — records stored before the :seq field exists can load
+      # without the key (same defensive read as the stores' sort).
+      Enum.any?(events, &is_nil(Map.get(&1, :seq))) ->
+        # pre-:seq sessions can't express a seq boundary and are documented as
+        # "re-record" since v0.5.0 — refuse rather than half-prune.
+        {:error, :legacy_session}
+
+      length(events) <= keep ->
+        {:ok, :noop}
+
+      true ->
+        {pruned, kept} = Enum.split(events, length(events) - keep)
+
+        prior =
+          case store.get_digest(handle) do
+            {:ok, d} -> d
+            _ -> nil
+          end
+
+        seed = (prior && prior.portable_anchor) || Shem.Attest.portable_genesis(session_id)
+
+        portable =
+          Enum.reduce(pruned, seed, fn e, acc ->
+            Shem.Attest.portable_next(acc, Shem.Attest.CanonicalJSON.encode(Shem.Attest.event_view(e)))
+          end)
+
+        last = List.last(pruned)
+
+        digest = %{
+          covers_to_seq: last.seq,
+          count: ((prior && prior.count) || 0) + length(pruned),
+          beam_anchor: last.hash,
+          portable_anchor: portable,
+          pruned_at: DateTime.utc_now()
+        }
+
+        with :ok <- store.put_digest(handle, digest),
+             :ok <- store.prune(handle, last.seq) do
+          {:ok, %{pruned: length(pruned), total_pruned: digest.count, kept: length(kept)}}
+        end
+    end
+  end
+
+  defp store_has_session?(Shem.EventLog.DETSStore, session_id),
+    do: File.exists?(Path.join(event_log_path(), "#{session_id}.dets"))
+
+  # Mnesia/Fake opens are non-creating lookups keyed by session id.
+  defp store_has_session?(store, session_id) do
+    case try_store_read(store, session_id) do
+      {:ok, [_ | _]} -> true
+      _ -> false
+    end
+  end
+
   defp read_dets_file(session_id) do
     path = event_log_path()
     dets_path = Path.join(path, "#{session_id}.dets")
@@ -327,7 +464,14 @@ defmodule Shem.EventLog do
           # events and breaks chain verification. Legacy events (no :seq) fall
           # back to timestamp.
           events =
-            :dets.foldl(fn {_id, event}, acc -> [event | acc] end, [], tab)
+            :dets.foldl(
+              fn
+                {_id, %Event{} = event}, acc -> [event | acc]
+                _other, acc -> acc
+              end,
+              [],
+              tab
+            )
             |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
 
           :dets.close(tab)

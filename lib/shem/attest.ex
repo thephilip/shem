@@ -38,7 +38,8 @@ defmodule Shem.Attest do
   end
 
   # The exact fields Chain.canonical/1 commits to — no seq, no hash.
-  defp event_view(e) do
+  @doc false
+  def event_view(e) do
     %{
       id: e.id,
       session_id: e.session_id,
