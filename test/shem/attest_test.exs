@@ -55,6 +55,22 @@ defmodule Shem.AttestTest do
     assert head == manifest["portable_head"]
   end
 
+  test "rpc_report prints the sentinel and bundle dir on success", %{sid: sid, out: out} do
+    output = ExUnit.CaptureIO.capture_io(fn -> assert :ok = Attest.rpc_report(sid, out) end)
+    [first, second | _] = String.split(output, "\n")
+    assert first == "SHEM_ATTEST_OK"
+    assert File.dir?(second)
+  end
+
+  test "rpc_report reports an error on stderr for an unknown session" do
+    err =
+      ExUnit.CaptureIO.capture_io(:stderr, fn ->
+        assert :ok = Attest.rpc_report("ses_nonexistent00", System.tmp_dir!())
+      end)
+
+    assert err =~ "failed"
+  end
+
   defp tool_ext("beam"), do: "ex"
   defp tool_ext("python"), do: "py"
   defp tool_ext(_), do: "ts"

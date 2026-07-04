@@ -157,8 +157,18 @@ cmd_attest() {
     *'"'*|*'\'*|*'#{'*) echo "shem attest: output dir may not contain quotes, backslashes, or '#{'" >&2; exit 2 ;;
   esac
   if running; then
-    # read-only: run inside the live node — no DETS-lock collision, no need to stop.
-    "$LAUNCHER" rpc "Elixir.Shem.Attest.build(\"$SID\", [out: \"$OUT\"]) |> IO.inspect(label: :attest)"
+    # read-only: run inside the live node (no DETS-lock collision, no need to stop).
+    # release `rpc` always exits 0 and hides the return value, but IO reaches us —
+    # so rpc_report prints a sentinel + dir and we set the exit code here.
+    out="$("$LAUNCHER" rpc "Elixir.Shem.Attest.rpc_report(\"$SID\", \"$OUT\")" 2>&1)"
+    if printf '%s\n' "$out" | head -n1 | grep -qx 'SHEM_ATTEST_OK'; then
+      dir="$(printf '%s\n' "$out" | sed -n '2p')"
+      echo "attest bundle written: $dir"
+      echo "verify with:  python3 \"$dir/verify.py\" \"$dir\""
+    else
+      printf '%s\n' "$out" >&2
+      exit 2
+    fi
   else
     "$LAUNCHER" eval "System.halt(Shem.Attest.cli(\"$SID\", \"$OUT\"))"
   fi

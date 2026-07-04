@@ -121,6 +121,27 @@ defmodule Shem.Attest do
   defp priv(name), do: Path.join(:code.priv_dir(:shem) |> to_string(), "attest/#{name}")
 
   @doc """
+  Live-node (`rpc`) entry for `shem attest` while Shem is RUNNING. Runs INSIDE the
+  daemon, so it must never halt. Release `rpc` always exits 0 and hides the return
+  value, but IO from here reaches the caller — so it prints a stable sentinel line
+  followed by the bundle dir on success, or an error to stderr, and the shell
+  wrapper keys the exit code on the sentinel.
+  """
+  @spec rpc_report(String.t(), String.t()) :: :ok
+  def rpc_report(session_id, out) do
+    case build(session_id, out: out) do
+      {:ok, dir} ->
+        IO.puts("SHEM_ATTEST_OK")
+        IO.puts(dir)
+
+      {:error, reason} ->
+        IO.puts(:stderr, "attest of #{session_id} failed: #{inspect(reason)}")
+    end
+
+    :ok
+  end
+
+  @doc """
   Ephemeral entry for `shem attest` when Shem is STOPPED (and `mix shem.attest`).
   Boots the app headless, writes the bundle, returns an exit code. The live
   (`rpc`) path calls `build/2` directly and must NOT use this (no halt/boot).
