@@ -18,13 +18,20 @@ defmodule Shem.Attest do
 
     with {:ok, _kind, _n} <- verify(session_id),
          {:ok, events} <- EventLog.read_session_events(session_id) do
+      digest =
+        case EventLog.get_digest(session_id) do
+          {:ok, d} -> d
+          _ -> nil
+        end
+
       lines = Enum.map(events, &CanonicalJSON.encode(event_view(&1)))
-      head = Enum.reduce(lines, portable_genesis(session_id), &portable_next(&2, &1))
+      seed = (digest && digest.portable_anchor) || portable_genesis(session_id)
+      head = Enum.reduce(lines, seed, &portable_next(&2, &1))
       beam_head = events |> List.last() |> then(& &1 && &1.hash)
       tools = collect_tools(events)
 
       dir = Path.join(out, "attest-#{session_id}-#{String.slice(head, 0, 8)}")
-      write_bundle(dir, session_id, events, lines, head, beam_head, tools)
+      write_bundle(dir, session_id, events, lines, head, beam_head, tools, digest)
       {:ok, dir}
     end
   end
@@ -87,7 +94,7 @@ defmodule Shem.Attest do
   defp ext_for({:beam, _}), do: "ex"
   defp ext_for({:port, rt}), do: Languages.ext(rt)
 
-  defp write_bundle(dir, session_id, events, lines, head, beam_head, tools) do
+  defp write_bundle(dir, session_id, events, lines, head, beam_head, tools, digest) do
     File.rm_rf!(dir)
     File.mkdir_p!(Path.join(dir, "tools"))
 
@@ -112,6 +119,19 @@ defmodule Shem.Attest do
       beam_head: beam_head,
       tools: Enum.map(tools, &Map.take(&1, [:name, :sha256, :runtime, :status]))
     }
+
+    manifest =
+      if digest do
+        Map.put(manifest, :gc, %{
+          covers_to_seq: digest.covers_to_seq,
+          pruned_count: digest.count,
+          portable_anchor: digest.portable_anchor,
+          beam_anchor: digest.beam_anchor,
+          pruned_at: DateTime.to_iso8601(digest.pruned_at)
+        })
+      else
+        manifest
+      end
 
     File.write!(Path.join(dir, "manifest.json"), Jason.encode!(manifest, pretty: true))
 

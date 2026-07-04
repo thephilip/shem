@@ -30,6 +30,8 @@ Shell fallback (no Python, POSIX sh + sha256sum):
 
   # chain: seed at genesis = sha256(session_id), fold over each line,
   # then compare the printed head to portable_head in manifest.json.
+  # If manifest.json has a "gc" block, this session was pruned: seed h
+  # with gc.portable_anchor instead of the genesis (the loop is unchanged).
   sid=$(sed -n 's/.*"session_id": *"\([^"]*\)".*/\1/p' manifest.json)
   h=$(printf %s "$sid" | sha256sum | cut -d' ' -f1)
   while IFS= read -r line; do

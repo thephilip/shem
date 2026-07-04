@@ -10,7 +10,8 @@ def main(argv):
     manifest = json.loads((root / "manifest.json").read_text())
 
     # Chain: fold sha256 over the exact events.jsonl line bytes.
-    head = sha256_hex(manifest["session_id"].encode("utf-8"))  # genesis
+    gc = manifest.get("gc")
+    head = gc["portable_anchor"] if gc else sha256_hex(manifest["session_id"].encode("utf-8"))
     with (root / "events.jsonl").open("rb") as f:
         n = 0
         for raw in f:
@@ -26,6 +27,9 @@ def main(argv):
     else:
         ok = False
         print(f"CHAIN MISMATCH: recomputed {head[:12]}… != manifest {manifest['portable_head'][:12]}…")
+
+    if gc:
+        print(f'events 1-{gc["pruned_count"]} pruned (digest anchor {gc["portable_anchor"][:12]}…); remainder verified from anchor')
 
     for t in manifest["tools"]:
         if t["status"] != "present":

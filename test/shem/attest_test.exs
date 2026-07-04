@@ -71,6 +71,28 @@ defmodule Shem.AttestTest do
     assert err =~ "failed"
   end
 
+  test "bundle of a GC'd session seeds the portable chain at the digest anchor", %{out: out} do
+    {:ok, sid} = Shem.EventLog.start_session()
+    for i <- 0..9, do: {:ok, _} = Shem.EventLog.append(sid, :test, %{i: i})
+    {:ok, _} = Shem.EventLog.gc(sid, 4)
+
+    assert {:ok, dir} = Attest.build(sid, out: out)
+    manifest = dir |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    assert manifest["event_count"] == 4
+    assert %{"pruned_count" => 6, "portable_anchor" => anchor} = manifest["gc"]
+
+    # recompute: fold the 4 surviving lines from the anchor → portable_head
+    lines = dir |> Path.join("events.jsonl") |> File.read!() |> String.split("\n", trim: true)
+    head = Enum.reduce(lines, anchor, &Attest.portable_next(&2, &1))
+    assert head == manifest["portable_head"]
+  end
+
+  test "un-GC'd bundle has no gc block", %{sid: sid, out: out} do
+    assert {:ok, dir} = Attest.build(sid, out: out)
+    manifest = dir |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    refute Map.has_key?(manifest, "gc")
+  end
+
   defp tool_ext("beam"), do: "ex"
   defp tool_ext("python"), do: "py"
   defp tool_ext(_), do: "ts"

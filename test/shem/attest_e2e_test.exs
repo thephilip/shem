@@ -43,4 +43,22 @@ defmodule Shem.AttestE2ETest do
     assert {out, 1} = verify(dir)
     assert out =~ "SHA MISMATCH"
   end
+
+  test "verify.py verifies a GC'd bundle and catches anchor tampering" do
+    {:ok, sid} = Shem.EventLog.start_session()
+    for i <- 0..9, do: {:ok, _} = Shem.EventLog.append(sid, :test, %{i: i})
+    {:ok, _} = Shem.EventLog.gc(sid, 4)
+
+    out_dir = Path.join(System.tmp_dir!(), "attest_e2e_gc_#{System.unique_integer([:positive])}")
+    on_exit(fn -> File.rm_rf(out_dir) end)
+    {:ok, dir} = Shem.Attest.build(sid, out: out_dir)
+
+    assert {out, 0} = verify(dir)
+    assert out =~ "pruned"
+
+    m = Jason.decode!(File.read!(Path.join(dir, "manifest.json")))
+    m = put_in(m["gc"]["portable_anchor"], String.duplicate("0", 64))
+    File.write!(Path.join(dir, "manifest.json"), Jason.encode!(m))
+    assert {_, 1} = verify(dir)
+  end
 end
