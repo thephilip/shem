@@ -61,15 +61,18 @@ detection).
 replays with a divergence report; a deliberate prompt change is caught; the
 exit code is usable in CI.
 
-## Phase 4 — Verifiable Ops `next`
+## Phase 4 — Verifiable Ops `in progress`
 
-- **`shem attest <session>`** — export a self-verifying bundle: events, chain
-  head, exact tool sources by sha256, and a standalone verifier that runs on a
-  machine without Shem installed.
-- **Segment-digest GC** — prune old events by segment, folding each pruned
-  segment into a rollup digest that stays in the hash chain (the shallow-clone
-  model). Verification reports "events 1–N pruned, digest intact; N+1–now
-  fully replayable."
+- **`shem attest <session>`** `done` (2026-07-03) — export a self-verifying
+  bundle: `events.jsonl` (canonical JSON), `tools/<sha256>` exact tool sources,
+  `manifest.json` (portable_head + beam_head, two-head trust model), a
+  stdlib-only `verify.py`, and a POSIX-sh/`sha256sum` fallback. Runs on a
+  machine with neither Shem nor Erlang. Live path attests a running session via
+  `rpc` (no stop needed); stopped path boots ephemeral. Suite 1225.
+- **Segment-digest GC** `next` — prune old events by segment, folding each
+  pruned segment into a rollup digest that stays in the hash chain (the
+  shallow-clone model). Verification reports "events 1–N pruned, digest intact;
+  N+1–now fully replayable." Reuses the attest canonical-JSON serialization.
 
 **Exit criteria:** disk usage bounded under continuous use; chain verification
 passes across a GC; an attest bundle verifies offline on a clean machine.
@@ -136,6 +139,20 @@ each; this is the live stickiness measurement):
   tools that need network + playwright browsers. Workaround: `executor.backend: local`.
   Per-tool sandbox profiles (network mode, container image per runtime) needed.
   Filed by big-pickle.
+
+- 2026-07-03 (Phase 4 attest): building a scriptable `shem attest` verb over the
+  live node was awkward — release `rpc` (OTP 29 / Elixir 1.19) ALWAYS exits 0, does
+  not surface the evaluated expression's return value, and does not propagate a
+  raise as a non-zero exit; only `IO` from inside the call reaches the caller. So a
+  read-only CLI action against a running daemon can't report failure via exit code
+  the obvious way — we print a sentinel line and have the shell wrapper key the exit
+  code on it. A first-class "release rpc that returns an exit code without halting
+  the node" would remove this dance.
+
+- 2026-07-03 (Phase 4 Dogfood, OPEN): "attest a real session from this track" not yet
+  done live — the running instance is an older 0.4.0 without `attest`; exit criteria
+  are met by the e2e (real `verify.py`), but the live-Dogfood attest awaits a rebuilt
+  `shem start` of this version.
 
 ## Parked (explicitly not scheduled)
 

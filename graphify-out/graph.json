@@ -406,6 +406,36 @@
       "norm_label": "fixed_tool()"
     },
     {
+      "label": "shem.attest.ex",
+      "file_type": "code",
+      "source_file": "lib/mix/tasks/shem.attest.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tasks_shem_attest",
+      "community": 265,
+      "norm_label": "shem.attest.ex"
+    },
+    {
+      "label": "Mix.Tasks.Shem.Attest",
+      "file_type": "code",
+      "source_file": "lib/mix/tasks/shem.attest.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tasks_shem_attest_mix_tasks_shem_attest",
+      "community": 265,
+      "norm_label": "mix.tasks.shem.attest"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "lib/mix/tasks/shem.attest.ex",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "tasks_shem_attest_mix_tasks_shem_attest_run",
+      "community": 265,
+      "norm_label": "run()"
+    },
+    {
       "label": "shem.replay.ex",
       "file_type": "code",
       "source_file": "lib/mix/tasks/shem.replay.ex",
@@ -1734,6 +1764,216 @@
       "id": "shem_application_shem_application_detect_container_runtime",
       "community": 13,
       "norm_label": "detect_container_runtime()"
+    },
+    {
+      "label": "attest.ex",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "shem_attest",
+      "community": 257,
+      "norm_label": "attest.ex"
+    },
+    {
+      "label": "Shem.Attest",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest",
+      "community": 257,
+      "norm_label": "shem.attest"
+    },
+    {
+      "label": "build()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_build",
+      "community": 257,
+      "norm_label": "build()"
+    },
+    {
+      "label": "verify()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_verify",
+      "community": 257,
+      "norm_label": "verify()"
+    },
+    {
+      "label": "event_view()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_event_view",
+      "community": 257,
+      "norm_label": "event_view()"
+    },
+    {
+      "label": "portable_genesis()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_portable_genesis",
+      "community": 257,
+      "norm_label": "portable_genesis()"
+    },
+    {
+      "label": "portable_next()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_portable_next",
+      "community": 257,
+      "norm_label": "portable_next()"
+    },
+    {
+      "label": "collect_tools()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_collect_tools",
+      "community": 257,
+      "norm_label": "collect_tools()"
+    },
+    {
+      "label": "resolve_tool()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L71",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_resolve_tool",
+      "community": 257,
+      "norm_label": "resolve_tool()"
+    },
+    {
+      "label": "runtime_tag()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L83",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_runtime_tag",
+      "community": 257,
+      "norm_label": "runtime_tag()"
+    },
+    {
+      "label": "ext_for()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L86",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_ext_for",
+      "community": 257,
+      "norm_label": "ext_for()"
+    },
+    {
+      "label": "write_bundle()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L89",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_write_bundle",
+      "community": 257,
+      "norm_label": "write_bundle()"
+    },
+    {
+      "label": "priv()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L121",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_priv",
+      "community": 257,
+      "norm_label": "priv()"
+    },
+    {
+      "label": "rpc_report()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L131",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_rpc_report",
+      "community": 257,
+      "norm_label": "rpc_report()"
+    },
+    {
+      "label": "cli()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L150",
+      "_origin": "ast",
+      "id": "shem_attest_shem_attest_cli",
+      "community": 257,
+      "norm_label": "cli()"
+    },
+    {
+      "label": "canonical_json.ex",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attest_canonical_json",
+      "community": 262,
+      "norm_label": "canonical_json.ex"
+    },
+    {
+      "label": "Shem.Attest.CanonicalJSON",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attest_canonical_json_shem_attest_canonicaljson",
+      "community": 262,
+      "norm_label": "shem.attest.canonicaljson"
+    },
+    {
+      "label": "encode()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "attest_canonical_json_shem_attest_canonicaljson_encode",
+      "community": 262,
+      "norm_label": "encode()"
+    },
+    {
+      "label": "normalize()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "attest_canonical_json_shem_attest_canonicaljson_normalize",
+      "community": 262,
+      "norm_label": "normalize()"
+    },
+    {
+      "label": "to_string_key()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "attest_canonical_json_shem_attest_canonicaljson_to_string_key",
+      "community": 262,
+      "norm_label": "to_string_key()"
+    },
+    {
+      "label": "to_iodata()",
+      "file_type": "code",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "attest_canonical_json_shem_attest_canonicaljson_to_iodata",
+      "community": 262,
+      "norm_label": "to_iodata()"
     },
     {
       "label": "banner.ex",
@@ -4332,7 +4572,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lab_registry",
-      "community": 6,
+      "community": 0,
       "norm_label": "registry.ex"
     },
     {
@@ -10186,6 +10426,36 @@
       "norm_label": "texttools.wordcount"
     },
     {
+      "label": "verify.py",
+      "file_type": "code",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attest_verify",
+      "community": 263,
+      "norm_label": "verify.py"
+    },
+    {
+      "label": "sha256_hex()",
+      "file_type": "code",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "attest_verify_sha256_hex",
+      "community": 263,
+      "norm_label": "sha256_hex()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "attest_verify_main",
+      "community": 263,
+      "norm_label": "main()"
+    },
+    {
       "label": "run_qwen.sh",
       "file_type": "code",
       "source_file": "run_qwen.sh",
@@ -10360,7 +10630,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test",
-      "community": 257,
+      "community": 18,
       "norm_label": "client_brain_replay_test.exs"
     },
     {
@@ -10370,7 +10640,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test_shem_agent_clientbrainreplaytest",
-      "community": 257,
+      "community": 18,
       "norm_label": "shem.agent.clientbrainreplaytest"
     },
     {
@@ -10380,7 +10650,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "agent_client_brain_replay_test_shem_agent_clientbrainreplaytest_wait_for_awaiting",
-      "community": 257,
+      "community": 18,
       "norm_label": "wait_for_awaiting()"
     },
     {
@@ -10822,6 +11092,86 @@
       "id": "shem_application_test_shem_applicationtest",
       "community": 219,
       "norm_label": "shem.applicationtest"
+    },
+    {
+      "label": "canonical_json_test.exs",
+      "file_type": "code",
+      "source_file": "test/shem/attest/canonical_json_test.exs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attest_canonical_json_test",
+      "community": 266,
+      "norm_label": "canonical_json_test.exs"
+    },
+    {
+      "label": "Shem.Attest.CanonicalJSONTest",
+      "file_type": "code",
+      "source_file": "test/shem/attest/canonical_json_test.exs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attest_canonical_json_test_shem_attest_canonicaljsontest",
+      "community": 266,
+      "norm_label": "shem.attest.canonicaljsontest"
+    },
+    {
+      "label": "attest_e2e_test.exs",
+      "file_type": "code",
+      "source_file": "test/shem/attest_e2e_test.exs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "shem_attest_e2e_test",
+      "community": 264,
+      "norm_label": "attest_e2e_test.exs"
+    },
+    {
+      "label": "Shem.AttestE2ETest",
+      "file_type": "code",
+      "source_file": "test/shem/attest_e2e_test.exs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "shem_attest_e2e_test_shem_atteste2etest",
+      "community": 264,
+      "norm_label": "shem.atteste2etest"
+    },
+    {
+      "label": "verify()",
+      "file_type": "code",
+      "source_file": "test/shem/attest_e2e_test.exs",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "shem_attest_e2e_test_shem_atteste2etest_verify",
+      "community": 264,
+      "norm_label": "verify()"
+    },
+    {
+      "label": "attest_test.exs",
+      "file_type": "code",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "shem_attest_test",
+      "community": 257,
+      "norm_label": "attest_test.exs"
+    },
+    {
+      "label": "Shem.AttestTest",
+      "file_type": "code",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "shem_attest_test_shem_attesttest",
+      "community": 257,
+      "norm_label": "shem.attesttest"
+    },
+    {
+      "label": "tool_ext()",
+      "file_type": "code",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "shem_attest_test_shem_attesttest_tool_ext",
+      "community": 257,
+      "norm_label": "tool_ext()"
     },
     {
       "label": "config_file_test.exs",
@@ -15239,12 +15589,32 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "lib/mix/tasks/shem.attest.ex",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tasks_shem_attest",
+      "target": "tasks_shem_attest_mix_tasks_shem_attest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/mix/tasks/shem.attest.ex",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "tasks_shem_attest_mix_tasks_shem_attest",
+      "target": "tasks_shem_attest_mix_tasks_shem_attest_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "lib/mix/tasks/shem.replay.ex",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tasks_shem_replay",
-      "target": "tasks_shem_replay_mix_tasks_shem_replay",
-      "confidence_score": 1.0
+      "target": "tasks_shem_replay_mix_tasks_shem_replay"
     },
     {
       "relation": "method",
@@ -15252,9 +15622,9 @@
       "source_file": "lib/mix/tasks/shem.replay.ex",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tasks_shem_replay_mix_tasks_shem_replay",
-      "target": "tasks_shem_replay_mix_tasks_shem_replay_run",
-      "confidence_score": 1.0
+      "target": "tasks_shem_replay_mix_tasks_shem_replay_run"
     },
     {
       "relation": "contains",
@@ -15659,9 +16029,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "context": "import",
+      "confidence_score": 1.0,
       "source": "agent_replay_config_test",
-      "target": "shem_agent",
-      "confidence_score": 1.0
+      "target": "shem_agent"
     },
     {
       "relation": "imports",
@@ -15938,9 +16308,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "import",
+      "confidence_score": 1.0,
       "source": "agent_replay_config_test",
-      "target": "shem_agent_config",
-      "confidence_score": 1.0
+      "target": "shem_agent_config"
     },
     {
       "relation": "imports",
@@ -17437,6 +17807,339 @@
       "confidence_score": 1.0,
       "source": "shem_application_shem_application_start",
       "target": "shem_application_shem_application_tui_children"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shem_attest",
+      "target": "shem_attest_shem_attest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "context": "import",
+      "source": "shem_attest_test",
+      "target": "shem_attest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_cli",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_collect_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_event_view",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_ext_for",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_portable_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L121",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_priv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_resolve_tool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_rpc_report",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_runtime_tag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_verify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "shem_attest_shem_attest",
+      "target": "shem_attest_shem_attest_write_bundle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_collect_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_event_view",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L22",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L22",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_portable_next",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L19",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_verify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_build",
+      "target": "shem_attest_shem_attest_write_bundle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L156",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_cli",
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L132",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_rpc_report",
+      "target": "shem_attest_shem_attest_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L109",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_write_bundle",
+      "target": "shem_attest_shem_attest_portable_genesis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L76",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_resolve_tool",
+      "target": "shem_attest_shem_attest_ext_for",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L75",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_resolve_tool",
+      "target": "shem_attest_shem_attest_runtime_tag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest.ex",
+      "source_location": "L117",
+      "weight": 1.0,
+      "context": "call",
+      "source": "shem_attest_shem_attest_write_bundle",
+      "target": "shem_attest_shem_attest_priv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "attest_canonical_json",
+      "target": "attest_canonical_json_shem_attest_canonicaljson",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "attest_canonical_json_shem_attest_canonicaljson",
+      "target": "attest_canonical_json_shem_attest_canonicaljson_encode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "attest_canonical_json_shem_attest_canonicaljson",
+      "target": "attest_canonical_json_shem_attest_canonicaljson_normalize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "attest_canonical_json_shem_attest_canonicaljson",
+      "target": "attest_canonical_json_shem_attest_canonicaljson_to_iodata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "lib/shem/attest/canonical_json.ex",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "attest_canonical_json_shem_attest_canonicaljson",
+      "target": "attest_canonical_json_shem_attest_canonicaljson_to_string_key",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -25076,9 +25779,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check",
-      "target": "replay_check_report",
-      "confidence_score": 1.0
+      "target": "replay_check_report"
     },
     {
       "relation": "contains",
@@ -25086,9 +25789,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check",
-      "target": "replay_check_shem_replay_check",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check"
     },
     {
       "relation": "method",
@@ -25096,9 +25799,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_build_config",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_build_config"
     },
     {
       "relation": "method",
@@ -25106,9 +25809,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_build_report",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_build_report"
     },
     {
       "relation": "method",
@@ -25116,9 +25819,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L232",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_cli",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_cli"
     },
     {
       "relation": "method",
@@ -25126,9 +25829,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L177",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_format"
     },
     {
       "relation": "method",
@@ -25136,9 +25839,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L225",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format_error",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_format_error"
     },
     {
       "relation": "method",
@@ -25146,9 +25849,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L203",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_format_finding",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_format_finding"
     },
     {
       "relation": "method",
@@ -25156,9 +25859,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_replay_agent",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_replay_agent"
     },
     {
       "relation": "method",
@@ -25166,9 +25869,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_replay_fields",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_replay_fields"
     },
     {
       "relation": "method",
@@ -25176,9 +25879,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_run",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_run"
     },
     {
       "relation": "method",
@@ -25186,9 +25889,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L206",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_tail",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_tail"
     },
     {
       "relation": "method",
@@ -25196,9 +25899,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check",
-      "target": "replay_check_shem_replay_check_verify",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_verify"
     },
     {
       "relation": "method",
@@ -25206,9 +25909,9 @@
       "source_file": "lib/shem/replay/check.ex",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_report",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
+      "target": "replay_check_report_clean"
     },
     {
       "relation": "calls",
@@ -25217,9 +25920,9 @@
       "source_location": "L242",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
+      "target": "replay_check_report_clean"
     },
     {
       "relation": "calls",
@@ -25228,9 +25931,9 @@
       "source_location": "L183",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_format",
-      "target": "replay_check_report_clean",
-      "confidence_score": 1.0
+      "target": "replay_check_report_clean"
     },
     {
       "relation": "calls",
@@ -25239,9 +25942,9 @@
       "source_location": "L239",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_run",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_run"
     },
     {
       "relation": "calls",
@@ -25250,9 +25953,9 @@
       "source_location": "L32",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_build_config",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_build_config"
     },
     {
       "relation": "calls",
@@ -25261,9 +25964,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_build_report",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_build_report"
     },
     {
       "relation": "calls",
@@ -25272,9 +25975,9 @@
       "source_location": "L36",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_replay_agent",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_replay_agent"
     },
     {
       "relation": "calls",
@@ -25283,9 +25986,9 @@
       "source_location": "L31",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_replay_fields",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_replay_fields"
     },
     {
       "relation": "calls",
@@ -25294,9 +25997,9 @@
       "source_location": "L29",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_run",
-      "target": "replay_check_shem_replay_check_verify",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_verify"
     },
     {
       "relation": "calls",
@@ -25305,9 +26008,9 @@
       "source_location": "L241",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_format",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_format"
     },
     {
       "relation": "calls",
@@ -25316,9 +26019,9 @@
       "source_location": "L197",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_format_finding",
-      "target": "replay_check_shem_replay_check_tail",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_tail"
     },
     {
       "relation": "calls",
@@ -25327,9 +26030,9 @@
       "source_location": "L245",
       "weight": 1.0,
       "context": "call",
+      "confidence_score": 1.0,
       "source": "replay_check_shem_replay_check_cli",
-      "target": "replay_check_shem_replay_check_format_error",
-      "confidence_score": 1.0
+      "target": "replay_check_shem_replay_check_format_error"
     },
     {
       "relation": "contains",
@@ -28517,6 +29220,37 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "attest_verify",
+      "target": "attest_verify_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "attest_verify",
+      "target": "attest_verify_sha256_hex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "priv/attest/verify.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "attest_verify_main",
+      "target": "attest_verify_sha256_hex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "run_qwen.sh",
       "source_location": "L1",
       "weight": 1.0,
@@ -28791,9 +29525,9 @@
       "source_file": "test/shem/agent/replay_config_test.exs",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agent_replay_config_test",
-      "target": "agent_replay_config_test_shem_agent_replayconfigtest",
-      "confidence_score": 1.0
+      "target": "agent_replay_config_test_shem_agent_replayconfigtest"
     },
     {
       "relation": "contains",
@@ -28934,6 +29668,56 @@
       "confidence_score": 1.0,
       "source": "shem_application_test",
       "target": "shem_application_test_shem_applicationtest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest/canonical_json_test.exs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "attest_canonical_json_test",
+      "target": "attest_canonical_json_test_shem_attest_canonicaljsontest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest_e2e_test.exs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shem_attest_e2e_test",
+      "target": "shem_attest_e2e_test_shem_atteste2etest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest_e2e_test.exs",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "shem_attest_e2e_test_shem_atteste2etest",
+      "target": "shem_attest_e2e_test_shem_atteste2etest_verify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "shem_attest_test",
+      "target": "shem_attest_test_shem_attesttest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "test/shem/attest_test.exs",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "shem_attest_test_shem_attesttest",
+      "target": "shem_attest_test_shem_attesttest_tool_ext",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -30821,9 +31605,9 @@
       "source_file": "test/shem/replay/check_format_test.exs",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_format_test",
-      "target": "replay_check_format_test_shem_replay_checkformattest",
-      "confidence_score": 1.0
+      "target": "replay_check_format_test_shem_replay_checkformattest"
     },
     {
       "relation": "contains",
@@ -30831,9 +31615,9 @@
       "source_file": "test/shem/replay/check_test.exs",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_test",
-      "target": "replay_check_test_shem_replay_checktest",
-      "confidence_score": 1.0
+      "target": "replay_check_test_shem_replay_checktest"
     },
     {
       "relation": "method",
@@ -30841,9 +31625,9 @@
       "source_file": "test/shem/replay/check_test.exs",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_classes",
-      "confidence_score": 1.0
+      "target": "replay_check_test_shem_replay_checktest_classes"
     },
     {
       "relation": "method",
@@ -30851,9 +31635,9 @@
       "source_file": "test/shem/replay/check_test.exs",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_craft_golden",
-      "confidence_score": 1.0
+      "target": "replay_check_test_shem_replay_checktest_craft_golden"
     },
     {
       "relation": "method",
@@ -30861,9 +31645,9 @@
       "source_file": "test/shem/replay/check_test.exs",
       "source_location": "L61",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_craft_golden_with_failure",
-      "confidence_score": 1.0
+      "target": "replay_check_test_shem_replay_checktest_craft_golden_with_failure"
     },
     {
       "relation": "method",
@@ -30871,9 +31655,9 @@
       "source_file": "test/shem/replay/check_test.exs",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "replay_check_test_shem_replay_checktest",
-      "target": "replay_check_test_shem_replay_checktest_record_golden",
-      "confidence_score": 1.0
+      "target": "replay_check_test_shem_replay_checktest_record_golden"
     },
     {
       "relation": "contains",
@@ -31438,5 +32222,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "875d74bf41b555ab7fadb929146ab7a01dc9c513"
+  "built_at_commit": "b1204a8b146c69839c414db787133dd6d4ab3958"
 }
