@@ -78,6 +78,14 @@ And because the log is sha256 hash-chained per session, each lane carries a live
 **verify badge**: a retroactive edit is *detectable* (`GET /api/sessions/:id/verify`) —
 the replay you trust can't be quietly rewritten.
 
+Logs aren't kept forever by default: old segments are GC'd into a rollup
+digest (`shem gc <session>`, or automatically on append once a session passes
+`keep_events`, default 100,000). The digest stays in the hash chain, so
+verification and attest bundles are unaffected — a verify report on a GC'd
+session reads "events 1–N pruned, digest intact; N+1–now fully replayable."
+The pruned prefix is genuinely gone, though: it's summarized, not archived, so
+replay or fork *inside* the pruned range is refused.
+
 ## Why Shem?
 
 **Real concurrency.** Built on the BEAM (Erlang VM). Agents run as supervised OTP processes. No GIL, no asyncio, no mystery crashes under load.

@@ -61,7 +61,7 @@ detection).
 replays with a divergence report; a deliberate prompt change is caught; the
 exit code is usable in CI.
 
-## Phase 4 — Verifiable Ops `in progress`
+## Phase 4 — Verifiable Ops `done`
 
 - **`shem attest <session>`** `done` (2026-07-03) — export a self-verifying
   bundle: `events.jsonl` (canonical JSON), `tools/<sha256>` exact tool sources,
@@ -69,10 +69,11 @@ exit code is usable in CI.
   stdlib-only `verify.py`, and a POSIX-sh/`sha256sum` fallback. Runs on a
   machine with neither Shem nor Erlang. Live path attests a running session via
   `rpc` (no stop needed); stopped path boots ephemeral. Suite 1225.
-- **Segment-digest GC** `next` — prune old events by segment, folding each
-  pruned segment into a rollup digest that stays in the hash chain (the
-  shallow-clone model). Verification reports "events 1–N pruned, digest intact;
-  N+1–now fully replayable." Reuses the attest canonical-JSON serialization.
+- **Segment-digest GC** `done` (2026-07-04) — prune old events by segment into
+  a coalescing rollup digest that stays in the hash chain, triggered
+  automatically on append (`keep_events`, default 100k) or manually
+  (`shem gc <session>` / `mix shem.gc`); verification and attest bundles stay
+  intact across a prune. Suite 1257.
 
 **Exit criteria:** disk usage bounded under continuous use; chain verification
 passes across a GC; an attest bundle verifies offline on a clean machine.
