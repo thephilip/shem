@@ -79,15 +79,43 @@ exit code is usable in CI.
 passes across a GC; an attest bundle verifies offline on a clean machine.
 Both are prerequisites for any production-readiness claim.
 
-## Phase 5 — Elixir Parity Sandbox `pending`
+## Phase 5 — Sandbox & Pack Contract `pending`
 
-Elixir tool graduation and invocation run with the same isolation as
-Python/JS/Go: container-executed or on a disposable peer node (the
-`Executor.run_remote` plumbing exists). Replaces the Phase 1 AST scan as the
-enforcement layer (the scan may remain as a fast pre-filter).
+Two specs (the first real toolpacks — browser/knowledge/secret — are the
+forcing function for spec 2; see the 2026-07-03 friction-log entry):
+
+- **Elixir parity sandbox** `pending` — Elixir tool graduation and invocation
+  run with the same isolation as Python/JS/Go: container-executed or on a
+  disposable peer node (the `Executor.run_remote` plumbing exists). Replaces
+  the Phase 1 AST scan as the enforcement layer (the scan may remain as a
+  fast pre-filter).
+- **Pack contract v2** `pending` — declarative per-tool needs in `pack.json`,
+  host decides policy:
+  - *Sandbox profiles*: a tool declares `sandbox: {network, image, mounts}`;
+    absent = today's `--network=none` + slim image (existing packs
+    unchanged); install re-gate surfaces the requested profile for user
+    consent. Kills the `executor.backend: local` escape hatch.
+  - *Action manifest + invoke-time policy*: dispatching mega-tools declare
+    `actions: [{name, risk: read|write|execute}]`; Guardrails gains
+    allow/deny by `{tool, action}` (e.g. deny `browser.evaluate`, allow
+    `browser.screenshot`). Risk tags are author-declared; the gate
+    sanity-checks them against source. Full per-action trust *scoring*
+    stays out of scope until a real pack demands it.
+  - *Secret hygiene*: `invoke_tool` resolves `{"$secret": "key"}` args at
+    execution time (plaintext never transits model/context/EventLog), and
+    a `sensitive` payload marker redacts fields at append time — BEFORE
+    hashing, so the chain commits to the redacted form and verification /
+    replay / attest stay intact. Without this, an attest bundle of a
+    session that read a secret exports that secret.
+  - A `PACKS.md` authoring guide codifies the contract; the three public
+    packs get retrofitted as reference implementations (tracked separately
+    in `../TOOLPACK_SUGGESTIONS.md`, outside this repo).
 
 **Exit criteria:** no code path compiles third-party or agent-authored Elixir
-source into the host BEAM; the README sandbox caveat is removed.
+source into the host BEAM; the README sandbox caveat is removed; the
+browser + knowledge packs run fully sandboxed with no `backend: local`
+workaround; a secret read through a handle appears nowhere in the event
+log or an attest bundle.
 
 ## Phase 6 — Observability Surface `pending`
 
