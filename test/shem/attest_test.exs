@@ -4,6 +4,12 @@ defmodule Shem.AttestTest do
   alias Shem.Attest
 
   setup do
+    # Other async: false tests elsewhere in the suite call Registry.flush()
+    # in their own setup and never restore it, leaving the shared global
+    # ETS-backed registry empty for whatever test runs next. Since tests
+    # run serially, that can be us. Rescan restores the seed floor (incl.
+    # DiffText) that this test depends on, regardless of prior test damage.
+    Shem.Lab.Registry.rescan()
     {:ok, sid} = Shem.EventLog.start_session()
     # Minimal replayable-shaped session: a start event + a tool call by name.
     {:ok, _} = Shem.EventLog.append(sid, :agent_started, %{task: "t", preset: "general"})
