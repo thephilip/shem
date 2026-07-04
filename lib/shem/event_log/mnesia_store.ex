@@ -94,11 +94,11 @@ defmodule Shem.EventLog.MnesiaStore do
   @impl true
   def read_all(session_id) do
     match_head = {@table, {session_id, :_}, :"$1"}
-    # Sort by the per-event append index (:seq) — the hash chain's true order —
-    # with a timestamp fallback for legacy events. Map.get keeps pre-:seq records
-    # from raising on the missing key.
+
     events =
       :mnesia.dirty_select(@table, [{match_head, [], [:"$1"]}])
+      # the {session_id, :gc_digest} row matches the select too — events only
+      |> Enum.filter(&is_struct(&1, Shem.EventLog.Event))
       |> Enum.sort_by(fn e -> {Map.get(e, :seq) || -1, DateTime.to_unix(e.timestamp, :microsecond)} end)
 
     {:ok, events}
@@ -133,4 +133,28 @@ defmodule Shem.EventLog.MnesiaStore do
 
   @impl true
   def close(_session_id), do: :ok
+
+  @impl true
+  def prune(session_id, up_to_seq) do
+    {:ok, events} = read_all(session_id)
+
+    events
+    |> Enum.filter(fn e -> (Map.get(e, :seq) || -1) <= up_to_seq end)
+    |> Enum.each(fn e -> :mnesia.dirty_delete(@table, {session_id, e.id}) end)
+
+    :ok
+  end
+
+  @impl true
+  def get_digest(session_id) do
+    case :mnesia.dirty_read(@table, {session_id, :gc_digest}) do
+      [{@table, _key, digest}] -> {:ok, digest}
+      [] -> {:error, :none}
+    end
+  end
+
+  @impl true
+  def put_digest(session_id, digest) do
+    :mnesia.dirty_write({@table, {session_id, :gc_digest}, digest})
+  end
 end
