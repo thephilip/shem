@@ -23,4 +23,22 @@ defmodule Shem.Attest.CanonicalJSONTest do
     assert CanonicalJSON.encode(%{"s" => "héllo \"q\"\n", "n" => 3}) ==
              ~s({"n":3,"s":"héllo \\"q\\"\\n"})
   end
+
+  defmodule Widget do
+    defstruct [:name, :count]
+  end
+
+  test "DateTime struct normalizes to its ISO8601 string" do
+    dt = ~U[2026-07-04 12:00:00Z]
+
+    assert CanonicalJSON.encode(%{"at" => dt}) ==
+             ~s({"at":"2026-07-04T12:00:00Z"})
+  end
+
+  test "arbitrary struct nested in a map normalizes via Map.from_struct, sorted keys" do
+    payload = %{"event" => %{"widget" => %Widget{name: "gizmo", count: 2}}}
+
+    assert CanonicalJSON.encode(payload) ==
+             ~s({"event":{"widget":{"count":2,"name":"gizmo"}}})
+  end
 end

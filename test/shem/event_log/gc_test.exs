@@ -103,6 +103,26 @@ defmodule Shem.EventLog.GCTest do
     assert {:error, :not_found} = EventLog.gc("ses_NOPE", 5)
   end
 
+  defmodule Widget do
+    defstruct [:name]
+  end
+
+  test "gc and verify_chain succeed when a payload embeds structs (DateTime, custom struct)" do
+    {:ok, sid} = EventLog.start_session()
+    for i <- 0..8, do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+
+    {:ok, _} =
+      EventLog.append(sid, :test, %{
+        at: DateTime.utc_now(),
+        widget: %Widget{name: "gizmo"}
+      })
+
+    for i <- 10..14, do: {:ok, _} = EventLog.append(sid, :test, %{i: i})
+
+    assert {:ok, %{kept: 5}} = EventLog.gc(sid, 5)
+    assert {:ok, :verified_gc, _} = EventLog.verify_chain(sid)
+  end
+
   defp wait_until_registered(attempts \\ 100)
 
   defp wait_until_registered(0), do: flunk("Shem.EventLog did not re-register")

@@ -21,6 +21,12 @@ defmodule Shem.Attest.CanonicalJSON do
   defp normalize(t) when is_tuple(t), do: t |> Tuple.to_list() |> Enum.map(&normalize/1)
   defp normalize(l) when is_list(l), do: Enum.map(l, &normalize/1)
 
+  defp normalize(%mod{} = s) when mod in [DateTime, NaiveDateTime, Date, Time] do
+    mod.to_iso8601(s)
+  end
+
+  defp normalize(%_{} = s), do: s |> Map.from_struct() |> normalize()
+
   defp normalize(m) when is_map(m) and not is_struct(m) do
     Map.new(m, fn {k, v} -> {to_string_key(k), normalize(v)} end)
   end
