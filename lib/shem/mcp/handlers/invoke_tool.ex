@@ -13,32 +13,45 @@ defmodule Shem.MCP.Handlers.InvokeTool do
          {:ok, tool} <- Registry.lookup(valid["id"]) do
       args = Map.get(valid, "args", %{})
 
-      case tool.runtime do
-        {:beam, mod} ->
-          with :ok <- ensure_loaded(tool),
-               {:ok, _} <- Schema.validate(args, tool.input_schema) do
-            try do
-              {:ok, mod.run(args)}
-            rescue
-              e -> {:error, :runtime, Exception.message(e)}
-            end
-          end
+      declared =
+        case tool.metadata["actions"] do
+          l when is_list(l) and l != [] -> Enum.map(l, & &1["name"])
+          _ -> nil
+        end
 
-        {:port, runtime_path} ->
-          language = Map.get(tool.metadata, "language", "python")
-          granted = Map.get(tool.metadata, "granted", %{})
-
-          if Shem.Lab.Sandbox.requires_container?(granted) and
-               is_nil(Application.get_env(:shem, :container_runtime_bin)) do
-            {:error, :runtime, "tool requires a container runtime for its granted sandbox profile"}
-          else
-            with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
-                 {:ok, pool} <-
-                   Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-              PortPool.call(pool, resolved_args)
-            end
-          end
+      case Shem.Guardrails.check_action(tool.name, args, policy: nil, actions: declared) do
+        {:blocked, reason} -> {:error, :blocked, reason}
+        :ok -> dispatch(tool, args)
       end
+    end
+  end
+
+  defp dispatch(tool, args) do
+    case tool.runtime do
+      {:beam, mod} ->
+        with :ok <- ensure_loaded(tool),
+             {:ok, _} <- Schema.validate(args, tool.input_schema) do
+          try do
+            {:ok, mod.run(args)}
+          rescue
+            e -> {:error, :runtime, Exception.message(e)}
+          end
+        end
+
+      {:port, runtime_path} ->
+        language = Map.get(tool.metadata, "language", "python")
+        granted = Map.get(tool.metadata, "granted", %{})
+
+        if Shem.Lab.Sandbox.requires_container?(granted) and
+             is_nil(Application.get_env(:shem, :container_runtime_bin)) do
+          {:error, :runtime, "tool requires a container runtime for its granted sandbox profile"}
+        else
+          with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
+               {:ok, pool} <-
+                 Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
+            PortPool.call(pool, resolved_args)
+          end
+        end
     end
   end
 

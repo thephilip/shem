@@ -43,4 +43,33 @@ defmodule Shem.GuardrailsActionTest do
     Application.put_env(:shem, :tool_policy, %{deny: ["other.thing"]})
     assert :ok = Guardrails.check_action("plain", %{"action" => "anything"}, policy: nil, actions: nil)
   end
+
+  test "MCP invoke_tool enforces host policy and declared actions" do
+    tool = %Shem.Tool{
+      id: "policed_beam",
+      name: "policed",
+      runtime: {:beam, PolicedNope},
+      source: "defmodule PolicedNope do\n  def run(_), do: :ok\nend",
+      test_source: "",
+      graduated_at: DateTime.utc_now(),
+      metadata: %{
+        "description" => "d",
+        "schema" => %{},
+        "actions" => [%{"name" => "greet", "risk" => "read"}]
+      }
+    }
+
+    :ok = Shem.Lab.Registry.register(tool)
+    on_exit(fn -> Shem.Lab.Registry.rescan() end)
+
+    # undeclared action: fail-closed
+    assert {:error, :blocked, _} =
+             Shem.MCP.Handlers.InvokeTool.call(%{"id" => "policed_beam", "args" => %{"action" => "smuggle"}})
+
+    # host deny of a declared action
+    Application.put_env(:shem, :tool_policy, %{deny: ["policed.greet"]})
+
+    assert {:error, :blocked, _} =
+             Shem.MCP.Handlers.InvokeTool.call(%{"id" => "policed_beam", "args" => %{"action" => "greet"}})
+  end
 end
