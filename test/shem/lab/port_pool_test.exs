@@ -167,4 +167,17 @@ defmodule Shem.Lab.PortPoolTest do
     {:ok, pool} = Shem.Lab.PortPool.Supervisor.ensure_started("up_js", rt, "javascript")
     assert {:ok, %{"up" => "HI"}} = Shem.Lab.PortPool.call(pool, %{"s" => "hi"})
   end
+
+  test "responses longer than the port line limit round-trip intact", %{script: script} do
+    pool_name = :"pool_test_#{:erlang.unique_integer()}"
+    {:ok, _pid} = start_supervised(
+      {PortPool, [tool_id: "long_echo", runtime_path: script, pool_size: 1, name: pool_name, executable: "sh"]}
+    )
+
+    # ~64KB value: far beyond :line's 1024-byte cap, so it arrives as many
+    # :noeol chunks (a base64 screenshot in miniature)
+    big = String.duplicate("A", 65_536)
+    assert {:ok, response} = PortPool.call(pool_name, %{"blob" => big})
+    assert response["blob"] == big
+  end
 end

@@ -49,6 +49,7 @@ defmodule Shem.Lab.PortPool do
       language: language,
       idle: workers,
       busy: %{},
+      buf: %{},
       queue: :queue.new()
     }}
   end
@@ -77,8 +78,17 @@ defmodule Shem.Lab.PortPool do
   end
 
   @impl true
+  # :line mode caps lines (1024 default): longer output arrives as :noeol
+  # chunks then a final :eol tail. Buffer per port or large results (e.g. a
+  # base64 screenshot) decode as truncated JSON.
+  def handle_info({port, {:data, {:noeol, chunk}}}, state) when is_port(port) do
+    {:noreply, %{state | buf: Map.update(state.buf, port, chunk, &(&1 <> chunk))}}
+  end
+
   def handle_info({port, {:data, {:eol, line}}}, state) when is_port(port) do
-    line = String.trim(line)
+    {buffered, buf} = Map.pop(state.buf, port, "")
+    state = %{state | buf: buf}
+    line = String.trim(buffered <> line)
 
     case Map.pop(state.busy, port) do
       {nil, _} ->
