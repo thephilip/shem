@@ -124,4 +124,14 @@ defmodule Shem.Lab.PackContractTest do
                end)
              end)
   end
+
+  test "registry exposes actions and granted after install", %{tmp: tmp} do
+    repo = make_pack_repo!(tmp, %{"sandbox" => %{"network" => true},
+                                  "actions" => [%{"name" => "echo", "risk" => "read"}]})
+    {:ok, %{installed: [tool_id]}} = Pack.install(repo, ".", grants: ["pc_echo"])
+
+    {:ok, tool} = Shem.Lab.Registry.lookup(tool_id)
+    assert tool.metadata["actions"] == [%{"name" => "echo", "risk" => "read"}]
+    assert tool.metadata["granted"] == %{"network" => true}
+  end
 end

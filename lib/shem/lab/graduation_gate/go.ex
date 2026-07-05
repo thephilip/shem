@@ -64,7 +64,8 @@ defmodule Shem.Lab.GraduationGate.Go do
       metadata: %{
         "language"    => "go",
         "description" => Keyword.get(opts, :description, ""),
-        "schema"      => Keyword.get(opts, :schema, %{})
+        "schema"      => Keyword.get(opts, :schema, %{}),
+        "actions"     => Keyword.get(opts, :actions) || []
       }
     }
 

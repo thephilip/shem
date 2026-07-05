@@ -67,7 +67,8 @@ defmodule Shem.Lab.GraduationGate.JS do
       metadata: %{
         "language"    => "javascript",
         "description" => Keyword.get(opts, :description, ""),
-        "schema"      => Keyword.get(opts, :schema, %{})
+        "schema"      => Keyword.get(opts, :schema, %{}),
+        "actions"     => Keyword.get(opts, :actions) || []
       }
     }
 

@@ -73,7 +73,8 @@ defmodule Shem.Lab.GraduationGate.Python do
       metadata: %{
         "language"    => "python",
         "description" => description,
-        "schema"      => schema
+        "schema"      => schema,
+        "actions"     => Keyword.get(opts, :actions) || []
       }
     }
 

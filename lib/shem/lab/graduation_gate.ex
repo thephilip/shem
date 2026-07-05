@@ -60,7 +60,8 @@ defmodule Shem.Lab.GraduationGate do
             metadata: %{
               :property_tested => property?,
               "description"    => description,
-              "schema"         => schema
+              "schema"         => schema,
+              "actions"        => Keyword.get(opts, :actions) || []
             }
           }
 

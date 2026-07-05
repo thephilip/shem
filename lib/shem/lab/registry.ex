@@ -188,7 +188,9 @@ defmodule Shem.Lab.Registry do
       graduated_at: parse_dt(m["graduated_at"]),
       metadata: %{
         "description" => m["description"] || "",
-        "schema"      => m["schema"] || %{}
+        "schema"      => m["schema"] || %{},
+        "actions"     => m["actions"] || [],
+        "granted"     => m["granted"] || %{}
       }
     }
   end
@@ -218,7 +220,9 @@ defmodule Shem.Lab.Registry do
       metadata: %{
         "language"    => m["language"] || "python",
         "description" => m["description"] || "",
-        "schema"      => m["schema"] || %{}
+        "schema"      => m["schema"] || %{},
+        "actions"     => m["actions"] || [],
+        "granted"     => m["granted"] || %{}
       }
     }
   end

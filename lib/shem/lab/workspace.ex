@@ -90,6 +90,7 @@ defmodule Shem.Lab.Workspace do
       "language"     => "elixir",
       "description"  => Map.get(tool.metadata, "description", ""),
       "schema"       => Map.get(tool.metadata, "schema", %{}),
+      "actions"      => Map.get(tool.metadata, "actions", []),
       "constraints"  => tool.constraints,
       "test_source"  => tool.test_source,
       "graduated_at" => DateTime.to_iso8601(tool.graduated_at)
@@ -105,6 +106,7 @@ defmodule Shem.Lab.Workspace do
       "runtime_path" => runtime_path,
       "description"  => Map.get(tool.metadata, "description", ""),
       "schema"       => Map.get(tool.metadata, "schema", %{}),
+      "actions"      => Map.get(tool.metadata, "actions", []),
       "constraints"  => tool.constraints,
       "test_source"  => tool.test_source,
       "graduated_at" => DateTime.to_iso8601(tool.graduated_at)

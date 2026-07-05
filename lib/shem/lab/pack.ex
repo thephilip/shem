@@ -77,6 +77,8 @@ defmodule Shem.Lab.Pack do
          {:ok, tool} <- gate(source, manifest, granted) do
       case tag_manifest(tool.id, pack_name, pack_version, source, granted, manifest["actions"]) do
         :ok ->
+          # gate registered the pre-tag tool; rescan so lookup sees granted/actions
+          Registry.rescan()
           {:ok, tool.id}
 
         {:error, reason} ->
