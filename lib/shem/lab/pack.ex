@@ -6,18 +6,18 @@ defmodule Shem.Lab.Pack do
   """
   alias Shem.Lab.{GraduationGate, Registry, Workspace}
 
-  @spec install(String.t(), String.t()) ::
+  @spec install(String.t(), String.t(), keyword()) ::
           {:ok, %{name: String.t(), installed: [String.t()], replaced: [String.t()], rejected: [map()]}}
           | {:error, term()}
-  def install(repo, path \\ ".") do
+  def install(repo, path \\ ".", opts \\ []) do
     if allowed_scheme?(repo) do
-      do_install(repo, path)
+      do_install(repo, path, Keyword.get(opts, :grants, []))
     else
       {:error, :unsupported_scheme}
     end
   end
 
-  defp do_install(repo, path) do
+  defp do_install(repo, path, grants) do
     tmp = Path.join(System.tmp_dir!(), "shem-pack-#{System.unique_integer([:positive])}")
 
     try do
@@ -25,9 +25,16 @@ defmodule Shem.Lab.Pack do
            pack_dir = Path.join(tmp, path),
            {:ok, pack} <- read_pack(pack_dir) do
         {:ok, %{removed: replaced}} = uninstall(pack["name"])
-        results = Enum.map(pack["tools"], &install_tool(pack_dir, pack["name"], pack["version"], &1))
+        results = Enum.map(pack["tools"], &install_tool(pack_dir, pack["name"], pack["version"], grants, &1))
         installed = for {:ok, id} <- results, do: id
-        rejected = for {:error, id, reason} <- results, do: %{id: id, reason: inspect(reason)}
+
+        rejected =
+          Enum.flat_map(results, fn
+            {:error, id, reason} -> [%{id: id, reason: inspect(reason)}]
+            {:needs_consent, id, requested} -> [%{id: id, reason: "needs_consent", requested: requested}]
+            {:ok, _} -> []
+          end)
+
         {:ok, %{name: pack["name"], installed: installed, replaced: replaced, rejected: rejected}}
       end
     after
@@ -62,11 +69,13 @@ defmodule Shem.Lab.Pack do
     end
   end
 
-  defp install_tool(pack_dir, pack_name, pack_version, id) do
+  defp install_tool(pack_dir, pack_name, pack_version, grants, id) do
     with {:ok, manifest} <- read_manifest(pack_dir, id),
+         :ok <- validate_contract(manifest),
+         {:ok, granted} <- check_consent(manifest, grants, id),
          {:ok, source} <- read_source(pack_dir, id, manifest),
-         {:ok, tool} <- gate(source, manifest) do
-      case tag_manifest(tool.id, pack_name, pack_version, source) do
+         {:ok, tool} <- gate(source, manifest, granted) do
+      case tag_manifest(tool.id, pack_name, pack_version, source, granted, manifest["actions"]) do
         :ok ->
           {:ok, tool.id}
 
@@ -78,7 +87,76 @@ defmodule Shem.Lab.Pack do
           {:error, id, reason}
       end
     else
+      {:needs_consent, requested} -> {:needs_consent, id, requested}
       {:error, reason} -> {:error, id, reason}
+    end
+  end
+
+  # ── Contract v2 validation ──────────────────────────────────────────────────
+
+  defp validate_contract(m) do
+    with :ok <- validate_sandbox(m["sandbox"]), do: validate_actions(m["actions"])
+  end
+
+  defp validate_sandbox(nil), do: :ok
+
+  defp validate_sandbox(%{} = s) do
+    cond do
+      not is_boolean(Map.get(s, "network", false)) -> {:error, :bad_sandbox_network}
+      not (is_nil(s["image"]) or is_binary(s["image"])) -> {:error, :bad_sandbox_image}
+      not valid_mounts?(Map.get(s, "mounts", [])) -> {:error, :bad_sandbox_mounts}
+      true -> :ok
+    end
+  end
+
+  defp validate_sandbox(_), do: {:error, :bad_sandbox}
+
+  defp valid_mounts?(mounts) when is_list(mounts) do
+    Enum.all?(mounts, fn
+      %{"host" => h, "container" => c} = m ->
+        is_binary(h) and is_binary(c) and Map.get(m, "mode", "ro") in ["ro", "rw"]
+
+      _ ->
+        false
+    end)
+  end
+
+  defp valid_mounts?(_), do: false
+
+  defp validate_actions(nil), do: :ok
+
+  defp validate_actions(actions) when is_list(actions) do
+    valid =
+      Enum.all?(actions, fn
+        %{"name" => n, "risk" => r} -> is_binary(n) and r in ["read", "write", "execute"]
+        _ -> false
+      end)
+
+    if valid, do: :ok, else: {:error, :bad_actions}
+  end
+
+  defp validate_actions(_), do: {:error, :bad_actions}
+
+  # The elevation map contains ONLY what exceeds the default profile
+  # (--network=none, per-language slim image, no extra mounts). %{} = default.
+  defp elevation(nil), do: %{}
+
+  defp elevation(s) do
+    mounts =
+      for m <- Map.get(s, "mounts", []) do
+        %{"host" => m["host"], "container" => m["container"], "mode" => Map.get(m, "mode", "ro")}
+      end
+
+    %{}
+    |> then(&if Map.get(s, "network", false), do: Map.put(&1, "network", true), else: &1)
+    |> then(&if s["image"], do: Map.put(&1, "image", s["image"]), else: &1)
+    |> then(&if mounts != [], do: Map.put(&1, "mounts", mounts), else: &1)
+  end
+
+  defp check_consent(manifest, grants, id) do
+    case elevation(manifest["sandbox"]) do
+      granted when granted == %{} -> {:ok, %{}}
+      granted -> if id in grants, do: {:ok, granted}, else: {:needs_consent, granted}
     end
   end
 
@@ -100,12 +178,14 @@ defmodule Shem.Lab.Pack do
     end
   end
 
-  defp gate(source, m) do
+  defp gate(source, m, granted) do
     opts = [
       language: m["language"] || "elixir",
       description: m["description"] || "",
       schema: m["schema"] || %{},
-      constraints: m["constraints"] || []
+      constraints: m["constraints"] || [],
+      actions: m["actions"],
+      sandbox: granted
     ]
 
     case GraduationGate.run(source, m["test_source"] || "", opts) do
@@ -159,18 +239,19 @@ defmodule Shem.Lab.Pack do
     end
   end
 
-  defp tag_manifest(tool_id, pack_name, pack_version, source) do
+  defp tag_manifest(tool_id, pack_name, pack_version, source, granted, actions) do
     try do
       path = Workspace.manifest_path(tool_id)
       json = File.read!(path)
       # provenance of the installed source bytes (not a verified tamper check)
       hash = :crypto.hash(:sha256, source) |> Base.encode16(case: :lower)
 
-      merged =
-        json
-        |> Jason.decode!()
-        |> Map.merge(%{"pack" => pack_name, "version" => pack_version, "sha256" => hash})
+      extra =
+        %{"pack" => pack_name, "version" => pack_version, "sha256" => hash}
+        |> then(&if granted != %{}, do: Map.put(&1, "granted", granted), else: &1)
+        |> then(&if is_list(actions), do: Map.put(&1, "actions", actions), else: &1)
 
+      merged = json |> Jason.decode!() |> Map.merge(extra)
       File.write!(path, Jason.encode!(merged, pretty: true))
       :ok
     rescue
