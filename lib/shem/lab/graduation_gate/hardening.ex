@@ -90,9 +90,22 @@ defmodule Shem.Lab.GraduationGate.Hardening do
     Tool: #{tool.name}
     Description: #{tool.metadata["description"]}
     Schema: #{Jason.encode!(tool.metadata["schema"] || %{})}
-
+    #{actions_block(tool.metadata["actions"])}
     Source:
     #{tool.source}
     """
   end
+
+  defp actions_block(actions) when is_list(actions) and actions != [] do
+    rows = Enum.map_join(actions, "\n", fn a -> "- #{a["name"]}: declared risk #{a["risk"]}" end)
+
+    """
+    Declared actions (check each declared risk against what the source actually
+    does for that action; an understated risk — e.g. an action declared "read"
+    that writes files or executes commands — should lower the score):
+    #{rows}
+    """
+  end
+
+  defp actions_block(_), do: ""
 end
