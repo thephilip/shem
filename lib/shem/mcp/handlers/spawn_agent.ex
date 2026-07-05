@@ -5,7 +5,8 @@ defmodule Shem.MCP.Handlers.SpawnAgent do
     "goal" => %{"type" => "string"},
     "preset" => %{"type" => "string", "required" => false},
     "placement" => %{"type" => "string", "required" => false},
-    "brain" => %{"type" => "string", "required" => false}
+    "brain" => %{"type" => "string", "required" => false},
+    "policy" => %{"required" => false}
   }
 
   @spec call(map()) :: {:ok, map()} | {:error, atom(), any()}
@@ -15,7 +16,14 @@ defmodule Shem.MCP.Handlers.SpawnAgent do
       preset = Map.get(valid, "preset", "general")
       brain = if Map.get(valid, "brain") == "client", do: :client, else: :model
 
-      case Shem.Agent.start_with_preset(preset, valid["goal"], placement: placement, brain: brain) do
+      policy =
+        case Map.get(valid, "policy") do
+          %{"deny" => deny} when is_list(deny) -> %{deny: Enum.filter(deny, &is_binary/1)}
+          _ -> nil
+        end
+
+      case Shem.Agent.start_with_preset(preset, valid["goal"],
+             placement: placement, brain: brain, policy: policy) do
         {:ok, _name, session_id} ->
           {:ok, %{"agent_id" => session_id, "status" => "running"}}
 

@@ -259,7 +259,7 @@ defmodule Shem.Agent.Server do
 
   defp execute_tool_calls(calls, manifest, history, session_id, config) do
     backend = Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
-    opts = [fence: config.fence, backend: backend]
+    opts = [fence: config.fence, backend: backend, policy: config.policy]
 
     Enum.reduce(calls, history, fn call, acc ->
       EventLog.append(session_id, :agent_tool_called, %{tool: call.name, args: call.args})

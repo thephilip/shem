@@ -211,6 +211,11 @@ defmodule Shem.Agent.ToolDispatch do
           description: Map.get(tool.metadata, "description", "graduated tool: #{tool.name}"),
           source: {:lab, tool.id},
           trust: trust,
+          actions:
+            case tool.metadata["actions"] do
+              l when is_list(l) and l != [] -> Enum.map(l, & &1["name"])
+              _ -> nil
+            end,
           schema: case Map.get(tool.metadata, "schema", %{}) do
             s when map_size(s) > 0 -> s
             _ -> %{type: "object", properties: %{}, required: []}
@@ -231,7 +236,7 @@ defmodule Shem.Agent.ToolDispatch do
                 else: Enum.filter(ts, &(&1["name"] in allowed_tools))
             end)
             |> Enum.map(fn t ->
-              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}, trust: :external, schema: %{type: "object", properties: %{}, required: []}}
+              %{name: t["name"], description: t["description"] || "", source: {:mcp, server}, trust: :external, actions: nil, schema: %{type: "object", properties: %{}, required: []}}
             end)
 
           _ ->
@@ -256,21 +261,29 @@ defmodule Shem.Agent.ToolDispatch do
       nil ->
         {:error, "unknown tool: #{name}"}
 
-      %{source: :builtin} ->
-        with :ok <- Shem.Guardrails.check_fence(opts[:fence], name, args, backend: opts[:backend]) do
-          dispatch_builtin(name, args)
-        else
+      entry ->
+        case Shem.Guardrails.check_action(name, args,
+               policy: opts[:policy], actions: Map.get(entry, :actions)) do
           {:blocked, reason} -> {:error, reason}
+          :ok -> dispatch_entry(entry, name, args, opts)
         end
-
-      %{source: {:mcp, server}} ->
-        dispatch_mcp(server, name, args)
-
-      %{source: {:lab, id}, trust: trust} ->
-        if gate_blocks?(trust),
-          do: {:error, "tool blocked (trust: #{trust})"},
-          else: dispatch_lab(id, args)
     end
+  end
+
+  defp dispatch_entry(%{source: :builtin}, name, args, opts) do
+    with :ok <- Shem.Guardrails.check_fence(opts[:fence], name, args, backend: opts[:backend]) do
+      dispatch_builtin(name, args)
+    else
+      {:blocked, reason} -> {:error, reason}
+    end
+  end
+
+  defp dispatch_entry(%{source: {:mcp, server}}, name, args, _opts), do: dispatch_mcp(server, name, args)
+
+  defp dispatch_entry(%{source: {:lab, id}, trust: trust}, _name, args, _opts) do
+    if gate_blocks?(trust),
+      do: {:error, "tool blocked (trust: #{trust})"},
+      else: dispatch_lab(id, args)
   end
 
   defp gate_blocks?(:low), do: Application.get_env(:shem, :trust_gate_enabled, true)
