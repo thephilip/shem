@@ -72,20 +72,24 @@ defmodule Shem.Secrets do
     language = Map.get(tool.metadata, "language", "python")
 
     with {:ok, pool} <- PortPool.Supervisor.ensure_started(tool.id, runtime_path, language),
-         {:ok, plaintext} when is_binary(plaintext) <- PortPool.call(pool, args) do
-      {:ok, plaintext}
+         {:ok, result} <- PortPool.call(pool, args) do
+      unwrap(result, key)
     else
-      {:ok, _other} -> {:error, "secret provider returned a non-string value for #{key}"}
       {:error, reason} -> {:error, "secret resolution failed for #{key}: #{inspect(reason)}"}
     end
   end
 
   defp invoke(%{runtime: {:beam, mod}}, args, key) do
-    case mod.run(args) do
-      v when is_binary(v) -> {:ok, v}
-      _ -> {:error, "secret provider returned a non-string value for #{key}"}
-    end
+    unwrap(mod.run(args), key)
   rescue
     e -> {:error, "secret resolution failed for #{key}: #{Exception.message(e)}"}
   end
+
+  # Provider contract: a binary, optionally wrapped — {"$sensitive": v} (the
+  # provider's own redaction marker) and/or nested under "value" (a provider
+  # that returns its full read result, e.g. shem-secret-tools).
+  defp unwrap(v, _key) when is_binary(v), do: {:ok, v}
+  defp unwrap(%{"$sensitive" => v}, _key) when is_binary(v), do: {:ok, v}
+  defp unwrap(%{"value" => v}, key), do: unwrap(v, key)
+  defp unwrap(_, key), do: {:error, "secret provider returned a non-string value for #{key}"}
 end

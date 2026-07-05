@@ -88,7 +88,9 @@ caller) passes a *handle*:
 At execution time — after the args have been appended to the EventLog — Shem
 resolves each handle through the configured provider tool
 (`config :shem, :secret_provider, "secret_store"`). The provider is invoked
-with `%{"action" => "read", "key" => key}` and must return a binary. The
+with `%{"action" => "read", "key" => key}` and must return the plaintext as a
+binary — bare, wrapped as `{"$sensitive": <binary>}`, or nested under a
+`"value"` key (so a provider may return its full read result). The
 plaintext is spliced into the executor-bound args only; the EventLog, the
 model context, and any attest bundle keep the handle. Resolution failure fails
 the whole tool call — a tool never runs with a half-resolved arg set.
