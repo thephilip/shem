@@ -32,9 +32,10 @@ defmodule Shem.MCP.Handlers.InvokeTool do
                is_nil(Application.get_env(:shem, :container_runtime_bin)) do
             {:error, :runtime, "tool requires a container runtime for its granted sandbox profile"}
           else
-            with {:ok, pool} <-
+            with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
+                 {:ok, pool} <-
                    Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-              PortPool.call(pool, args)
+              PortPool.call(pool, resolved_args)
             end
           end
       end

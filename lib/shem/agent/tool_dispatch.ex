@@ -502,8 +502,11 @@ defmodule Shem.Agent.ToolDispatch do
 
               true ->
                 language = Map.get(tool.metadata, "language", "python")
-                with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-                  Lab.PortPool.call(pool, args)
+
+                with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
+                     {:ok, pool} <-
+                       Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
+                  Lab.PortPool.call(pool, resolved_args)
                 end
             end
         end
