@@ -12,11 +12,13 @@ defmodule Shem.REST.Handlers.Packs do
   post "/" do
     repo = String.trim(conn.body_params["repo"] || "")
     path = conn.body_params["path"] || "."
+    grants = conn.body_params["grants"] || []
+    grants = if is_list(grants), do: Enum.filter(grants, &is_binary/1), else: []
 
     if repo == "" do
       send_json(conn, 422, %{error: "repo is required"})
     else
-      case Shem.Lab.Pack.install(repo, path) do
+      case Shem.Lab.Pack.install(repo, path, grants: grants) do
         {:ok, result} -> send_json(conn, 201, result)
         {:error, reason} -> send_json(conn, 422, %{error: inspect(reason)})
       end
