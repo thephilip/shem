@@ -26,10 +26,16 @@ defmodule Shem.MCP.Handlers.InvokeTool do
 
         {:port, runtime_path} ->
           language = Map.get(tool.metadata, "language", "python")
+          granted = Map.get(tool.metadata, "granted", %{})
 
-          with {:ok, pool} <-
-                 Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-            PortPool.call(pool, args)
+          if Shem.Lab.Sandbox.requires_container?(granted) and
+               is_nil(Application.get_env(:shem, :container_runtime_bin)) do
+            {:error, :runtime, "tool requires a container runtime for its granted sandbox profile"}
+          else
+            with {:ok, pool} <-
+                   Shem.Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
+              PortPool.call(pool, args)
+            end
           end
       end
     end

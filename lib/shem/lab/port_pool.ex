@@ -133,12 +133,19 @@ defmodule Shem.Lab.PortPool do
   defp open_port(runtime_path, host_exe, language, tool_id) do
     runtime_bin = Application.get_env(:shem, :container_runtime_bin)
 
+    granted =
+      case Shem.Lab.Registry.lookup(tool_id) do
+        {:ok, tool} -> Map.get(tool.metadata, "granted", %{})
+        _ -> %{}
+      end
+
     {exe, args, port_opts} =
       Shem.Lab.Sandbox.spawn_spec(runtime_bin, %{
         runtime_path: runtime_path,
         language: language,
         tool_id: tool_id,
-        host_exe: host_exe
+        host_exe: host_exe,
+        granted: granted
       })
 
     case System.find_executable(exe) do

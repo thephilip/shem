@@ -477,13 +477,21 @@ defmodule Shem.Agent.ToolDispatch do
                 {:error, :unrated} -> :unrated
               end
 
-            if gate_blocks?(trust_band) do
-              {:error, "tool blocked (trust: #{trust_band})"}
-            else
-              language = Map.get(tool.metadata, "language", "python")
-              with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-                Lab.PortPool.call(pool, args)
-              end
+            granted = Map.get(tool.metadata, "granted", %{})
+
+            cond do
+              gate_blocks?(trust_band) ->
+                {:error, "tool blocked (trust: #{trust_band})"}
+
+              Shem.Lab.Sandbox.requires_container?(granted) and
+                  is_nil(Application.get_env(:shem, :container_runtime_bin)) ->
+                {:error, "tool #{tool.id} requires a container runtime for its granted sandbox profile"}
+
+              true ->
+                language = Map.get(tool.metadata, "language", "python")
+                with {:ok, pool} <- Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
+                  Lab.PortPool.call(pool, args)
+                end
             end
         end
 

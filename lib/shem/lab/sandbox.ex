@@ -30,11 +30,15 @@ defmodule Shem.Lab.Sandbox do
     {exe, Languages.argv(lang, path), port_opts}
   end
 
-  def spawn_spec(runtime_bin, %{language: lang, runtime_path: path, tool_id: id}) do
-    {runtime_bin, container_argv(lang, path, id), []}
+  def spawn_spec(runtime_bin, %{language: lang, runtime_path: path, tool_id: id} = spec)
+      when is_binary(runtime_bin) do
+    {runtime_bin, container_argv(lang, path, id, Map.get(spec, :granted) || %{}), []}
   end
 
-  defp container_argv(lang, runtime_path, tool_id) do
+  @spec requires_container?(map() | nil) :: boolean()
+  def requires_container?(granted), do: (granted || %{}) != %{}
+
+  defp container_argv(lang, runtime_path, tool_id, granted) do
     name = "shem-#{tool_id}-#{System.unique_integer([:positive])}"
 
     {mount_dir, container_path} =
@@ -45,15 +49,23 @@ defmodule Shem.Lab.Sandbox do
 
     in_container = [Languages.exe(lang) | Languages.argv(lang, container_path)]
 
+    network_args = if granted["network"], do: [], else: ["--network=none"]
+    img = granted["image"] || image(lang)
+
+    extra_mounts =
+      Enum.flat_map(granted["mounts"] || [], fn m ->
+        ["-v", "#{Path.expand(m["host"])}:#{m["container"]}:#{Map.get(m, "mode", "ro")}"]
+      end)
+
     [
       "run", "-i", "--rm",
       "--name", name,
       "--label", "shem.managed=1",
-      "--label", "shem.tool=#{tool_id}",
-      "--network=none",
+      "--label", "shem.tool=#{tool_id}"
+    ] ++ network_args ++ [
       "-v", "#{mount_dir}:/workspace:ro",
       "-w", "/workspace"
-    ] ++ env_args(lang) ++ [image(lang) | in_container]
+    ] ++ extra_mounts ++ env_args(lang) ++ [img | in_container]
   end
 
   defp env_args("go"), do: ["-e", "GOPROXY=off"]
