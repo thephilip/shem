@@ -15,7 +15,7 @@ defmodule Shem.Lab.GraduationGate.Python do
     timeout = Application.get_env(:shem, :executor_timeout_ms, 30_000)
 
     extra_mounts =
-      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"], Map.get(m, "mode", "ro")}
 
     result =
       Executor.run_shell(

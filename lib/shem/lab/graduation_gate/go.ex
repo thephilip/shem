@@ -15,7 +15,7 @@ defmodule Shem.Lab.GraduationGate.Go do
     timeout = Application.get_env(:shem, :executor_timeout_ms, 120_000)
 
     extra_mounts =
-      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"], Map.get(m, "mode", "ro")}
 
     # GOPROXY=off enforces stdlib-only / self-contained — the gate needs NO network
     # (cleaner than the JS gate's --allow-net for jsr). Graduated tools run on host

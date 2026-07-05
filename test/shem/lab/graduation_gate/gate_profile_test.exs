@@ -30,7 +30,14 @@ defmodule Shem.Lab.GraduationGate.GateProfileTest do
 
     assert_receive {:gate_opts, opts}
     assert opts[:image] == "docker.io/x/y:1"
-    assert {"/tmp", "/cache"} in Enum.map(opts[:mounts], fn {h, c} -> {h, c} end)
+
+    normalized =
+      Enum.map(opts[:mounts], fn
+        {h, c} -> {h, c, "ro"}
+        {h, c, m} -> {h, c, m}
+      end)
+
+    assert {"/tmp", "/cache", "ro"} in normalized
   end
 
   test "js gate uses granted image" do

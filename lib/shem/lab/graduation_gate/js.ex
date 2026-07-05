@@ -14,7 +14,7 @@ defmodule Shem.Lab.GraduationGate.JS do
     timeout = Application.get_env(:shem, :executor_timeout_ms, 30_000)
 
     extra_mounts =
-      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"], Map.get(m, "mode", "ro")}
 
     # --no-check: this gate accepts plain JS (`export function run(a)` trips Deno's
     #   default TS implicit-any check); we test runtime behaviour, not TS strictness.

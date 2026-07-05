@@ -56,9 +56,11 @@ defmodule Shem.Lab.Executor.Backend.Container do
         _ -> []
       end
 
-    mount_args = Enum.flat_map(mounts, fn {host, container} ->
-      ["-v", "#{host}:#{container}:ro"]
-    end)
+    mount_args =
+      Enum.flat_map(mounts, fn
+        {host, container} -> ["-v", "#{host}:#{container}:ro"]
+        {host, container, mode} when mode in ["ro", "rw"] -> ["-v", "#{host}:#{container}:#{mode}"]
+      end)
 
     ["run", "--rm", "--name", name, "-i"] ++ network_args ++ mount_args ++ [image, "sh", "-c", cmd]
   end
