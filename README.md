@@ -92,10 +92,10 @@ replay or fork *inside* the pruned range is refused.
 
 **Steerable.** Pause a running agent at its next turn boundary (`Space`), inject a course-correction, resume. Kill it outright (`Ctrl+K`). Fence it to a directory (`/fence <path>`). The agent is a process you control, not a request you wait on.
 
-**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated Python, JavaScript, and Go tools run **container-sandboxed** at invocation — `--network=none` and a read-only source mount — with JavaScript additionally under Deno's deny-all permission model. (Without a container runtime they fall back to the host with a warning.)
+**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated Python, JavaScript, and Go tools run **container-sandboxed** at invocation — `--network=none` and a read-only source mount by default — with JavaScript additionally under Deno's deny-all permission model. Tools that genuinely need more (network, a custom image, a host mount) declare it in their pack manifest and get it only with an explicit per-tool grant at install — see [PACKS.md](PACKS.md). (Without a container runtime, default-profile tools fall back to the host with a warning; elevated-profile tools refuse to run.)
 Elixir tools currently compile into the host BEAM behind a static safety
 scan (pure compute only — no file, system, or network access); full parity
-sandboxing for Elixir is on the roadmap ([Phase 5](ROADMAP.md)).
+sandboxing for Elixir is on the roadmap ([Phase 6](ROADMAP.md)).
 
 ## Quick start
 
