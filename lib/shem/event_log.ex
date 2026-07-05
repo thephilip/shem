@@ -36,6 +36,7 @@ defmodule Shem.EventLog do
   @spec append(String.t(), atom(), map(), String.t() | nil) ::
           {:ok, Event.t()} | {:error, :session_not_found | :session_ended}
   def append(session_id, type, payload, parent_id \\ nil) do
+    payload = Shem.EventLog.Redact.redact(payload)
     meta = %{type: type, node: node()}
 
     :telemetry.span([:shem, :event_log, :append], meta, fn ->
