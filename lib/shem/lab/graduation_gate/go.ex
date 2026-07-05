@@ -10,8 +10,12 @@ defmodule Shem.Lab.GraduationGate.Go do
     File.write!(Path.join(tmp, "tool_test.go"), test_source)
     File.write!(Path.join(tmp, "go.mod"), "module shemtool\n\ngo 1.21\n")
 
-    image   = Application.get_env(:shem, :executor_image_go, "docker.io/library/golang:alpine")
+    granted = Keyword.get(opts, :sandbox) || %{}
+    image   = granted["image"] || Application.get_env(:shem, :executor_image_go, "docker.io/library/golang:alpine")
     timeout = Application.get_env(:shem, :executor_timeout_ms, 120_000)
+
+    extra_mounts =
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
 
     # GOPROXY=off enforces stdlib-only / self-contained — the gate needs NO network
     # (cleaner than the JS gate's --allow-net for jsr). Graduated tools run on host
@@ -21,7 +25,7 @@ defmodule Shem.Lab.GraduationGate.Go do
         "cd /workspace && GOPROXY=off go test",
         timeout,
         image: image,
-        mounts: [{tmp, "/workspace"}]
+        mounts: [{tmp, "/workspace"} | extra_mounts]
       )
 
     File.rm_rf!(tmp)

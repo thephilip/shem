@@ -9,8 +9,12 @@ defmodule Shem.Lab.GraduationGate.JS do
     File.write!(Path.join(tmp, "tool.ts"), source)
     File.write!(Path.join(tmp, "tool_test.ts"), test_source)
 
-    image   = Application.get_env(:shem, :executor_image_js, "docker.io/denoland/deno:alpine")
+    granted = Keyword.get(opts, :sandbox) || %{}
+    image   = granted["image"] || Application.get_env(:shem, :executor_image_js, "docker.io/denoland/deno:alpine")
     timeout = Application.get_env(:shem, :executor_timeout_ms, 30_000)
+
+    extra_mounts =
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
 
     # --no-check: this gate accepts plain JS (`export function run(a)` trips Deno's
     #   default TS implicit-any check); we test runtime behaviour, not TS strictness.
@@ -24,7 +28,7 @@ defmodule Shem.Lab.GraduationGate.JS do
         "cd /workspace && deno test --no-check --allow-net --allow-read tool_test.ts",
         timeout,
         image: image,
-        mounts: [{tmp, "/workspace"}]
+        mounts: [{tmp, "/workspace"} | extra_mounts]
       )
 
     File.rm_rf!(tmp)

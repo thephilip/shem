@@ -10,15 +10,19 @@ defmodule Shem.Lab.GraduationGate.Python do
     File.write!(Path.join(tmp_dir, "tool.py"), source)
     File.write!(Path.join(tmp_dir, "test_tool.py"), test_source)
 
-    image   = Application.get_env(:shem, :executor_image_python, "python:3.12-slim")
+    granted = Keyword.get(opts, :sandbox) || %{}
+    image   = granted["image"] || Application.get_env(:shem, :executor_image_python, "python:3.12-slim")
     timeout = Application.get_env(:shem, :executor_timeout_ms, 30_000)
+
+    extra_mounts =
+      for m <- granted["mounts"] || [], do: {Path.expand(m["host"]), m["container"]}
 
     result =
       Executor.run_shell(
         "cd /workspace && pip install pytest hypothesis -q --no-warn-script-location 2>/dev/null && pytest test_tool.py -q",
         timeout,
         image: image,
-        mounts: [{tmp_dir, "/workspace"}]
+        mounts: [{tmp_dir, "/workspace"} | extra_mounts]
       )
 
     File.rm_rf!(tmp_dir)
