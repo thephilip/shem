@@ -5,7 +5,7 @@ defmodule Shem.CLI.Setup do
   alias Shem.CLI.{Banner, ConfigFile}
 
   @backends [
-    {"1", "anthropic", "Anthropic", "claude-sonnet-4-6", "ANTHROPIC_API_KEY"},
+    {"1", "anthropic", "Anthropic", "claude-sonnet-5", "ANTHROPIC_API_KEY"},
     {"2", "openai",    "OpenAI",    "gpt-4o",            "OPENAI_API_KEY"},
     {"3", "ollama",    "Ollama",    "llama3.2",           nil},
     {"4", "llama_cpp", "llama.cpp", "local-model",       nil}
@@ -73,7 +73,7 @@ defmodule Shem.CLI.Setup do
   defp step_backend do
     IO.puts("Step 1/3 — LLM Backend")
     IO.puts("  Which provider will you use?")
-    IO.puts("  [1] Anthropic   (claude-sonnet-4-6)")
+    IO.puts("  [1] Anthropic   (claude-sonnet-5)")
     IO.puts("  [2] OpenAI      (gpt-4o)")
     IO.puts("  [3] Ollama      (local — http://localhost:11434)")
     IO.puts("  [4] llama.cpp   (local — http://localhost:1234)")
