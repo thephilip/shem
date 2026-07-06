@@ -506,7 +506,14 @@ defmodule Shem.Agent.ToolDispatch do
                 with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
                      {:ok, pool} <-
                        Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
-                  Lab.PortPool.call(pool, resolved_args)
+                  # agent history interpolates results as strings; port tools
+                  # return decoded JSON (maps crash String.Chars — beam branch
+                  # already inspect()s)
+                  case Lab.PortPool.call(pool, resolved_args) do
+                    {:ok, result} when is_binary(result) -> {:ok, result}
+                    {:ok, result} -> {:ok, Jason.encode!(result)}
+                    other -> other
+                  end
                 end
             end
         end

@@ -767,4 +767,50 @@ defmodule Shem.Agent.ToolDispatchTest do
       assert msg =~ "not found"
     end
   end
+
+  describe "execute/3 with port-runtime tools" do
+    test "map results are JSON-encoded strings (agent history interpolates them)" do
+      # PortPool.Supervisor is disabled in test config
+      start_supervised!(Shem.Lab.PortPool.Supervisor)
+      prev_bin = Application.get_env(:shem, :container_runtime_bin)
+      prev_backend = Application.get_env(:shem, :executor_backend)
+      Application.put_env(:shem, :container_runtime_bin, nil)
+      Application.put_env(:shem, :executor_backend, :local)
+
+      script = Path.join(System.tmp_dir!(), "dispatch_port_#{System.unique_integer([:positive])}.py")
+
+      File.write!(script, """
+      import sys, json
+      for line in sys.stdin:
+          print(json.dumps({"echo": json.loads(line)}), flush=True)
+      """)
+
+      tool = %Shem.Tool{
+        id: "dispatch_port_map",
+        name: "dispatch_port_map",
+        runtime: {:port, script},
+        source: "",
+        test_source: "",
+        graduated_at: DateTime.utc_now(),
+        metadata: %{"description" => "d", "schema" => %{}, "language" => "python"}
+      }
+
+      :ok = Shem.Lab.Registry.register(tool)
+
+      on_exit(fn ->
+        Shem.Lab.Registry.rescan()
+        File.rm(script)
+        Application.put_env(:shem, :container_runtime_bin, prev_bin)
+        Application.put_env(:shem, :executor_backend, prev_backend)
+      end)
+
+      manifest = [%{name: "dispatch_port_map", description: "d", source: {:lab, tool.id}, trust: :unrated}]
+
+      assert {:ok, result} =
+               ToolDispatch.execute(%{name: "dispatch_port_map", args: %{"x" => 1}}, manifest, [])
+
+      assert is_binary(result)
+      assert Jason.decode!(result) == %{"echo" => %{"x" => 1}}
+    end
+  end
 end
