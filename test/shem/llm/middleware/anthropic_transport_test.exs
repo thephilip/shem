@@ -110,6 +110,31 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
       opts = [api_key: "sk-ant-test", http_post_fn: mock, base_url: custom_url]
       assert {:ok, _resp} = AnthropicTransport.call(req(), opts, nil)
     end
+
+    test "surfaces cache_read_input_tokens and cache_creation_input_tokens from usage" do
+      body = %{
+        "content" => [%{"type" => "text", "text" => "Hi"}],
+        "usage" => %{
+          "input_tokens" => 4,
+          "output_tokens" => 2,
+          "cache_read_input_tokens" => 100,
+          "cache_creation_input_tokens" => 20
+        }
+      }
+
+      opts = [api_key: "sk-ant-test", http_post_fn: mock_post(200, body)]
+
+      assert {:ok, resp} = AnthropicTransport.call(req(), opts, nil)
+      assert resp.cache_read_input_tokens == 100
+      assert resp.cache_creation_input_tokens == 20
+    end
+
+    test "cache-token fields default to 0 when usage omits them" do
+      opts = [api_key: "sk-ant-test", http_post_fn: mock_post(200, success_body("Hi", 4, 2))]
+      assert {:ok, resp} = AnthropicTransport.call(req(), opts, nil)
+      assert resp.cache_read_input_tokens == 0
+      assert resp.cache_creation_input_tokens == 0
+    end
   end
 
   describe "call/3 — HTTP errors" do

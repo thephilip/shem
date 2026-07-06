@@ -144,7 +144,9 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       tool_calls: %{},
       tool_cut: false,
       input_tokens: 0,
-      output_tokens: 0
+      output_tokens: 0,
+      cache_read: 0,
+      cache_creation: 0
     })
 
     {result, final} =
@@ -217,7 +219,12 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
          state,
          _cf
        ) do
-    %{state | input_tokens: Map.get(usage, "input_tokens", 0)}
+    %{
+      state
+      | input_tokens: Map.get(usage, "input_tokens", 0),
+        cache_read: Map.get(usage, "cache_read_input_tokens", 0),
+        cache_creation: Map.get(usage, "cache_creation_input_tokens", 0)
+    }
   end
 
   defp apply_anthropic_chunk(
@@ -297,7 +304,9 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
        tool_calls: tool_calls,
        tokens_used: tokens_used,
        model: model,
-       latency_ms: latency_ms
+       latency_ms: latency_ms,
+       cache_read_input_tokens: final.cache_read,
+       cache_creation_input_tokens: final.cache_creation
      }}
   end
 
@@ -344,6 +353,8 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
        when is_list(content_blocks) do
     tokens_used = Map.get(usage, "input_tokens", 0) + Map.get(usage, "output_tokens", 0)
     latency_ms = System.monotonic_time(:millisecond) - start_ms
+    cache_read = Map.get(usage, "cache_read_input_tokens", 0)
+    cache_creation = Map.get(usage, "cache_creation_input_tokens", 0)
 
     text =
       content_blocks
@@ -371,7 +382,9 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
        tool_calls: tool_calls,
        tokens_used: tokens_used,
        model: model,
-       latency_ms: latency_ms
+       latency_ms: latency_ms,
+       cache_read_input_tokens: cache_read,
+       cache_creation_input_tokens: cache_creation
      }}
   end
 
