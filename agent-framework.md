@@ -3,7 +3,7 @@
 ## 1. System Vision & Philosophy
 This project is an open-source, local-first, polyglot agent orchestration framework built on the Elixir/Erlang VM (BEAM). It is designed to act as an autonomous system that "wakes up smart" and grows as you use it.
 
-The goal is not just to build another agent framework — it is to shock the industry by exploiting capabilities that Python-based frameworks (LangChain, CrewAI, AutoGen) are architecturally incapable of providing: true preemptive concurrency, transparent fault recovery, distributed multi-machine agent meshes, and deterministic time-travel debugging. The moat is the BEAM itself.
+The goal is to deliver capabilities that Python-based frameworks (LangChain, CrewAI, AutoGen) are architecturally incapable of providing: true preemptive concurrency, transparent fault recovery, distributed multi-machine agent meshes, and deterministic time-travel debugging. The moat is the BEAM itself.
 
 ### Core Distinctions
 * **Correct Concurrency:** Uses the BEAM's native actor model (`GenServer`) to host autonomous agents as isolated processes. No asyncio, no GIL, no "one agent blocks everything."
