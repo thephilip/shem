@@ -33,6 +33,57 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
 
       assert {:ok, _} = AnthropicTransport.call(req(), opts, nil)
     end
+
+    test "puts a cache_control breakpoint on the system block when system is present" do
+      request = %Request{
+        prompt: "hi",
+        model: :default,
+        messages: [%{role: :user, content: "hi"}],
+        system: "You are a stable system prompt."
+      }
+
+      opts = [
+        api_key: "sk-ant-test",
+        http_post_fn: capture_post(fn body ->
+          assert [%{"type" => "text", "text" => "You are a stable system prompt.",
+                   "cache_control" => %{"type" => "ephemeral"}}] = body["system"]
+        end)
+      ]
+
+      assert {:ok, _} = AnthropicTransport.call(request, opts, nil)
+    end
+
+    test "puts a cache_control breakpoint on the last tool when there is no system" do
+      tools = [
+        %{name: "a", description: "d", schema: %{type: "object", properties: %{}, required: []}},
+        %{name: "b", description: "d", schema: %{type: "object", properties: %{}, required: []}}
+      ]
+
+      request = %Request{prompt: "hi", model: :default, tools: tools}
+
+      opts = [
+        api_key: "sk-ant-test",
+        http_post_fn: capture_post(fn body ->
+          [first, last] = body["tools"]
+          refute Map.has_key?(first, "cache_control")
+          assert last["cache_control"] == %{"type" => "ephemeral"}
+        end)
+      ]
+
+      assert {:ok, _} = AnthropicTransport.call(request, opts, nil)
+    end
+
+    test "adds no cache_control when there is neither system nor tools" do
+      opts = [
+        api_key: "sk-ant-test",
+        http_post_fn: capture_post(fn body ->
+          refute Map.has_key?(body, "system")
+          refute Map.has_key?(body, "tools")
+        end)
+      ]
+
+      assert {:ok, _} = AnthropicTransport.call(req(), opts, nil)
+    end
   end
 
   describe "call/3 — success" do
@@ -347,7 +398,8 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
 
       mock = fn _url, opts ->
         body = opts[:json]
-        assert body["system"] == "Be concise."
+        assert [%{"type" => "text", "text" => "Be concise.",
+                 "cache_control" => %{"type" => "ephemeral"}}] = body["system"]
         assert body["messages"] == [
           %{"role" => "user", "content" => "What is 2+2?"},
           %{"role" => "assistant", "content" => "Let me compute."}

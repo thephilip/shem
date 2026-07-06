@@ -47,6 +47,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
         end
 
       body = Map.merge(body, tools_fields)
+      body = put_cache_control(body)
 
       headers = [
         {"x-api-key", api_key},
@@ -120,6 +121,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
         end
 
       body = Map.merge(body, tools_fields)
+      body = put_cache_control(body)
       headers = [{"x-api-key", api_key}, {"anthropic-version", "2023-06-01"}]
       req_fn = Keyword.get(opts, :req_fn, &Req.post/2)
 
@@ -375,5 +377,29 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
 
   defp parse_response(raw_body, _model, _start_ms) do
     {:error, {:parse_error, raw_body}}
+  end
+
+  # ponytail: cache the stable prefix only. Breakpoint on system (renders after
+  # tools, so it caches tools+system); fall back to the last tool when no system.
+  # Sonnet 5's min cacheable prefix is 2048 tokens; shorter prompts silently
+  # won't cache — degrades to prior behavior. Upgrade path: a second breakpoint
+  # on the message tail if long-conversation reuse ever matters.
+  defp put_cache_control(body) do
+    ephemeral = %{"type" => "ephemeral"}
+
+    cond do
+      is_binary(body["system"]) and body["system"] != "" ->
+        Map.put(body, "system", [
+          %{"type" => "text", "text" => body["system"], "cache_control" => ephemeral}
+        ])
+
+      is_list(body["tools"]) and body["tools"] != [] ->
+        Map.update!(body, "tools", fn tools ->
+          List.update_at(tools, -1, &Map.put(&1, "cache_control", ephemeral))
+        end)
+
+      true ->
+        body
+    end
   end
 end
