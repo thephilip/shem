@@ -79,32 +79,44 @@ exit code is usable in CI.
 passes across a GC; an attest bundle verifies offline on a clean machine.
 Both are prerequisites for any production-readiness claim.
 
-## Phase 5 — MRTR-Native MCP Surface `next`
+## Phase 5 — Frontier-Model Access + MRTR Co-Driver `in progress`
 
-**Deadline-driven: 2026-07-28.** The MCP spec RC of that date deprecates
-sampling (SEP-2577) and standardizes Multi Round-Trip Requests (SEP-2322) as
-the successor: a `tools/call` may return `InputRequiredResult` carrying
-`inputRequests` + an opaque `requestState`; the client re-issues the call with
-`inputResponses` and the echoed state. Shem's client-brain loop
-(`agent_status` → `provide_turn`) is the same pattern in a proprietary shape,
-and park-as-state maps ~1:1 onto `requestState`. Ship Shem as one of the first
-MRTR-native MCP servers while the RC window is open — being on the
-"implements the new spec" list is durable distribution a blog post alone
-can't buy.
+**Repositioned 2026-07-05.** Reading SEP-2322 (Final) and SEP-2577 verbatim
+collapsed the original "MRTR/sampling-native" framing: MRTR is a *transport*
+that carries one of `sampling/createMessage` | `elicitation/create` |
+`list_roots`. Shem's client-brain loop needs a **model completion** as its
+payload — semantically **sampling**, which SEP-2577 *deprecates* and no client
+(Claude Code / Desktop / OpenCode) implements. So "client-brain-over-MRTR" is
+building on a dead primitive. Meanwhile "talk to a frontier model from Shem" is
+already delivered by the direct BYO-key adapter and the keyless client-brain
+pull loop — neither needs the deprecated spec. Phase 5 splits into two plans.
 
-**Scope**
-- Client-brain `spawn_agent` over MCP returns `InputRequiredResult` (the
-  agent's parked turn as `inputRequests`, park identity as `requestState`);
-  the re-issued call with `inputResponses` resumes it — subsuming the
-  polling pull for MRTR-capable clients. REST/poll surface stays for
-  everyone else.
-- Publish the MCP round-trip positioning post (absorbs the Outward-track
-  item): Shem's forkable, replayable, keyless client-brain loop IS the
-  pattern MCP just standardized — running today, MRTR-native.
+**Plan A — Adapter freshening `done 2026-07-06`.** The direct Anthropic adapter
+made current and cache-efficient: default model `claude-sonnet-5`; a
+`cache_control` breakpoint on the stable prefix (system + tools) so multi-turn
+agent loops stop re-paying for the same system prompt every turn; cache-token
+counts (`cache_read/creation_input_tokens`) surfaced on `Shem.LLM.Response`.
+Suite 1314 green; whole-branch review clean. **Outstanding:** the measured
+before/after token number for the README (needs a live key + `shem start`).
 
-**Exit criteria:** a client speaking the 2026-07-28 RC drives a Shem
-client-brain agent end-to-end through MRTR round-trips; the post is live
-before 2026-07-28.
+**Plan B — Elicitation-over-MRTR co-driver `pending` (deadline 2026-07-28).**
+MRTR's *surviving* payload is elicitation, and Shem's Phase-2 human co-driver
+(park → `provide_turn`, a human supplies the turn) **is** an elicitation.
+Re-express that existing loop in the MRTR envelope so it speaks the standard
+wire format — interoperability + being on the "implements the RC" list while
+the window is open. Not a new capability; a wire-format adapter over shipped
+code. Prerequisite: sign the co-driver `turn_token` (today a forgeable plain
+`"turn:nonce"`) — MRTR requires an integrity-protected `requestState`, and the
+signing stands on its own as a co-driver security fix. Ships with a README
+explainer of what MRTR is / isn't (elicitation yes, sampling deprecated) and
+the positioning post. Claim scoped precisely: *"Shem's co-driver loop is
+MRTR-native via elicitation"* — never "Shem is MRTR-native."
+
+**Exit criteria:** Plan A — a 2nd session turn returns `cache_read_input_tokens
+> 0`; token number in the README. Plan B — a conformance test drives the
+co-driver through an MRTR round-trip (capability-gated, tampered `requestState`
+rejected); the post is live before 2026-07-28. A live RC-speaking client
+end-to-end is a stretch, not a gate (RC ≠ GA).
 
 ## Phase 6 — Sandbox & Pack Contract `pending`
 
