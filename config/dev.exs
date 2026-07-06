@@ -15,7 +15,7 @@ config :shem,
   llm_routes: %{
     # Local, keyless: LM Studio / OpenAI-compatible server on :1234.
     default: {:openai, "qwen"}
-    # Cloud (needs ANTHROPIC_API_KEY): default: {:anthropic, "claude-sonnet-4-6"}
+    # Cloud (needs ANTHROPIC_API_KEY): default: {:anthropic, "claude-sonnet-5"}
   },
   llm_models: %{default: "qwen"},
   llm_openai_base_url: "http://localhost:1234",

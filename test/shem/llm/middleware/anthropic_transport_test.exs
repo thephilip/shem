@@ -17,6 +17,24 @@ defmodule Shem.LLM.Middleware.AnthropicTransportTest do
     }
   end
 
+  defp capture_post(assert_fn) do
+    fn _url, opts ->
+      assert_fn.(Keyword.fetch!(opts, :json))
+      {:ok, %{status: 200, body: success_body("ok", 1, 1)}}
+    end
+  end
+
+  describe "call/3 — request body" do
+    test "defaults the model to claude-sonnet-5 when no :model_string opt is given" do
+      opts = [
+        api_key: "sk-ant-test",
+        http_post_fn: capture_post(fn body -> assert body["model"] == "claude-sonnet-5" end)
+      ]
+
+      assert {:ok, _} = AnthropicTransport.call(req(), opts, nil)
+    end
+  end
+
   describe "call/3 — success" do
     test "returns Response with content, tokens_used, and latency_ms" do
       opts = [

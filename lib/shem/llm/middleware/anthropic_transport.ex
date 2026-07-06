@@ -10,7 +10,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
     else
       http_post = Keyword.get(opts, :http_post_fn, &Req.post/2)
       timeout_ms = Keyword.get(opts, :timeout_ms, Application.get_env(:shem, :llm_timeout_ms, 120_000))
-      model_string = Keyword.get(opts, :model_string, "claude-sonnet-4-6")
+      model_string = Keyword.get(opts, :model_string, "claude-sonnet-5")
       max_tokens = Map.get(request.options, :max_tokens, 512)
       base_url = Keyword.get(opts, :base_url, "https://api.anthropic.com")
 
@@ -86,7 +86,7 @@ defmodule Shem.LLM.Middleware.AnthropicTransport do
       {:error, {:transport, :missing_api_key}}
     else
       timeout_ms = Keyword.get(opts, :timeout_ms, Application.get_env(:shem, :llm_timeout_ms, 120_000))
-      model_string = Keyword.get(opts, :model_string, "claude-sonnet-4-6")
+      model_string = Keyword.get(opts, :model_string, "claude-sonnet-5")
       max_tokens = Map.get(request.options, :max_tokens, 512)
       base_url = Keyword.get(opts, :base_url, "https://api.anthropic.com")
 
