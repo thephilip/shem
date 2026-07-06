@@ -116,8 +116,12 @@ forcing function for spec 2; see the 2026-07-03 friction-log entry):
   disposable peer node (the `Executor.run_remote` plumbing exists). Replaces
   the Phase 1 AST scan as the enforcement layer (the scan may remain as a
   fast pre-filter).
-- **Pack contract v2** `pending` — declarative per-tool needs in `pack.json`,
-  host decides policy:
+- **Pack contract v2** `done 2026-07-05` — declarative per-tool needs,
+  host decides policy. Live-verified same day: consent → grant → gate in the
+  granted image → sandboxed screenshot over granted network → per-action deny +
+  fail-closed undeclared actions → `$secret` handle through a client-brain
+  agent → attest bundle verified offline with zero plaintext (pack-side
+  follow-ups in `../TOOLPACK_SUGGESTIONS.md`):
   - *Sandbox profiles*: a tool declares `sandbox: {network, image, mounts}`;
     absent = today's `--network=none` + slim image (existing packs
     unchanged); install re-gate surfaces the requested profile for user
