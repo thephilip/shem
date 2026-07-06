@@ -92,19 +92,21 @@ defmodule Shem.Attest do
     case Registry.lookup_by_name(name) do
       {:ok, tool} ->
         sha = :crypto.hash(:sha256, tool.source) |> Base.encode16(case: :lower)
-        %{name: name, sha256: sha, runtime: runtime_tag(tool.runtime),
-          ext: ext_for(tool.runtime), source: tool.source, status: "present"}
+        %{name: name, sha256: sha, runtime: runtime_tag(tool),
+          ext: ext_for(tool), source: tool.source, status: "present"}
 
       {:error, :not_found} ->
         %{name: name, sha256: nil, runtime: nil, ext: nil, source: nil, status: "missing"}
     end
   end
 
-  defp runtime_tag({:beam, _}), do: "beam"
-  defp runtime_tag({:port, rt}), do: rt
+  # {:port, rt} carries the runtime PATH, not the language — read the language
+  # from metadata (Languages.ext/1 crashed on the first real port-tool session)
+  defp runtime_tag(%{runtime: {:beam, _}}), do: "beam"
+  defp runtime_tag(%{} = tool), do: Map.get(tool.metadata, "language", "python")
 
-  defp ext_for({:beam, _}), do: "ex"
-  defp ext_for({:port, rt}), do: Languages.ext(rt)
+  defp ext_for(%{runtime: {:beam, _}}), do: "ex"
+  defp ext_for(%{} = tool), do: Languages.ext(Map.get(tool.metadata, "language", "python"))
 
   defp write_bundle(dir, session_id, events, lines, head, beam_head, tools, digest) do
     File.rm_rf!(dir)
