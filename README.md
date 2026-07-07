@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  🚧 <em>Under construction — Shem is young and moving fast. APIs shift, docs lag reality in places. The <a href="ROADMAP.md">roadmap</a> says where it's headed.</em> 🚧
+</p>
+
+<p align="center">
   <a href="https://github.com/thephilip/shem/actions/workflows/ci.yml">
     <img src="https://github.com/thephilip/shem/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>

@@ -1,5 +1,13 @@
 # Shem Roadmap
 
+**Direction (2026-07-06):** Shem's niche is the **exocortex** — the trust
+substrate between humans and AI agents. The LLM gets memory, skills, and
+continuity it structurally lacks; the human gets offline-verifiable proof of
+everything it did. Two customers, one primitive-set. Phases 5–6 are the
+prerequisites (front door + trust floor); Phases 7–11 are the exocortex
+features, each an independently worthwhile side quest. Design:
+`docs/superpowers/specs/2026-07-06-exocortex-direction-design.md`.
+
 This is the single forward-looking plan. Phases execute **one at a time, in
 order**; a phase is marked complete only when its exit criteria are verified.
 Each phase gets a design spec and an implementation plan before code (local
@@ -160,32 +168,61 @@ browser + knowledge packs run fully sandboxed with no `backend: local`
 workaround; a secret read through a handle appears nowhere in the event
 log or an attest bundle.
 
-## Phase 7 — Hermes Off-Ramp `pending`
+## Phase 7 — Recall `pending`
 
-`shem import <hermes-skill.md>`: ingest a Hermes Agent markdown skill and run
-it through the graduation gate — trust-scored, property-tested, hash-logged.
-Turns the North Star's "earns adoption from Hermes users" from a memo line
-into a feature: *bring your skills, keep the learning loop, gain the
-receipts.* Hermes's skill corpus is plain Markdown (118 bundled plus a large
-user-created body at ~180k stars); the import itself is the safety argument,
-performed live. Requires Phase 6 (imported third-party source must never
-compile into the host BEAM).
+The first true exocortex feature: semantic query over past EventLogs —
+"have we solved this before?" — answered with replayable evidence, not
+summaries. Memory that cannot confabulate: the LLM queries it instead of
+re-deriving; the human audits the same index. Likely an MCP tool over an
+index of event payloads. Gets its own design cycle when it comes up.
 
-**Exit criteria:** a real bundled Hermes skill imports, gates, and invokes;
-a skill with undeclared side effects is caught by the gate and labeled.
+**Exit criteria (intent):** from a fresh session, an LLM over MCP finds a
+relevant past run by meaning (not session id), receives the matching events,
+and can fork/replay from what it found.
 
-## Phase 8 — Observability Surface `pending`
+## Phase 8 — Compounding Skills `pending`
 
-Deliberately deprioritized behind Phases 5–7 (2026-07-05): the live-dashboard
-market is crowded (Braintrust, LangSmith, Datadog, Phoenix); Shem's edge is
-forensic evidence, not real-time monitoring.
+EventLog pattern mining → suggested graduation: "this tool-call sequence has
+run N times; graduate it as one tool?" Suggested, gated, never automatic.
+Serves the LLM (fewer tokens, faster loops) and the human (their install
+grows more capable with use). Un-parks the pattern-miner idea; Dogfood-track
+data is the fuel — measure real recurrence before building the miner.
 
-WebUI live monitoring panel (per-node health via `:os_mon`, running agents,
-trust bands) and a read-only graduated-tool inspector (trust band, source,
-test results, live graduation view).
+**Exit criteria (intent):** a real recurring sequence from Dogfood sessions
+is detected, suggested, graduated through the normal gate, and invoked as a
+single tool in a later session.
 
-**Exit criteria:** node mesh and agent health visible live in the browser;
-every graduated tool inspectable without touching the filesystem.
+## Phase 9 — Counterfactual Fork `pending`
+
+Fork-N-and-diff as a first-class primitive an agent can invoke on its own
+reasoning: run variants from a chosen turn, return the structured diff, keep
+the winner. The forensic time-travel machinery used prospectively — an
+ability no prompt technique can replicate because it requires the substrate.
+
+**Exit criteria (intent):** an agent (client-brain included) requests a
+counterfactual over MCP, receives a divergence report, and continues on the
+selected branch; all branches remain in the log.
+
+## Phase 10 — Verified Handoff `pending`
+
+Subagent results carry attest bundles; parent agents verify before building
+on them. Trust between agents becomes checkable instead of vibes — no other
+framework can attempt this local-first, because it stands on offline attest
+(Phase 4).
+
+**Exit criteria (intent):** a spawned agent's result arrives with a bundle
+the parent verifies (tamper → rejected); the verification itself is in the
+parent's log.
+
+## Phase 11 — Continuity `pending`
+
+"What's parked, what's pending, what happened since my last session" as a
+single MCP surface. Finishes the wake-up-smart story: a stateless brain
+reconnects and picks up mid-thought.
+
+**Exit criteria (intent):** a fresh MCP session gets a truthful digest of
+parked agents, pending turns, and since-last-seen events, and resumes a
+parked agent from it.
 
 ---
 
@@ -250,7 +287,12 @@ each; this is the live stickiness measurement):
 
 ## Parked (explicitly not scheduled)
 
-Distributed `:port`-tool artifact locality · EventLog pattern miner (measure
-first, via Dogfood data) · single-file binary (Burrito/Bakeware) · hive_mind
-trust-weighted consensus · K8s executor backend · TUI (`--tui`) revival ·
-tool-building-in-UI (deferred) · generic human tool-runner (won't build).
+Hermes skill importer (was Phase 7 pre-2026-07-06; opportunistic — adoption
+follows from being the exocortex, not from an importer) · live observability
+panel (was Phase 8; absorbed — forensic recall over dashboards, crowded
+market) · distributed `:port`-tool artifact locality · single-file binary
+(Burrito/Bakeware) · hive_mind trust-weighted consensus · K8s executor
+backend · TUI (`--tui`) revival · tool-building-in-UI (deferred) · generic
+human tool-runner (won't build).
+
+*(EventLog pattern miner un-parked → Phase 8, Compounding Skills.)*
