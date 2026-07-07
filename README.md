@@ -5,7 +5,7 @@
 <h1 align="center">shem</h1>
 
 <p align="center">
-  <strong>The first AI agent platform you can actually debug.</strong>
+  <strong>Rewind, fork, and replay every agent run — with tamper-evident proof of what it did.</strong>
 </p>
 
 <p align="center">
@@ -22,7 +22,7 @@
 Shem is a general-purpose AI agent platform that runs on your machine.
 Ask it to review your code, research a topic, draft a document, or audit
 a security posture — then watch exactly what it did and why, turn by turn,
-with a hash-chained, replayable event log no Python-based framework can match.
+with a hash-chained, replayable event log — and offline-verifiable proof of what happened.
 
 Works with Claude, ChatGPT, Ollama, llama.cpp, and any OpenAI-compatible API.
 Or skip the LLM entirely and use Shem as a tool server for Claude Code.
@@ -44,7 +44,7 @@ docker run -it --rm \
   ghcr.io/thephilip/shem:latest
 ```
 
-## What no other agent framework does
+## The flight recorder
 
 Every agent run is a hash-chained event log you can **rewind, fork, and replay**.
 
@@ -59,8 +59,11 @@ session a3f ──┬── turn 6 ──● fork here
               └── turn 6' ──── turn 7 (claude)   → right
 ```
 
-Python-based frameworks can't do this — they log text you read after the fact.
-Shem gives you a timeline you *re-run*, in the browser at `/timeline`: **scrub** the
+Most frameworks hand you traces you read after the fact; a few can replay from
+checkpoints, but re-run the model as they go. Shem replays *from the recorded
+events* — deterministic — and the log is hash-chained, so a replay you trust
+can't be quietly rewritten. It's a timeline you *re-run*, in the browser at
+`/timeline`: **scrub** the
 event log to any point, **fork** at any LLM turn, and watch the original and the fork
 **diverge side by side** — the divergence point marked, each lane integrity-checked.
 Choose **Fork & continue** and the branch *runs forward live* — the agent resumes from
@@ -96,6 +99,23 @@ replay or fork *inside* the pruned range is refused.
 Elixir tools currently compile into the host BEAM behind a static safety
 scan (pure compute only — no file, system, or network access); full parity
 sandboxing for Elixir is on the roadmap ([Phase 6](ROADMAP.md)).
+
+## Built on the BEAM
+
+Shem isn't fighting its runtime — the runtime *is* the feature. The
+[BEAM](https://www.erlang.org/) (Erlang's VM) was built for telecom systems that
+can't go down, and those exact properties are what agent orchestration needs:
+
+- **[Preemptive scheduling](https://www.erlang.org/blog/a-brief-beam-primer/).** The scheduler preempts every process (~every 4,000 reductions), so no single agent can starve the others — no cooperative `async`/`await` you can accidentally block. A Python event loop can't promise this.
+- **Process isolation + supervision.** Every agent is an isolated [OTP](https://www.erlang.org/doc/design_principles/des_princ.html) process with its own heap and GC. One crashing agent can't corrupt another; a [supervision tree](https://hexdocs.pm/elixir/supervisor-and-application.html) restarts it and feeds the stack trace back into the self-correction loop. Millions of processes, ~2KB each, spawned in microseconds.
+- **Distribution is native, not bolted on.** [Erlang distribution](https://www.erlang.org/doc/system/distributed.html) + [Horde](https://github.com/derekkraan/horde) give supervised, location-transparent processes across machines — so an agent survives its *node* dying, not just its process. No Redis, no broker, no external orchestrator.
+- **Local-first persistence.** [DETS](https://www.erlang.org/doc/man/dets.html) (single-node) and [Mnesia](https://www.erlang.org/doc/man/mnesia.html) (clustered) are in the VM. The hash-chained event log, trust scores, and graduated tools persist with zero external database.
+- **[Elixir](https://elixir-lang.org/) on top.** A modern, approachable language over all of it — pattern matching, `|>` pipelines, and a genuinely great toolchain ([Mix](https://hexdocs.pm/mix/), [Plug](https://hexdocs.pm/plug/) + [Bandit](https://hexdocs.pm/bandit/) serving the Web UI, [`:telemetry`](https://hexdocs.pm/telemetry/) for live metrics).
+
+The short version: things other frameworks reimplement — schedulers, actor
+libraries, process registries, distributed pub/sub, crash recovery — the BEAM
+already did, decades ago, in production. Shem spends that inheritance instead of
+rebuilding it. (Further reading: ["Your agent orchestrator is just a bad clone of Elixir"](https://georgeguimaraes.com/your-agent-orchestrator-is-just-a-bad-clone-of-elixir/).)
 
 ## Quick start
 
@@ -278,6 +298,16 @@ mix run --no-halt         # development
 MIX_ENV=prod mix release
 ./_build/prod/rel/shem/bin/shem start
 ```
+
+## Honest limits
+
+No begging here — just what's true so you can decide for yourself.
+
+- **Young and single-author.** Shem is early. APIs move, and the community is small. If you need a battle-tested framework with a big ecosystem today, this isn't it yet.
+- **Not the only thing with time-travel.** LangGraph and others can rewind and fork from checkpoints. Shem's specific bet is *deterministic replay from a tamper-evident log* plus *offline-verifiable attestation* — evidence, not just traces — on the BEAM. That combination is the edge, not "debugging" as a category.
+- **Elixir tools aren't sandboxed yet.** Python/JS/Go tools run container-sandboxed; Elixir tools compile into the host BEAM behind a static safety scan (pure compute only). Full parity is [Phase 6](ROADMAP.md).
+- **Fork & continue re-rolls.** Replay *from the log* is deterministic. Forking forward runs live — new LLM calls re-roll and side-effecting tools execute again. That's by design, but it's not "replay."
+- **Determinism has a boundary.** Only what's in the log replays deterministically. GC'd segments are summarized, not archived — replay or fork *inside* a pruned range is refused.
 
 ## Roadmap
 

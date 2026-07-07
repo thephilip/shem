@@ -9,8 +9,9 @@ product
 The developer / AI engineer who builds and operates Shem — a BEAM-native framework for
 self-evolving, distributed agents. Primary user today is the project author, dogfooding;
 the target market is users of Hermes and OpenClaw who need what those frameworks can't
-offer (preemptive concurrency, fault recovery, distributed agent meshes, deterministic
-time-travel debugging).
+offer: BEAM-native preemptive concurrency, fault recovery, and distributed agent meshes —
+plus the combination those don't ship together, time-travel debugging *and* offline-verifiable
+receipts on a local-first runtime.
 
 Context of use: local, at `127.0.0.1:4000`, while a real agent run is happening or being
 dissected after the fact — watching agents work across nodes, scrubbing a session's event
@@ -24,8 +25,8 @@ The WebUI is the surface that turns Shem's lead differentiator — **time-travel
 from a README bullet into the thing that *sells* Shem. Rewind / fork / replay / verify is
 invisible in a CLI or TUI; in a browser it is a demonstration: scrub the timeline, pick an
 LLM turn, fork, watch the original and the fork diverge side-by-side, with a tamper-evident
-hash-chain badge proving integrity. That is the "oh, I get it" moment no Python agent
-framework can show.
+hash-chain badge proving integrity. That is the "oh, I get it" moment — live divergence *and*
+a verifiable log in one view, running locally with no external service behind it.
 
 Success is *useful AND used*: the debugger is a magnet that makes someone keep Shem open.
 The backend rails already exist (`/api/sessions/:id/{events,fork,verify}`, `/stream`,
