@@ -36,6 +36,28 @@ jobs:
       - name: Build release
         run: MIX_ENV=prod mix release
 
+      # The crypto NIF is dynamically linked against the builder's OpenSSL; hosts
+      # with a different/patched libcrypto (e.g. Fedora, which drops SM4) fail to
+      # boot (#1). Vendor the builder's libcrypto and point only the crypto NIFs
+      # at it via rpath — LD_LIBRARY_PATH would leak into spawned tool runtimes.
+      - name: Vendor libcrypto for the crypto NIF
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq patchelf
+          cd _build/prod/rel
+          crypto_so=$(ls shem/lib/crypto-*/priv/lib/crypto.so)
+          libcrypto=$(ldd "$crypto_so" | awk '/libcrypto\.so\.3/ {print $3}')
+          mkdir -p shem/vendor/lib
+          cp "$libcrypto" shem/vendor/lib/
+          for so in shem/lib/crypto-*/priv/lib/*.so; do
+            patchelf --set-rpath '$ORIGIN/../../../../vendor/lib' "$so"
+          done
+
+      - name: Verify crypto boots on Fedora (issue #1 repro)
+        run: |
+          docker run --rm -v "$PWD/_build/prod/rel/shem:/shem:ro" \
+            -e RELEASE_TMP=/tmp registry.fedoraproject.org/fedora:44 \
+            /shem/bin/shem eval '{:ok, _} = Application.ensure_all_started(:crypto); IO.inspect(:crypto.hash(:sha256, "shem"))'
+
       - name: Package
         run: |
           cd _build/prod/rel
