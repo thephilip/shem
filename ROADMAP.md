@@ -180,6 +180,16 @@ index of event payloads. Gets its own design cycle when it comes up.
 relevant past run by meaning (not session id), receives the matching events,
 and can fork/replay from what it found.
 
+**Explore (non-blocking):** a session *narrator* — a small (possibly local)
+model that reads the agent conversation straight from the EventLog and emits
+a concise, optionally-conversational account of what happened ("why did it
+fork there?"). The event stream is already typed and pre-chewed, which is
+where a tiny model earns its keep. Must be built the Recall way to be worth
+anything: feed *redacted* events, log the result as a chain `:summary` event
+so it can't confabulate outside the record, never a sidecar store. Open
+question that decides if it's worth building: narrator (what happened — easy)
+vs. taste (what's *off* across runs — the actual prize).
+
 ## Phase 8 — Compounding Skills `pending`
 
 EventLog pattern mining → suggested graduation: "this tool-call sequence has
@@ -213,6 +223,14 @@ framework can attempt this local-first, because it stands on offline attest
 **Exit criteria (intent):** a spawned agent's result arrives with a bundle
 the parent verifies (tamper → rejected); the verification itself is in the
 parent's log.
+
+**Explore (non-blocking):** a `send_message` / `collect_messages` MCP tool
+pair that treats inter-agent conversations as first-class EventLog primitives
+rather than opaque tool calls. If the whole conversation between two agents
+lives in a single forkable, replayable timeline, a parent can fork at the
+point it asked a subagent for help, change the instructions, and watch the
+entire sub-conversation diverge. The walkie-talkie pattern without the black
+boxes.
 
 ## Phase 11 — Continuity `pending`
 
