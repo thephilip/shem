@@ -101,10 +101,10 @@ defmodule Shem.MCP.Router do
     {:ok, %{"tools" => builtin_tool_descriptors()}}
   end
 
-  defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments}, _session_id) do
+  defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments} = params, session_id) do
     result =
       try do
-        call_tool(name, arguments)
+        route_tool(name, arguments, params, session_id)
       rescue
         e -> {:error, :handler_crashed, Exception.message(e)}
       catch
@@ -112,6 +112,11 @@ defmodule Shem.MCP.Router do
       end
 
     case result do
+      # MRTR InputRequiredResult goes out as the JSON-RPC result itself,
+      # not wrapped in tool content (SEP-2322).
+      {:input_required, map} ->
+        {:ok, map}
+
       {:ok, result} ->
         text =
           case Jason.encode(result) do
@@ -131,6 +136,23 @@ defmodule Shem.MCP.Router do
 
   defp dispatch_method("tools/call", _, _session_id), do: {:error, -32602, "missing name or arguments"}
   defp dispatch_method(_, _, _session_id), do: {:error, -32601, "Method not found"}
+
+  # spawn_agent is the one MRTR-capable tool: a retry carries requestState;
+  # a fresh client-brain spawn from an MRTR session parks into an elicitation.
+  defp route_tool("spawn_agent", arguments, params, session_id) do
+    cond do
+      is_binary(params["requestState"]) ->
+        Shem.MCP.MRTR.retry(params)
+
+      Map.get(arguments, "brain") == "client" and Shem.MCP.SessionRegistry.mrtr?(session_id) ->
+        Shem.MCP.MRTR.spawn_and_park(arguments)
+
+      true ->
+        SpawnAgent.call(arguments)
+    end
+  end
+
+  defp route_tool(name, arguments, _params, _session_id), do: call_tool(name, arguments)
 
   defp server_instructions do
     """
@@ -158,7 +180,6 @@ defmodule Shem.MCP.Router do
   defp call_tool("graduate_tool", args), do: GraduateTool.call(args)
   defp call_tool("list_tools", args), do: ListTools.call(args)
   defp call_tool("invoke_tool", args), do: InvokeTool.call(args)
-  defp call_tool("spawn_agent", args), do: SpawnAgent.call(args)
   defp call_tool("agent_status", args), do: AgentStatus.call(args)
   defp call_tool("list_agents", args), do: ListAgents.call(args)
   defp call_tool("stop_agent", args), do: StopAgent.call(args)
