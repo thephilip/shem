@@ -311,6 +311,12 @@ panel (was Phase 8; absorbed — forensic recall over dashboards, crowded
 market) · distributed `:port`-tool artifact locality · single-file binary
 (Burrito/Bakeware) · hive_mind trust-weighted consensus · K8s executor
 backend · TUI (`--tui`) revival · tool-building-in-UI (deferred) · generic
-human tool-runner (won't build).
+human tool-runner (won't build) · WebUI framework upgrade (current: Alpine +
+static files, ~1.8k lines, zero build step). If a screen — the timeline
+debugger is the likely one — outgrows Alpine, port *that screen* to Preact +
+htm (React model, still single vendored file, no Node build), not a full
+React/Vite rewrite. Full toolchain only earns its keep if the UI becomes a
+multi-screen app; a Node build step taxes the "one artifact, zero install"
+onboarding win.
 
 *(EventLog pattern miner un-parked → Phase 8, Compounding Skills.)*
