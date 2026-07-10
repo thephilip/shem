@@ -107,7 +107,8 @@ counts (`cache_read/creation_input_tokens`) surfaced on `Shem.LLM.Response`.
 Suite 1314 green; whole-branch review clean. **Outstanding:** the measured
 before/after token number for the README (needs a live key + `shem start`).
 
-**Plan B — Elicitation-over-MRTR co-driver `pending` (deadline 2026-07-28).**
+**Plan B — Elicitation-over-MRTR co-driver `implemented 2026-07-10` (deadline
+2026-07-28).**
 MRTR's *surviving* payload is elicitation, and Shem's Phase-2 human co-driver
 (park → `provide_turn`, a human supplies the turn) **is** an elicitation.
 Re-express that existing loop in the MRTR envelope so it speaks the standard
@@ -118,7 +119,15 @@ code. Prerequisite: sign the co-driver `turn_token` (today a forgeable plain
 signing stands on its own as a co-driver security fix. Ships with a README
 explainer of what MRTR is / isn't (elicitation yes, sampling deprecated) and
 the positioning post. Claim scoped precisely: *"Shem's co-driver loop is
-MRTR-native via elicitation"* — never "Shem is MRTR-native."
+MRTR-native via elicitation"* — never "Shem is MRTR-native." Signed turn token
+shipped (forged/expired/cross-agent turns rejected on both the MCP MRTR path
+and the REST `/agents/:id/turn` path); MRTR conformance tests green; live
+round-trip re-verified over real HTTP 2026-07-10 (`initialize` negotiates
+`2026-07-28`, `spawn_agent` parks with an `elicitation/create` request +
+signed `requestState`, retry with `inputResponses` resumes to a final result,
+requestState replay rejected as `stale_turn`); positioning post drafted at
+`docs/superpowers/posts/2026-07-mrtr-elicitation-post.md`, publication
+pending.
 
 **Exit criteria:** Plan A — a 2nd session turn returns `cache_read_input_tokens
 > 0`; token number in the README. Plan B — a conformance test drives the
