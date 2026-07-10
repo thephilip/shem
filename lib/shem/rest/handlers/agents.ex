@@ -133,19 +133,24 @@ defmodule Shem.REST.Handlers.Agents do
 
       base = %{status: info.status, node: node_str}
 
-      base =
-        if info.status == :awaiting_turn do
-          {:ok, sid} = Shem.Agent.session_id(name)
+      if info.status == :awaiting_turn do
+        case Shem.Agent.session_id(name) do
+          {:ok, sid} ->
+            send_json(
+              conn,
+              200,
+              Map.merge(base, %{
+                prompt: info.awaiting_prompt,
+                turn_token: ProvideTurn.encode_token(sid, info.turn_token)
+              })
+            )
 
-          Map.merge(base, %{
-            prompt: info.awaiting_prompt,
-            turn_token: ProvideTurn.encode_token(sid, info.turn_token)
-          })
-        else
-          base
+          {:error, :not_found} ->
+            send_json(conn, 404, %{error: "agent not found"})
         end
-
-      send_json(conn, 200, base)
+      else
+        send_json(conn, 200, base)
+      end
     else
       _ -> send_json(conn, 404, %{error: "agent not found"})
     end

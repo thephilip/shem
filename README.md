@@ -176,10 +176,10 @@ spawn_agent({goal: "find bugs in auth.rs", brain: "client"})
 → agent_id (e.g., "sess_abc123")
 
 agent_status(agent_id)
-→ {status: "awaiting_turn", prompt: "Claude, please…", turn_token: "1:4782"}
+→ {status: "awaiting_turn", prompt: "Claude, please…", turn_token: "MTIz…signed…"}
 
 provide_turn(agent_id, turn_token, "<Claude's action>")
-→ {status: "awaiting_turn", prompt: "Next prompt…", turn_token: "2:9351"}
+→ {status: "awaiting_turn", prompt: "Next prompt…", turn_token: "MTIz…signed…"}
   (or {status: "done", output: "…"} when finished)
 
 (repeat agent_status / provide_turn until done)

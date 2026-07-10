@@ -77,7 +77,8 @@ defmodule Shem.MCP.Router do
 
   defp dispatch_method("initialize", args, session_id) do
     requested = Map.get(args, "protocolVersion")
-    elicitation? = is_map(get_in(args, ["capabilities", "elicitation"]))
+    caps = Map.get(args, "capabilities")
+    elicitation? = is_map(caps) and is_map(Map.get(caps, "elicitation"))
     mrtr? = elicitation? and requested in @mrtr_versions
     if session_id, do: Shem.MCP.SessionRegistry.set_mrtr(session_id, mrtr?)
 
@@ -141,8 +142,17 @@ defmodule Shem.MCP.Router do
   # a fresh client-brain spawn from an MRTR session parks into an elicitation.
   defp route_tool("spawn_agent", arguments, params, session_id) do
     cond do
-      is_binary(params["requestState"]) ->
-        Shem.MCP.MRTR.retry(params)
+      Map.has_key?(params, "requestState") ->
+        cond do
+          not Shem.MCP.SessionRegistry.mrtr?(session_id) ->
+            {:error, :invalid_args, "requestState requires an MRTR-negotiated session"}
+
+          not is_binary(params["requestState"]) ->
+            {:error, :invalid_args, "bad requestState"}
+
+          true ->
+            Shem.MCP.MRTR.retry(params)
+        end
 
       Map.get(arguments, "brain") == "client" and Shem.MCP.SessionRegistry.mrtr?(session_id) ->
         Shem.MCP.MRTR.spawn_and_park(arguments)
@@ -358,7 +368,7 @@ defmodule Shem.MCP.Router do
             "agent_id" => %{"type" => "string", "description" => "Agent id from spawn_agent"},
             "turn_token" => %{
               "type" => "string",
-              "description" => "Turn token from agent_status (format: turn:nonce)"
+              "description" => "Opaque signed turn token from agent_status — pass it back verbatim"
             },
             "content" => %{"type" => "string", "description" => "Turn content or tool call JSON"}
           },
