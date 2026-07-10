@@ -40,7 +40,7 @@ defmodule Shem.MCP.Handlers.AgentStatus do
           if status == :awaiting_turn do
             base
             |> Map.put("prompt", Map.get(info, :awaiting_prompt, ""))
-            |> Map.put("turn_token", ProvideTurn.encode_token(info.turn_token))
+            |> Map.put("turn_token", ProvideTurn.encode_token(session_id, info.turn_token))
           else
             base
           end

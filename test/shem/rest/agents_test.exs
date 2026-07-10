@@ -322,7 +322,7 @@ defmodule Shem.REST.AgentsTest do
     body = Jason.decode!(conn.resp_body)
     assert body["status"] == "awaiting_turn"
     assert is_binary(body["prompt"]) and body["prompt"] != ""
-    assert body["turn_token"] =~ ~r/^\d+:\d+$/
+    assert body["turn_token"] =~ ~r/^[\w-]+\.[\w-]+$/
 
     Shem.Agent.stop(name)
   end

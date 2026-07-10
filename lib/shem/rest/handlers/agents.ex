@@ -135,9 +135,11 @@ defmodule Shem.REST.Handlers.Agents do
 
       base =
         if info.status == :awaiting_turn do
+          {:ok, sid} = Shem.Agent.session_id(name)
+
           Map.merge(base, %{
             prompt: info.awaiting_prompt,
-            turn_token: ProvideTurn.encode_token(info.turn_token)
+            turn_token: ProvideTurn.encode_token(sid, info.turn_token)
           })
         else
           base
@@ -191,13 +193,14 @@ defmodule Shem.REST.Handlers.Agents do
 
       true ->
         with {:ok, name} <- resolve_agent(id),
-             {:ok, token} <- ProvideTurn.decode_token(token_s) do
+             {:ok, sid} <- Shem.Agent.session_id(name),
+             {:ok, token} <- ProvideTurn.decode_token(token_s, sid) do
           case Shem.Agent.provide_turn(name, token, content) do
             {:ok, %{status: :awaiting_turn, prompt: p, turn_token: t}} ->
               send_json(conn, 200, %{
                 status: "awaiting_turn",
                 prompt: p,
-                turn_token: ProvideTurn.encode_token(t)
+                turn_token: ProvideTurn.encode_token(sid, t)
               })
 
             {:ok, %{status: :done, output: out}} ->
@@ -217,7 +220,8 @@ defmodule Shem.REST.Handlers.Agents do
           end
         else
           :not_found -> send_json(conn, 404, %{error: "agent not found"})
-          {:error, :invalid_args, _} -> send_json(conn, 400, %{error: "bad turn_token"})
+          {:error, :not_found} -> send_json(conn, 404, %{error: "agent not found"})
+          {:error, :invalid_args, msg} -> send_json(conn, 400, %{error: msg})
         end
     end
   end
