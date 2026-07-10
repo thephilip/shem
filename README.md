@@ -189,6 +189,25 @@ The loop is keyless (no LLM credentials), and the agent is forkable, replayable,
 and crash-surviving like any Shem agent — the event log persists independent of
 the brain.
 
+### Standards: the co-driver speaks MRTR
+
+Shem's co-driver loop is MRTR-native via elicitation. When a client that
+implements MCP's [Multi Round-Trip Requests](https://modelcontextprotocol.io/specification/draft/basic/patterns/mrtr)
+pattern spawns a client-brained agent, the agent's parked turn comes back as a
+standard `elicitation/create` input request — the human answers, the client
+retries the call, the agent moves. The `requestState` that makes the round trip
+is an HMAC-signed turn token (agent-bound, short TTL), so a tampered or
+replayed state is rejected. Clients without the `elicitation` capability keep
+the plain `agent_status` / `provide_turn` polling loop — same machinery, same
+event log either way.
+
+What Shem deliberately does **not** implement:
+[MCP sampling](https://modelcontextprotocol.io/specification/draft/client/sampling)
+— the "server borrows the client's model" path — is
+[deprecated](https://modelcontextprotocol.io/specification/draft/deprecated)
+(SEP-2577), and Shem gives you the fuller version anyway: bring your own
+key/local model (direct adapter), or drive turns yourself (client-brain loop).
+
 ## Presets
 
 | Preset | Purpose |
