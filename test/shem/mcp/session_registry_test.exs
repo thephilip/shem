@@ -53,4 +53,14 @@ defmodule Shem.MCP.SessionRegistryTest do
     :sys.get_state(reg)
     assert 0 = GenServer.call(reg, :client_count)
   end
+
+  test "mrtr flag: set, read, defaults false, nil session is false" do
+    {:ok, reg} = Shem.MCP.SessionRegistry.start_link(name: :"mrtr_reg_#{System.unique_integer([:positive])}")
+    refute Shem.MCP.SessionRegistry.mrtr?("s1", reg)
+    :ok = Shem.MCP.SessionRegistry.set_mrtr("s1", true, reg)
+    assert Shem.MCP.SessionRegistry.mrtr?("s1", reg)
+    :ok = Shem.MCP.SessionRegistry.unregister_session("s1", reg)
+    refute Shem.MCP.SessionRegistry.mrtr?("s1", reg)
+    refute Shem.MCP.SessionRegistry.mrtr?(nil, reg)
+  end
 end

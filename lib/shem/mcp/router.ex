@@ -1,6 +1,10 @@
 defmodule Shem.MCP.Router do
   use Plug.Router
 
+  # SEP-2322 (MRTR) protocol versions we speak. The RC is dated 2026-07-28;
+  # re-check the exact GA version string when it lands.
+  @mrtr_versions ["2026-07-28", "draft"]
+
   alias Shem.MCP.Handlers.{
     AgentStatus,
     ExecuteCode,
@@ -65,16 +69,21 @@ defmodule Shem.MCP.Router do
     if is_nil(id) do
       send_resp(conn, 204, "")
     else
-      result = dispatch_method(method, args)
+      result = dispatch_method(method, args, session_id)
       response = build_response(id, result)
       send_or_sse(conn, session_id, response)
     end
   end
 
-  defp dispatch_method("initialize", _args) do
+  defp dispatch_method("initialize", args, session_id) do
+    requested = Map.get(args, "protocolVersion")
+    elicitation? = is_map(get_in(args, ["capabilities", "elicitation"]))
+    mrtr? = elicitation? and requested in @mrtr_versions
+    if session_id, do: Shem.MCP.SessionRegistry.set_mrtr(session_id, mrtr?)
+
     {:ok,
      %{
-       "protocolVersion" => "2024-11-05",
+       "protocolVersion" => if(mrtr?, do: requested, else: "2024-11-05"),
        "capabilities" => %{"tools" => %{}},
        "serverInfo" => %{
          "name" => "shem",
@@ -86,13 +95,13 @@ defmodule Shem.MCP.Router do
      }}
   end
 
-  defp dispatch_method("ping", _args), do: {:ok, %{}}
+  defp dispatch_method("ping", _args, _session_id), do: {:ok, %{}}
 
-  defp dispatch_method("tools/list", _args) do
+  defp dispatch_method("tools/list", _args, _session_id) do
     {:ok, %{"tools" => builtin_tool_descriptors()}}
   end
 
-  defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments}) do
+  defp dispatch_method("tools/call", %{"name" => name, "arguments" => arguments}, _session_id) do
     result =
       try do
         call_tool(name, arguments)
@@ -120,8 +129,8 @@ defmodule Shem.MCP.Router do
     end
   end
 
-  defp dispatch_method("tools/call", _), do: {:error, -32602, "missing name or arguments"}
-  defp dispatch_method(_, _), do: {:error, -32601, "Method not found"}
+  defp dispatch_method("tools/call", _, _session_id), do: {:error, -32602, "missing name or arguments"}
+  defp dispatch_method(_, _, _session_id), do: {:error, -32601, "Method not found"}
 
   defp server_instructions do
     """
