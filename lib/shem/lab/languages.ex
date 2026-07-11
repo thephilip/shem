@@ -1,20 +1,23 @@
 defmodule Shem.Lab.Languages do
   @moduledoc """
   Per-language details for `:port`-runtime tools (Python, JavaScript).
-  4th language = add clauses here. `"elixir"` is the `{:beam, _}` path, not here.
+  Elixir joined in Phase 6 (parity sandbox).
   """
 
   def ext("python"), do: "py"
   def ext("javascript"), do: "ts"
   def ext("go"), do: "go"
+  def ext("elixir"), do: "exs"
 
   def exe("python"), do: "python3"
   def exe("javascript"), do: "deno"
   def exe("go"), do: "go"
+  def exe("elixir"), do: "elixir"
 
   def argv("python", script), do: [script]
   def argv("javascript", script), do: ["run", script]
   def argv("go", dir), do: ["run", dir]
+  def argv("elixir", script), do: [script]
 
   # Runtime artifact layout: single file (python/js) vs a directory package (go).
   def layout("go"), do: :dir
@@ -77,6 +80,50 @@ defmodule Shem.Lab.Languages do
                     print(json.dumps(result), flush=True)
                 except Exception as e:
                     print(json.dumps({"__error__": str(e)}), flush=True)
+    """
+  end
+
+  # Warm BEAM kept alive across newline-delimited JSON requests (Python-runner
+  # contract: `__error__` key on failure). Stdlib JSON only — no deps in-container.
+  def wrapper("elixir", source) do
+    [_, mod] = Regex.run(~r/defmodule\s+(\S+)\s+do/, source)
+
+    """
+    #{source}
+
+    defmodule ShemRunner do
+      def loop(mod) do
+        case IO.read(:stdio, :line) do
+          line when is_binary(line) ->
+            line = String.trim(line)
+
+            if line != "" do
+              out =
+                try do
+                  result = mod.run(JSON.decode!(line))
+
+                  try do
+                    JSON.encode!(result)
+                  rescue
+                    # non-JSON-able term (tuple, pid, ...) -> ship its inspect form
+                    _ -> JSON.encode!(inspect(result))
+                  end
+                rescue
+                  e -> JSON.encode!(%{"__error__" => Exception.message(e)})
+                end
+
+              IO.puts(out)
+            end
+
+            loop(mod)
+
+          _ ->
+            :ok
+        end
+      end
+    end
+
+    ShemRunner.loop(#{mod})
     """
   end
 

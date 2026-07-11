@@ -27,6 +27,29 @@ defmodule Shem.Lab.LanguagesTest do
     assert Languages.layout("javascript") == :file
   end
 
+  describe "elixir" do
+    test "file layout, exs ext, elixir exe, script argv" do
+      assert Languages.ext("elixir") == "exs"
+      assert Languages.exe("elixir") == "elixir"
+      assert Languages.argv("elixir", "/x/t.exs") == ["/x/t.exs"]
+      assert Languages.layout("elixir") == :file
+    end
+
+    test "wrapper embeds source and calls the tool module's run/1 in a stdin loop" do
+      source = """
+      defmodule My.DoubleTool do
+        def run(args), do: %{"result" => (args["n"] || 0) * 2}
+      end
+      """
+
+      w = Languages.wrapper("elixir", source)
+      assert w =~ "defmodule My.DoubleTool"
+      assert w =~ "ShemRunner.loop(My.DoubleTool)"
+      assert w =~ "JSON.decode!"
+      refute w =~ "Jason"
+    end
+  end
+
   test "go: dir_files emits tool.go (source), fixed main.go wrapper, go.mod with major.minor directive" do
     files = Languages.dir_files("go", "func run(a map[string]any) any { return a }")
     map = Map.new(files)

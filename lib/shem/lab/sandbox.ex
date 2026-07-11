@@ -19,6 +19,9 @@ defmodule Shem.Lab.Sandbox do
   def image("go"),
     do: Application.get_env(:shem, :executor_image_go, "docker.io/library/golang:alpine")
 
+  def image("elixir"),
+    do: Application.get_env(:shem, :executor_image_elixir, "docker.io/library/elixir:1.19-alpine")
+
   @spec spawn_spec(String.t() | nil, map()) :: {String.t(), [String.t()], keyword()}
   def spawn_spec(nil, %{language: lang, runtime_path: path, host_exe: exe}) do
     port_opts =

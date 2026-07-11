@@ -8,6 +8,10 @@ defmodule Shem.Lab.SandboxTest do
     assert Sandbox.image("go") == "docker.io/library/golang:alpine"
   end
 
+  test "elixir image is configurable with fully-qualified default" do
+    assert Sandbox.image("elixir") == "docker.io/library/elixir:1.19-alpine"
+  end
+
   test "spawn_spec host mode (runtime_bin nil) spawns the interpreter directly" do
     {exe, args, port_opts} =
       Sandbox.spawn_spec(nil, %{

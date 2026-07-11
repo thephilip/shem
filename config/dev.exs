@@ -45,5 +45,6 @@ config :shem, shadow_agent_poll_ms: 2_000
 
 config :shem,
   executor_image_python: "python:3.12-slim",
+  executor_image_elixir: "docker.io/library/elixir:1.19-alpine",
   port_pool_size: 2,
   start_port_pool: true
