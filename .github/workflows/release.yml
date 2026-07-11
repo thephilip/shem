@@ -58,6 +58,16 @@ jobs:
             -e RELEASE_TMP=/tmp registry.fedoraproject.org/fedora:44 \
             /shem/bin/shem eval '{:ok, _} = Application.ensure_all_started(:crypto); IO.inspect(:crypto.hash(:sha256, "shem"))'
 
+      # The tarball bundles ERTS + Elixir ebins but not the `elixir` CLI. Prove
+      # run_code works with neither a container runtime nor a system Elixir on
+      # PATH — a fresh Fedora with elixir stripped (Phase 6 regression guard).
+      - name: Verify run_code works without a system Elixir
+        run: |
+          docker run --rm -v "$PWD/_build/prod/rel/shem:/shem:ro" \
+            -e RELEASE_TMP=/tmp -e PATH=/usr/bin:/bin \
+            registry.fedoraproject.org/fedora:44 \
+            /shem/bin/shem eval '{exe, pre} = Shem.Lab.Languages.host_elixir(); true = String.contains?(exe, "erl"); d = Path.join(System.tmp_dir!(), "rc"); File.mkdir_p!(d); File.write!(Path.join(d, "r.exs"), "IO.write(\"__SHEM_RESULT__\" <> inspect(2*21))"); {out, 0} = System.cmd(exe, pre ++ ["r.exs"], cd: d, stderr_to_stdout: true); true = String.contains?(out, "__SHEM_RESULT__42"); IO.puts("ok")'
+
       - name: Package
         run: |
           cd _build/prod/rel
