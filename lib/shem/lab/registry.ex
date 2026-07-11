@@ -126,16 +126,19 @@ defmodule Shem.Lab.Registry do
         case File.read(source_path) do
           {:ok, source} ->
             case extract_module(source) do
-              {:ok, module} ->
-                [%Tool{
-                  id: id,
-                  name: module |> Atom.to_string() |> String.split(".") |> List.last(),
-                  runtime: {:beam, module},
-                  source: source,
-                  test_source: "",
-                  graduated_at: DateTime.utc_now(),
-                  metadata: %{}
-                }]
+              {:ok, _module} ->
+                try do
+                  [convert_legacy_elixir(id, %{})]
+                rescue
+                  e ->
+                    quarantine(id, source_path)
+
+                    Logger.warning(
+                      "quarantined legacy graduated tool #{id} -> .broken/: #{Exception.message(e)}"
+                    )
+
+                    []
+                end
 
               :error ->
                 quarantine(id, source_path)
@@ -170,31 +173,8 @@ defmodule Shem.Lab.Registry do
     end
   end
 
-  def build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
-    source_path = Workspace.graduated_path(id)
-    source = case File.read(source_path) do
-      {:ok, s} -> s
-      _ -> ""
-    end
-    {:ok, module} = extract_module(source)
-
-    %Tool{
-      id: id,
-      name: m["name"] || (module |> Atom.to_string() |> String.split(".") |> List.last()),
-      runtime: {:beam, module},
-      source: source,
-      test_source: m["test_source"] || "",
-      constraints: m["constraints"] || [],
-      graduated_at: parse_dt(m["graduated_at"]),
-      metadata: %{
-        "description" => m["description"] || "",
-        "schema"      => m["schema"] || %{},
-        "actions"     => m["actions"] || [],
-        "granted"     => m["granted"] || %{}
-      }
-    }
-  end
-
+  # runtime_path must match BEFORE the elixir clause: converted Elixir
+  # manifests carry both "runtime_path" and "language" => "elixir".
   def build_tool_from_manifest(id, %{"runtime_path" => runtime_path} = m) do
     language = m["language"] || "python"
 
@@ -225,6 +205,56 @@ defmodule Shem.Lab.Registry do
         "granted"     => m["granted"] || %{}
       }
     }
+  end
+
+  # Pre-Phase-6 manifest: elixir without runtime_path = a {:beam, _} tool.
+  # Agent-authored Elixir no longer runs in the host BEAM — convert to :port on
+  # load: scan (tamper defense), write the runtime artifact, rewrite the
+  # manifest. Idempotent: the rewritten manifest takes the clause above next boot.
+  def build_tool_from_manifest(id, %{"language" => "elixir"} = m) do
+    convert_legacy_elixir(id, m)
+  end
+
+  defp convert_legacy_elixir(id, m) do
+    source = File.read!(Workspace.graduated_path(id))
+    :ok = scan_legacy!(source)
+    {:ok, module} = extract_module_ok(source)
+
+    tool = %Tool{
+      id: id,
+      name: m["name"] || (module |> Atom.to_string() |> String.split(".") |> List.last()),
+      runtime: {:port, Workspace.runtime_path(id, "elixir")},
+      source: source,
+      test_source: m["test_source"] || "",
+      constraints: m["constraints"] || [],
+      graduated_at: parse_dt(m["graduated_at"]),
+      metadata: %{
+        "language"    => "elixir",
+        "description" => m["description"] || "",
+        "schema"      => m["schema"] || %{},
+        "actions"     => m["actions"] || [],
+        "granted"     => m["granted"] || %{}
+      }
+    }
+
+    :ok = Workspace.graduate(tool)
+    Logger.info("converted legacy beam tool #{id} to sandboxed :port runtime")
+    tool
+  end
+
+  # Any raise here is caught by scan_graduated's rescue -> quarantine.
+  defp scan_legacy!(source) do
+    case Shem.Lab.SourceScan.scan(source) do
+      :ok -> :ok
+      {:error, msg} -> raise "legacy beam tool failed " <> msg
+    end
+  end
+
+  defp extract_module_ok(source) do
+    case extract_module(source) do
+      {:ok, module} -> {:ok, module}
+      :error -> raise "could not determine module name from legacy source"
+    end
   end
 
   defp parse_dt(nil), do: DateTime.utc_now()

@@ -196,6 +196,75 @@ defmodule Shem.Lab.RegistryTest do
     assert reloaded.source =~ "export function run"   # was "" before this fix
   end
 
+  describe "legacy beam tool conversion (Phase 6)" do
+    @legacy_source """
+    defmodule Legacy.Tripler do
+      def run(args), do: %{"result" => (args["n"] || 0) * 3}
+    end
+    """
+
+    # graduated/<id>.ex + manifest WITHOUT runtime_path = pre-Phase-6 elixir tool
+    defp write_legacy!(id, source) do
+      dir = Path.join(Application.get_env(:shem, :lab_dir), "graduated")
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "#{id}.ex"), source)
+
+      File.write!(
+        Path.join(dir, "#{id}.json"),
+        Jason.encode!(%{
+          "id" => id,
+          "name" => "Tripler",
+          "language" => "elixir",
+          "description" => "triples n",
+          "schema" => %{},
+          "actions" => [],
+          "constraints" => [],
+          "test_source" => "",
+          "graduated_at" => "2026-07-01T00:00:00Z"
+        })
+      )
+    end
+
+    test "legacy elixir manifest converts to a :port tool on rescan" do
+      write_legacy!("tripler", @legacy_source)
+      :ok = Shem.Lab.Registry.rescan()
+
+      assert {:ok, tool} = Shem.Lab.Registry.lookup("tripler")
+      assert {:port, runtime_path} = tool.runtime
+      assert tool.metadata["language"] == "elixir"
+      assert File.read!(runtime_path) =~ "ShemRunner.loop(Legacy.Tripler)"
+
+      # idempotent: rewritten manifest now has runtime_path
+      manifest = Jason.decode!(File.read!(Shem.Lab.Workspace.manifest_path("tripler")))
+      assert manifest["runtime_path"] == runtime_path
+      :ok = Shem.Lab.Registry.rescan()
+      assert {:ok, %{runtime: {:port, ^runtime_path}}} = Shem.Lab.Registry.lookup("tripler")
+    end
+
+    test "manifestless legacy .ex source also converts" do
+      dir = Path.join(Application.get_env(:shem, :lab_dir), "graduated")
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "orphan.ex"), @legacy_source)
+
+      :ok = Shem.Lab.Registry.rescan()
+      assert {:ok, %{runtime: {:port, _}}} = Shem.Lab.Registry.lookup("orphan")
+    end
+
+    test "scan-failing legacy source is quarantined, not loaded" do
+      write_legacy!("evil", """
+      defmodule Legacy.Evil do
+        def run(_), do: File.rm_rf!("/")
+      end
+      """)
+
+      :ok = Shem.Lab.Registry.rescan()
+      assert {:error, :not_found} = Shem.Lab.Registry.lookup("evil")
+
+      broken = Path.join([Application.get_env(:shem, :lab_dir), "graduated", ".broken"])
+      assert File.exists?(Path.join(broken, "evil.ex"))
+    end
+  end
+
   test "reload reads Go tool source from tool.go inside the dir" do
     id = "go_reload_#{System.unique_integer([:positive])}"
     rt = Shem.Lab.Workspace.runtime_path(id, "go")

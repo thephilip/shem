@@ -28,9 +28,11 @@ defmodule Shem.Lab.GraduationGateTest do
     """
     assert {:ok, tool} = GraduationGate.run(source, test_source)
     assert tool.id == "gate_add1"
-    assert tool.runtime == {:beam, GateAdd1}
+    # Phase 6: elixir graduates as a sandboxed :port runtime, not host BEAM.
+    assert {:port, runtime_path} = tool.runtime
     assert tool.source == source
-    assert File.exists?(Workspace.graduated_path("gate_add1"))
+    assert File.exists?(runtime_path)
+    assert File.exists?(Workspace.runtime_path("gate_add1", "elixir"))
   end
 
   test "returns {:error, :gate, ...} when test module's run/0 raises" do
@@ -157,6 +159,9 @@ defmodule Shem.Lab.GraduationGateTest do
       assert {:ok, 0.5} = Shem.Trust.Store.score(tool.id)
     end
 
+    # Property gates run Mix.install([:stream_data]) inside the sandbox —
+    # needs network + hex, so excluded from the default suite.
+    @tag :elixir_integration
     test "a tool with a passing StreamData property graduates unrated" do
       source = """
       defmodule PropTool1 do
@@ -185,6 +190,7 @@ defmodule Shem.Lab.GraduationGateTest do
       assert {:error, :unrated} = Shem.Trust.Store.score(tool.id)
     end
 
+    @tag :elixir_integration
     test "a failing property still fails the gate" do
       source = """
       defmodule PropTool2 do
@@ -208,6 +214,7 @@ defmodule Shem.Lab.GraduationGateTest do
       assert {:error, _, _} = GraduationGate.run(source, test_src)
     end
 
+    @tag :elixir_integration
     test "the elixir_toolsmith preset's documented test format graduates with property trust" do
       # Pins preset.ex's elixir_toolsmith docs to the gate's actual contract: a plain
       # `def run/0` (no ExUnit) with an imperative StreamData.check_all. If someone
@@ -252,7 +259,7 @@ defmodule Shem.Lab.GraduationGateTest do
       end
       """
       assert {:ok, tool} = GraduationGate.run(source, test_source)
-      assert match?({:beam, _}, tool.runtime)
+      assert match?({:port, _}, tool.runtime)
     end
 
     test "language: elixir explicitly routes to elixir path" do
@@ -267,7 +274,7 @@ defmodule Shem.Lab.GraduationGateTest do
       end
       """
       assert {:ok, tool} = GraduationGate.run(source, test_source, language: "elixir")
-      assert match?({:beam, _}, tool.runtime)
+      assert match?({:port, _}, tool.runtime)
     end
 
     test "unknown language returns {:error, :language_not_configured, lang}" do

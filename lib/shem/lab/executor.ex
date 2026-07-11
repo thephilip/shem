@@ -1,39 +1,12 @@
 defmodule Shem.Lab.Executor do
-  @default_timeout 5_000
+  @moduledoc """
+  Sandboxed execution for agent-supplied code. Phase 6: the host-BEAM compile
+  path (`run/3`) is gone — Elixir source runs in a container when a runtime is
+  available, or a host `elixir` subprocess (AST-scanned) otherwise. Either way
+  it never compiles into the host BEAM.
+  """
 
-  @spec run(String.t(), (atom() -> any()), keyword()) ::
-          {:ok, any()}
-          | {:error, :compile, String.t()}
-          | {:error, :timeout}
-          | {:error, :runtime, any()}
-          | {:error, any()}
-  def run(source, fun, opts \\ []) do
-    timeout =
-      Keyword.get(opts, :timeout, Application.get_env(:shem, :executor_timeout_ms, @default_timeout))
-
-    target_node = Keyword.get(opts, :node, nil)
-    scan? = Keyword.get(opts, :scan, true)
-
-    with :ok <- maybe_scan(source, scan?) do
-      if target_node && target_node != Node.self() do
-        run_remote(source, fun, timeout, target_node)
-      else
-        run_local(source, fun, timeout)
-      end
-    end
-  end
-
-  # ponytail: scan failures reuse the :compile error channel — every caller
-  # already handles {:error, :compile, msg}; the "safety scan:" prefix keeps
-  # them distinguishable.
-  defp maybe_scan(_source, false), do: :ok
-
-  defp maybe_scan(source, true) do
-    case Shem.Lab.SourceScan.scan(source) do
-      :ok -> :ok
-      {:error, msg} -> {:error, :compile, msg}
-    end
-  end
+  @default_timeout 30_000
 
   @spec run_shell(String.t(), non_neg_integer(), keyword()) ::
           {:ok, String.t()} | {:error, String.t()}
@@ -45,57 +18,66 @@ defmodule Shem.Lab.Executor do
     backend.run_shell(cmd, timeout_ms, opts)
   end
 
-  defp run_remote(source, fun, timeout, node) do
-    case :rpc.call(node, __MODULE__, :run, [source, fun, [timeout: timeout]], timeout + 1_000) do
-      {:badrpc, reason} -> {:error, reason}
-      result -> result
-    end
-  end
+  @doc """
+  Compile + run one-shot Elixir source in the sandbox and return the
+  `inspect/1` of the last module's `run/0`, parsed from a sentinel line.
+  """
+  @spec run_source(String.t(), keyword()) :: {:ok, String.t()} | {:error, String.t()}
+  def run_source(source, opts \\ []) do
+    timeout =
+      Keyword.get(opts, :timeout, Application.get_env(:shem, :executor_timeout_ms, @default_timeout))
 
-  defp run_local(source, fun, timeout) do
-    case compile(source) do
-      {:ok, modules} ->
-        Enum.each(modules, fn {mod, bc} -> :code.load_binary(mod, ~c"nofile", bc) end)
-        last_module = modules |> List.last() |> elem(0)
+    with :ok <- host_fallback_scan(source) do
+      dir = Path.join(System.tmp_dir!(), "shem_run_#{System.unique_integer([:positive])}")
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "source.exs"), source)
+      File.write!(Path.join(dir, "run.exs"), driver())
 
-        try do
-          execute(last_module, fun, timeout)
-        after
-          Enum.each(modules, fn {mod, _} ->
-            :code.purge(mod)
-            :code.delete(mod)
-          end)
+      shell_opts =
+        [image: Shem.Lab.Sandbox.image("elixir"), mounts: [{dir, dir}]] ++
+          Keyword.take(opts, [:run_fn])
+
+      try do
+        # cd to the dir's own absolute path (mounted at the same path in the
+        # container) so the Local fallback backend runs the same command.
+        case run_shell("cd #{dir} && elixir run.exs", timeout, shell_opts) do
+          {:ok, out} ->
+            case String.split(out, "__SHEM_RESULT__") do
+              [_, result] -> {:ok, String.trim(result)}
+              _ -> {:error, "no result marker in output: #{out}"}
+            end
+
+          {:error, msg} ->
+            {:error, msg}
         end
-
-      error ->
-        error
-    end
-  end
-
-  defp compile(source) do
-    try do
-      case Code.compile_string(source) do
-        [] -> {:error, :compile, "source defines no modules"}
-        modules -> {:ok, modules}
+      after
+        File.rm_rf!(dir)
       end
-    rescue
-      e -> {:error, :compile, Exception.message(e)}
     end
   end
 
-  defp execute(module, fun, timeout) do
-    task = Task.Supervisor.async_nolink(Shem.Lab.TaskSupervisor, fn -> fun.(module) end)
+  defp driver do
+    """
+    mods = Code.compile_string(File.read!("source.exs"))
+    {mod, _} = List.last(mods)
+    IO.write("\\n__SHEM_RESULT__" <> inspect(mod.run()))
+    """
+  end
 
-    case Task.yield(task, timeout) do
-      {:ok, value} ->
-        {:ok, value}
+  # In-container the sandbox is the enforcement layer; on the host-subprocess
+  # fallback the AST scan is the only guard (spec §3).
+  defp host_fallback_scan(source) do
+    backend =
+      Process.get(:shem_executor_backend) ||
+        Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
 
-      {:exit, reason} ->
-        {:error, :runtime, reason}
-
-      nil ->
-        Task.shutdown(task, :brutal_kill)
-        {:error, :timeout}
+    if backend == Shem.Lab.Executor.Backend.Local do
+      case Shem.Lab.SourceScan.scan(source) do
+        :ok -> :ok
+        {:error, msg} -> {:error, msg}
+      end
+    else
+      :ok
     end
   end
 end

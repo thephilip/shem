@@ -28,7 +28,7 @@ defmodule Shem.MCP.Handlers.GraduateToolTest do
     args = %{"source" => source, "test_source" => test_source}
     assert {:ok, tool} = GraduateTool.call(args)
     assert tool.id == "grad_handler_tool1"
-    assert tool.runtime == {:beam, GradHandlerTool1}
+    assert match?({:port, _}, tool.runtime)
   end
 
   test "accepts optional input_schema and stores it on the tool" do

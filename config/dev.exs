@@ -34,7 +34,6 @@ config :libcluster,
 
 config :shem, start_cluster: true
 config :shem, budget_node_tokens: 500_000
-config :shem, lab_executor_node: nil
 
 config :shem,
   adversarial_max_rounds: 5,

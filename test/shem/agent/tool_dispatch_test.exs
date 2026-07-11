@@ -284,7 +284,8 @@ defmodule Shem.Agent.ToolDispatchTest do
                  %{name: "run_code", args: %{"source" => "this is not valid elixir !!!"}},
                  manifest
                )
-      assert msg =~ "compile error"
+      # Phase 6: on the host-fallback path the AST scan front-runs the compile.
+      assert msg =~ "safety scan"
     end
   end
 
@@ -330,6 +331,12 @@ defmodule Shem.Agent.ToolDispatchTest do
   end
 
   describe "execute/2 — Lab tool dispatch" do
+    setup do
+      # PortPool.Supervisor is disabled in test config; elixir tools are :port now
+      start_supervised!(Shem.Lab.PortPool.Supervisor)
+      :ok
+    end
+
     test "routes to a graduated tool and returns its result" do
       source = """
       defmodule LabDispatchTool1 do
@@ -669,6 +676,9 @@ defmodule Shem.Agent.ToolDispatchTest do
 
   describe "execute/2 — trust gate" do
     setup do
+      # PortPool.Supervisor is disabled in test config; elixir tools are :port now
+      start_supervised!(Shem.Lab.PortPool.Supervisor)
+
       source = """
       defmodule TrustGateTool do
         def run(_args), do: :gated

@@ -10,12 +10,13 @@ defmodule Shem.MCP.Handlers.ExecuteCodeTest do
     end
     """
 
-    assert {:ok, {:ok, 42}} = ExecuteCode.call(%{"source" => source})
+    # Phase 6: run_source returns the inspect/1 of the result as a string.
+    assert {:ok, "{:ok, 42}"} = ExecuteCode.call(%{"source" => source})
   end
 
-  test "returns compile error for invalid Elixir source" do
+  test "returns runtime error for invalid Elixir source" do
     source = "this is not valid elixir !!!"
-    assert {:error, :compile, reason} = ExecuteCode.call(%{"source" => source})
+    assert {:error, :runtime, reason} = ExecuteCode.call(%{"source" => source})
     assert is_binary(reason)
   end
 

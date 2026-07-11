@@ -3,81 +3,52 @@ defmodule Shem.Lab.ExecutorTest do
 
   alias Shem.Lab.Executor
 
-  test "returns {:ok, value} when source compiles and fun succeeds" do
+  # Test env resolves to the Local backend: run_source executes a real host
+  # `elixir` subprocess — the fallback path. Container path is covered by the
+  # :elixir_integration e2e.
+
+  test "run_source returns the inspected run/0 result of the last module" do
     source = """
-    defmodule ExecAdd do
-      def add(a, b), do: a + b
+    defmodule ExecSourceOk do
+      def run, do: {:answer, 21 * 2}
     end
     """
 
-    assert {:ok, 7} = Executor.run(source, fn mod -> mod.add(3, 4) end)
+    assert {:ok, "{:answer, 42}"} = Executor.run_source(source)
   end
 
-  test "returns {:error, :compile, reason} for syntactically invalid source" do
-    assert {:error, :compile, reason} =
-             Executor.run("this is not valid elixir!!!", fn _ -> :ok end)
-
-    assert is_binary(reason)
-  end
-
-  test "returns {:error, :runtime, _} when fun raises" do
+  test "run_source reports compile failure" do
+    # Unparseable source is caught by the host-fallback scan before the
+    # subprocess; parseable-but-uncompilable source exercises the subprocess.
     source = """
-    defmodule ExecBoom do
-      def boom, do: raise "explosion"
+    defmodule ExecSourceBadCompile do
+      def run, do: this_function_does_not_exist()
     end
     """
 
-    assert {:error, :runtime, _} = Executor.run(source, fn mod -> mod.boom() end)
+    assert {:error, msg} = Executor.run_source(source)
+    assert msg =~ ~r/exit \d+/
   end
 
-  test "returns {:error, :timeout} when fun exceeds configured timeout" do
+  test "run_source reports runtime failure" do
     source = """
-    defmodule ExecHang do
-      def hang, do: Process.sleep(:infinity)
+    defmodule ExecSourceBoom do
+      def run, do: raise("boom")
     end
     """
 
-    assert {:error, :timeout} = Executor.run(source, fn mod -> mod.hang() end, timeout: 50)
+    assert {:error, msg} = Executor.run_source(source)
+    assert msg =~ "boom"
   end
 
-  test "loads all modules in source; fun receives the last defined module atom" do
+  test "run_source times out" do
     source = """
-    defmodule ExecHelper do
-      def val, do: 42
-    end
-
-    defmodule ExecMain do
-      def result, do: ExecHelper.val() * 2
+    defmodule ExecSourceHang do
+      def run, do: Process.sleep(60_000)
     end
     """
 
-    assert {:ok, 84} = Executor.run(source, fn mod -> mod.result() end)
-  end
-
-  describe "remote node dispatch" do
-    test "node: nil uses local execution (existing behavior)" do
-      source = """
-      defmodule RemoteTestLocal do
-        def run, do: :local_result
-      end
-      """
-      assert {:ok, :local_result} = Shem.Lab.Executor.run(source, fn m -> m.run() end, node: nil)
-    end
-
-    test "node: Node.self() uses local execution" do
-      source = """
-      defmodule RemoteTestSelf do
-        def run, do: :self_result
-      end
-      """
-      assert {:ok, :self_result} =
-               Shem.Lab.Executor.run(source, fn m -> m.run() end, node: Node.self())
-    end
-
-    test "node: :nonexistent@host returns {:error, _} " do
-      source = "defmodule RemoteTestFail do\n  def run, do: :ok\nend"
-      result = Shem.Lab.Executor.run(source, fn m -> m.run() end, node: :"nonexistent@127.0.0.1")
-      assert match?({:error, _}, result)
-    end
+    assert {:error, msg} = Executor.run_source(source, timeout: 2_000)
+    assert msg =~ "timeout"
   end
 end

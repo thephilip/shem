@@ -291,14 +291,11 @@ defmodule Shem.Agent.ToolDispatch do
 
   defp dispatch_builtin("run_code", args) do
     source = args["source"] || ""
-    timeout = args["timeout_ms"] || 5_000
+    timeout = args["timeout_ms"] || Application.get_env(:shem, :executor_timeout_ms, 30_000)
 
-    case Lab.Executor.run(source, fn mod -> mod.run() end, timeout: timeout, scan: false) do
-      {:ok, result} -> {:ok, inspect(result)}
-      {:error, :compile, msg} -> {:error, "compile error: #{msg}"}
-      {:error, :timeout} -> {:error, "timeout after #{timeout}ms"}
-      {:error, :runtime, reason} -> {:error, "runtime error: #{inspect(reason)}"}
-    end
+    # Phase 6: source runs in the sandbox (container, or scanned host subprocess),
+    # never in the host BEAM.
+    Lab.Executor.run_source(source, timeout: timeout)
   end
 
   defp dispatch_builtin("write_tool", args) do
