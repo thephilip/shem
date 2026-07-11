@@ -1,5 +1,5 @@
 defmodule Shem.Lab.GraduationGate.Go do
-  alias Shem.Lab.{Workspace, Executor, Registry}
+  alias Shem.Lab.{Workspace, Executor}
   alias Shem.Tool
 
   def run(source, test_source, opts) do
@@ -73,24 +73,6 @@ defmodule Shem.Lab.GraduationGate.Go do
       }
     }
 
-    :ok = Workspace.graduate(tool)
-    :ok = Registry.register(tool)
-    # Same single-turn hardening review the Python/JS gates run (:skip → 0.5 when no
-    # LLM), so trust parity holds across runtimes.
-    seed_trust(tool.id, hardening_score(tool))
-    {:ok, tool}
-  end
-
-  defp hardening_score(tool) do
-    case Shem.Lab.GraduationGate.Hardening.check(tool) do
-      {:ok, score} -> score
-      :skip -> 0.5
-    end
-  end
-
-  defp seed_trust(tool_id, score) do
-    Shem.Trust.Store.seed(tool_id, score)
-  catch
-    :exit, _ -> :ok
+    Shem.Lab.GraduationGate.Common.register_and_seed(tool)
   end
 end
