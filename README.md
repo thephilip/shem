@@ -208,6 +208,9 @@ What Shem deliberately does **not** implement:
 (SEP-2577), and Shem gives you the fuller version anyway: bring your own
 key/local model (direct adapter), or drive turns yourself (client-brain loop).
 
+Longer write-up: [Sampling is dead, elicitation is standard — what MRTR means
+for agent servers](docs/2026-07-mrtr-elicitation.md).
+
 ## Presets
 
 | Preset | Purpose |
@@ -334,7 +337,7 @@ No begging here — just what's true so you can decide for yourself.
 
 ## Roadmap
 
-Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge) and container-sandboxed polyglot tools (Python/JS/Go). Upcoming: a browser **co-driver** (inject a running agent's next turn from the WebUI), human-in-the-loop approvals, and hive_mind trust-weighted consensus.
+Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: human-in-the-loop approvals and hive_mind trust-weighted consensus. Full plan: [ROADMAP.md](ROADMAP.md).
 
 ## License
 
