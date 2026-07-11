@@ -137,16 +137,24 @@ co-driver through an MRTR round-trip (capability-gated, tampered `requestState`
 rejected); the post is live. A live RC-speaking client
 end-to-end is a stretch, not a gate (RC ≠ GA).
 
-## Phase 6 — Sandbox & Pack Contract `pending`
+## Phase 6 — Sandbox & Pack Contract `done`
 
 Two specs (the first real toolpacks — browser/knowledge/secret — are the
 forcing function for spec 2; see the 2026-07-03 friction-log entry):
 
-- **Elixir parity sandbox** `pending` — Elixir tool graduation and invocation
-  run with the same isolation as Python/JS/Go: container-executed or on a
-  disposable peer node (the `Executor.run_remote` plumbing exists). Replaces
-  the Phase 1 AST scan as the enforcement layer (the scan may remain as a
-  fast pre-filter).
+- **Elixir parity sandbox** `done 2026-07-11` — Elixir is the 5th `:port`
+  runtime: graduation runs the tool's tests in an `elixir:1.19-alpine`
+  container; invocation is a pooled containerized worker (stdlib-`JSON`
+  runner, zero deps). `run_code`/`execute_code` re-routed through a
+  sandboxed `Executor.run_source/2`; the host-BEAM `Executor.run/3` and both
+  invoke-time recompile paths are deleted; `{:beam, _}` dispatch is refused
+  for anything but first-party seed modules. Legacy `{:beam, _}` tools
+  auto-convert to `:port` on load (scan → artifact → manifest rewrite,
+  idempotent). SourceScan stays as pre-filter, and is the sole guard on the
+  no-container host fallback. Exit criteria verified: `grep compile_string
+  lib/` hits only the two driver strings that execute *inside* the sandbox;
+  README caveat removed; keyless containerized graduate+invoke e2e green
+  against podman (suite 1337, `--include elixir_integration`).
 - **Pack contract v2** `done 2026-07-05` — declarative per-tool needs,
   host decides policy. Live-verified same day: consent → grant → gate in the
   granted image → sandboxed screenshot over granted network → per-action deny +

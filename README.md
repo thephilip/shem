@@ -99,10 +99,7 @@ replay or fork *inside* the pruned range is refused.
 
 **Steerable.** Pause a running agent at its next turn boundary (`Space`), inject a course-correction, resume. Kill it outright (`Ctrl+K`). Fence it to a directory (`/fence <path>`). The agent is a process you control, not a request you wait on.
 
-**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted (Python/Go in a container with `pytest`/`go test`, JavaScript in a container with `deno test`). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. Graduated Python, JavaScript, and Go tools run **container-sandboxed** at invocation — `--network=none` and a read-only source mount by default — with JavaScript additionally under Deno's deny-all permission model. Tools that genuinely need more (network, a custom image, a host mount) declare it in their pack manifest and get it only with an explicit per-tool grant at install — see [PACKS.md](PACKS.md). (Without a container runtime, default-profile tools fall back to the host with a warning; elevated-profile tools refuse to run.)
-Elixir tools currently compile into the host BEAM behind a static safety
-scan (pure compute only — no file, system, or network access); full parity
-sandboxing for Elixir is on the roadmap ([Phase 6](ROADMAP.md)).
+**Self-improving, with receipts.** Agents write and graduate their own tools in **Elixir, Python, JavaScript (Deno), or Go** — each tested before it's trusted, in a container (`pytest`/`go test`/`deno test`, and Elixir's gate runs the tool's tests inside an `elixir:alpine` container). Tools that prove invariants with property-based tests graduate clean; example-only tools graduate at reduced trust. A red-team agent hardens every graduated tool, and trust scores gate execution. All four languages run **container-sandboxed** at invocation — `--network=none` and a read-only source mount by default — with JavaScript additionally under Deno's deny-all permission model. Tools that genuinely need more (network, a custom image, a host mount) declare it in their pack manifest and get it only with an explicit per-tool grant at install — see [PACKS.md](PACKS.md). (Without a container runtime, default-profile tools fall back to host subprocesses with a warning — Elixir additionally behind an AST deny-scan — and elevated-profile tools refuse to run. Agent-authored Elixir never compiles into the host BEAM, container or not.)
 
 ## Built on the BEAM
 
@@ -331,13 +328,12 @@ No begging here — just what's true so you can decide for yourself.
 
 - **Young and single-author.** Shem is early. APIs move, and the community is small. If you need a battle-tested framework with a big ecosystem today, this isn't it yet.
 - **Not the only thing with time-travel.** LangGraph and others can rewind and fork from checkpoints. Shem's specific bet is *deterministic replay from a tamper-evident log* plus *offline-verifiable attestation* — evidence, not just traces — on the BEAM. That combination is the edge, not "debugging" as a category.
-- **Elixir tools aren't sandboxed yet.** Python/JS/Go tools run container-sandboxed; Elixir tools compile into the host BEAM behind a static safety scan (pure compute only). Full parity is [Phase 6](ROADMAP.md).
 - **Fork & continue re-rolls.** Replay *from the log* is deterministic. Forking forward runs live — new LLM calls re-roll and side-effecting tools execute again. That's by design, but it's not "replay."
 - **Determinism has a boundary.** Only what's in the log replays deterministically. GC'd segments are summarized, not archived — replay or fork *inside* a pruned range is refused.
 
 ## Roadmap
 
-Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: human-in-the-loop approvals and hive_mind trust-weighted consensus. Full plan: [ROADMAP.md](ROADMAP.md).
+Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go/Elixir — nothing agent-authored touches the host BEAM), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: human-in-the-loop approvals and hive_mind trust-weighted consensus. Full plan: [ROADMAP.md](ROADMAP.md).
 
 ## License
 

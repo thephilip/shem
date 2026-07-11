@@ -35,6 +35,11 @@ fails its own tests is rejected. You are not asking users to trust your CI.
 | `sandbox` | object | no | elevated profile request — see below |
 | `actions` | list | no | `[{"name": ..., "risk": ...}]` — see below |
 
+All four languages run under the same contract — including Elixir, which
+graduates and runs as a containerized `:port` runtime like the rest (Phase 6):
+`sandbox:` profiles apply, secret handles resolve at invocation, and pack
+Elixir never compiles into the host BEAM.
+
 **`sandbox`** — omit it and your tool runs in the default profile. Fields:
 
 - `network` (boolean, default `false`) — `true` removes `--network=none`.
@@ -114,12 +119,6 @@ Undeclared actions are blocked fail-closed regardless of policy.
   network grant. Grants bound the blast radius; they don't audit intent.
 - Risk tags are advisory. They feed the hardening review and the operator's
   decision; they are not enforced semantics.
-- Elixir tools compile into the host BEAM behind the AST safety scan — the
-  parity sandbox is a separate roadmap item, and elevated profiles do not
-  apply to them.
-- Secret handles resolve for port-runtime tools (Python/JS/Go) only; Elixir
-  tools await the parity sandbox.
-
 ## Pre-publish checklist
 
 - [ ] Declare your real sandbox profile — nothing more, nothing less.
