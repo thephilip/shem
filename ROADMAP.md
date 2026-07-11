@@ -107,8 +107,7 @@ counts (`cache_read/creation_input_tokens`) surfaced on `Shem.LLM.Response`.
 Suite 1314 green; whole-branch review clean. **Outstanding:** the measured
 before/after token number for the README (needs a live key + `shem start`).
 
-**Plan B — Elicitation-over-MRTR co-driver `implemented 2026-07-10` (deadline
-2026-07-28).**
+**Plan B — Elicitation-over-MRTR co-driver `done 2026-07-10`.**
 MRTR's *surviving* payload is elicitation, and Shem's Phase-2 human co-driver
 (park → `provide_turn`, a human supplies the turn) **is** an elicitation.
 Re-express that existing loop in the MRTR envelope so it speaks the standard
@@ -125,14 +124,17 @@ and the REST `/agents/:id/turn` path); MRTR conformance tests green; live
 round-trip re-verified over real HTTP 2026-07-10 (`initialize` negotiates
 `2026-07-28`, `spawn_agent` parks with an `elicitation/create` request +
 signed `requestState`, retry with `inputResponses` resumes to a final result,
-requestState replay rejected as `stale_turn`); positioning post drafted at
-`docs/superpowers/posts/2026-07-mrtr-elicitation-post.md`, publication
-pending.
+requestState replay rejected as `stale_turn`); positioning post published at
+[`docs/2026-07-mrtr-elicitation.md`](docs/2026-07-mrtr-elicitation.md) and
+linked from the README. The first real browser click-through of the co-driver
+strip (2026-07-10) exposed a WebUI bug — the sessions list hardcoded active
+status to `running`, so the strip's `awaiting_turn` render condition never
+fired — fixed and the strip verified end-to-end from the browser.
 
 **Exit criteria:** Plan A — a 2nd session turn returns `cache_read_input_tokens
 > 0`; token number in the README. Plan B — a conformance test drives the
 co-driver through an MRTR round-trip (capability-gated, tampered `requestState`
-rejected); the post is live before 2026-07-28. A live RC-speaking client
+rejected); the post is live. A live RC-speaking client
 end-to-end is a stretch, not a gate (RC ≠ GA).
 
 ## Phase 6 — Sandbox & Pack Contract `pending`
