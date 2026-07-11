@@ -53,6 +53,16 @@ defmodule Shem.Lab.GraduationGate.ElixirTest do
     assert inspect(reason) =~ "intentional failure"
   end
 
+  test "a test that returns a non-:ok value (without raising) fails the gate" do
+    returns_error = """
+    defmodule Gate.SoftFailTest do
+      def run, do: {:error, "assertions failed"}
+    end
+    """
+
+    assert {:error, :gate, _} = GraduationGate.run(@source, returns_error, language: "elixir")
+  end
+
   test "invalid source yields {:error, :compile, _}" do
     assert {:error, :compile, _} =
              GraduationGate.run("not elixir at all", @test_source, language: "elixir")

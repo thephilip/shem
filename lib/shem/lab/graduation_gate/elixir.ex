@@ -89,7 +89,13 @@ defmodule Shem.Lab.GraduationGate.Elixir do
         end
 
       {mod, _} = List.last(mods)
-      mod.run()
+
+      # Test contract: run/0 returns :ok on success (matches the pre-Phase-6
+      # {:ok, :ok} gate). A non-raising failure value must still fail the gate.
+      case mod.run() do
+        :ok -> :ok
+        other -> IO.puts("gate test returned " <> inspect(other)); System.halt(3)
+      end
       """
   end
 

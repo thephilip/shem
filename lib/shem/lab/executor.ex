@@ -33,8 +33,10 @@ defmodule Shem.Lab.Executor do
       File.write!(Path.join(dir, "source.exs"), source)
       File.write!(Path.join(dir, "run.exs"), driver())
 
+      # run_code/execute_code is a scratch primitive with no granted profile —
+      # deny network by default like every other unprofiled sandboxed tool.
       shell_opts =
-        [image: Shem.Lab.Sandbox.image("elixir"), mounts: [{dir, dir}]] ++
+        [image: Shem.Lab.Sandbox.image("elixir"), network: :none, mounts: [{dir, dir}]] ++
           Keyword.take(opts, [:run_fn])
 
       try do
