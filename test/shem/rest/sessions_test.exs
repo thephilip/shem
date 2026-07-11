@@ -45,6 +45,44 @@ defmodule Shem.REST.SessionsTest do
     EventLog.end_session(session_id)
   end
 
+  test "GET /sessions reports awaiting_turn for a parked client-brain agent's session" do
+    {:ok, name, sid} =
+      Shem.Agent.start_with_preset("general", "parked status test", brain: :client)
+
+    wait_for_awaiting(sid)
+
+    conn = get_path("/sessions")
+    assert conn.status == 200
+    found = Jason.decode!(conn.resp_body) |> Enum.find(&(&1["session_id"] == sid))
+
+    assert found != nil
+    assert found["active"] == true
+    assert found["status"] == "awaiting_turn"
+
+    Shem.Agent.stop(name)
+  end
+
+  defp wait_for_awaiting(sid, n \\ 250)
+  defp wait_for_awaiting(_sid, 0), do: flunk("agent never parked")
+
+  defp wait_for_awaiting(sid, n) do
+    case Shem.MCP.Handlers.AgentCommon.find_by_session(sid) do
+      {:ok, name} ->
+        case Shem.Agent.info(name) do
+          {:ok, %{status: :awaiting_turn}} ->
+            name
+
+          _ ->
+            Process.sleep(20)
+            wait_for_awaiting(sid, n - 1)
+        end
+
+      :not_found ->
+        Process.sleep(20)
+        wait_for_awaiting(sid, n - 1)
+    end
+  end
+
   test "GET /sessions session entries have required fields" do
     {:ok, session_id} = EventLog.start_session()
     EventLog.append(session_id, :agent_started, %{task: "field check", preset: "coder"})

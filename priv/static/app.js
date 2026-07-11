@@ -307,12 +307,12 @@ Alpine.data('sessionList', () => ({
   },
 
   statusLabel(s) {
-    const map = { running: '● LIVE', done: '✓ DONE', error: '✕ ERROR', fork: '⑂ FORK', unknown: '? UNKNOWN' };
+    const map = { running: '● LIVE', awaiting_turn: '◈ AWAITING TURN', done: '✓ DONE', error: '✕ ERROR', fork: '⑂ FORK', unknown: '? UNKNOWN' };
     return map[s.status] || s.status.toUpperCase();
   },
 
   statusColor(status) {
-    const map = { running: 'var(--ok)', done: 'var(--ink-2)', error: 'var(--bad)', fork: 'var(--accent)', unknown: 'var(--ink-3)' };
+    const map = { running: 'var(--ok)', awaiting_turn: 'var(--warn)', done: 'var(--ink-2)', error: 'var(--bad)', fork: 'var(--accent)', unknown: 'var(--ink-3)' };
     return map[status] || 'var(--ink-3)';
   },
 

@@ -3,6 +3,7 @@ defmodule Shem.REST.Handlers.Sessions do
 
   alias Shem.EventLog
   alias Shem.EventLog.HistoryScanner
+  alias Shem.MCP.Handlers.AgentCommon
 
   plug :match
   plug :dispatch
@@ -116,11 +117,21 @@ defmodule Shem.REST.Handlers.Sessions do
           {nil, 0}
       end
 
+    # The live agent's real status (a parked client-brain agent is
+    # "awaiting_turn", which the WebUI co-driver strip keys off).
+    status =
+      with {:ok, name} <- AgentCommon.find_by_session(session.id),
+           {:ok, info} <- Shem.Agent.info(name) do
+        Atom.to_string(info.status)
+      else
+        _ -> "running"
+      end
+
     %{
       session_id: session.id,
       task: task,
       started_at: session.started_at,
-      status: "running",
+      status: status,
       turn_count: turn_count,
       active: true
     }
