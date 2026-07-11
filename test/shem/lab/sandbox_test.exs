@@ -12,6 +12,21 @@ defmodule Shem.Lab.SandboxTest do
     assert Sandbox.image("elixir") == "docker.io/library/elixir:1.19-alpine"
   end
 
+  test "elixir host-fallback spawn_spec resolves an elixir launcher + runtime path" do
+    {exe, args, port_opts} =
+      Sandbox.spawn_spec(nil, %{
+        runtime_path: "/lab/graduated/foo_runtime.exs",
+        language: "elixir",
+        tool_id: "foo",
+        host_exe: "elixir"
+      })
+
+    # system elixir on PATH in dev/test -> absolute elixir, script is the last arg
+    assert exe =~ "elixir"
+    assert List.last(args) == "/lab/graduated/foo_runtime.exs"
+    assert port_opts == []
+  end
+
   test "spawn_spec host mode (runtime_bin nil) spawns the interpreter directly" do
     {exe, args, port_opts} =
       Sandbox.spawn_spec(nil, %{

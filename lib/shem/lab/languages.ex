@@ -19,6 +19,59 @@ defmodule Shem.Lab.Languages do
   def argv("go", dir), do: ["run", dir]
   def argv("elixir", script), do: [script]
 
+  @doc """
+  How to launch `elixir` on the host. Returns `{executable, prefix_argv}` —
+  append the script path (and its args).
+
+  Inside a release it uses the release's OWN bundled ERTS + Elixir ebins
+  (`erl -boot start_clean -pa … -s elixir start_cli -extra`), so the portable
+  tarball runs/graduates Elixir tools with neither a container runtime nor a
+  separate Elixir install — and it stays self-consistent with the release's
+  ERTS env instead of misbooting a mismatched system `elixir`. In a dev/source
+  run (no bundled Elixir under the code root) it uses system `elixir` on PATH.
+  Either way it launches a *fresh* BEAM, never the host BEAM.
+  """
+  @spec host_elixir() :: {String.t(), [String.t()]}
+  def host_elixir do
+    case bundled_elixir() do
+      {_erl, _prefix} = bundled -> bundled
+      :none -> {System.find_executable("elixir") || "elixir", []}
+    end
+  end
+
+  defp bundled_elixir do
+    root = to_string(:code.root_dir())
+
+    with [erl | _] <- Path.wildcard(Path.join(root, "erts-*/bin/erl")),
+         [boot | _] <- Path.wildcard(Path.join(root, "releases/*/start_clean.boot")),
+         [_ | _] <- Path.wildcard(Path.join(root, "lib/elixir-*/ebin")) do
+      # Only the Elixir stdlib apps — NOT Shem or its deps — so agent source in
+      # the host-fallback tier runs against a clean Elixir, same as `elixir X.exs`.
+      pa =
+        ~w(elixir eex ex_unit iex logger mix)
+        |> Enum.flat_map(fn app ->
+          root |> Path.join("lib/#{app}-*/ebin") |> Path.wildcard() |> Enum.take(1)
+        end)
+        |> Enum.flat_map(&["-pa", &1])
+
+      prefix =
+        [
+          "-boot",
+          String.trim_trailing(boot, ".boot"),
+          "-boot_var",
+          "RELEASE_LIB",
+          Path.join(root, "lib"),
+          # force UTF-8 filename encoding — start_clean drops the locale erl sets
+          "+fnu"
+        ] ++ pa ++ ["-noshell", "-s", "elixir", "start_cli", "-extra"]
+
+      {erl, prefix}
+    else
+      # Not a release (dev/source run) — defer to system elixir.
+      _ -> :none
+    end
+  end
+
   # Runtime artifact layout: single file (python/js) vs a directory package (go).
   def layout("go"), do: :dir
   def layout(_), do: :file

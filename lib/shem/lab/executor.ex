@@ -8,14 +8,32 @@ defmodule Shem.Lab.Executor do
 
   @default_timeout 30_000
 
+  @doc "The resolved execution backend (process override, then config, then Local)."
+  def backend do
+    Process.get(:shem_executor_backend) ||
+      Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
+  end
+
+  @doc """
+  How to invoke `elixir` for the resolved backend: a literal `elixir` inside a
+  container (the image provides it), or the host launcher (system elixir, else
+  the release's bundled runtime) on the Local backend. Append ` <script>.exs`.
+  """
+  def elixir_invocation do
+    case backend() do
+      Shem.Lab.Executor.Backend.Local ->
+        {exe, prefix} = Shem.Lab.Languages.host_elixir()
+        Enum.join([exe | prefix], " ")
+
+      _ ->
+        "elixir"
+    end
+  end
+
   @spec run_shell(String.t(), non_neg_integer(), keyword()) ::
           {:ok, String.t()} | {:error, String.t()}
   def run_shell(cmd, timeout_ms, opts \\ []) do
-    backend =
-      Process.get(:shem_executor_backend) ||
-        Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
-
-    backend.run_shell(cmd, timeout_ms, opts)
+    backend().run_shell(cmd, timeout_ms, opts)
   end
 
   @doc """
@@ -42,7 +60,7 @@ defmodule Shem.Lab.Executor do
       try do
         # cd to the dir's own absolute path (mounted at the same path in the
         # container) so the Local fallback backend runs the same command.
-        case run_shell("cd #{dir} && elixir run.exs", timeout, shell_opts) do
+        case run_shell("cd #{dir} && #{elixir_invocation()} run.exs", timeout, shell_opts) do
           {:ok, out} ->
             case String.split(out, "__SHEM_RESULT__") do
               [_, result] -> {:ok, String.trim(result)}
@@ -69,11 +87,7 @@ defmodule Shem.Lab.Executor do
   # In-container the sandbox is the enforcement layer; on the host-subprocess
   # fallback the AST scan is the only guard (spec §3).
   defp host_fallback_scan(source) do
-    backend =
-      Process.get(:shem_executor_backend) ||
-        Application.get_env(:shem, :resolved_executor_backend, Shem.Lab.Executor.Backend.Local)
-
-    if backend == Shem.Lab.Executor.Backend.Local do
+    if backend() == Shem.Lab.Executor.Backend.Local do
       case Shem.Lab.SourceScan.scan(source) do
         :ok -> :ok
         {:error, msg} -> {:error, msg}

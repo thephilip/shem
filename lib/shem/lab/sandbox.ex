@@ -23,6 +23,13 @@ defmodule Shem.Lab.Sandbox do
     do: Application.get_env(:shem, :executor_image_elixir, "docker.io/library/elixir:1.19-alpine")
 
   @spec spawn_spec(String.t() | nil, map()) :: {String.t(), [String.t()], keyword()}
+  # Elixir host fallback: no container runtime and maybe no system elixir (the
+  # portable tarball) — launch a fresh BEAM via the release's bundled runtime.
+  def spawn_spec(nil, %{language: "elixir", runtime_path: path}) do
+    {exe, prefix} = Languages.host_elixir()
+    {exe, prefix ++ [path], []}
+  end
+
   def spawn_spec(nil, %{language: lang, runtime_path: path, host_exe: exe}) do
     port_opts =
       case Languages.layout(lang) do

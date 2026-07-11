@@ -50,7 +50,7 @@ defmodule Shem.Lab.GraduationGate.Elixir do
     # cd to the dir's own absolute path (mounted at the same path) so the
     # Local fallback backend runs the identical command.
     result =
-      Executor.run_shell("cd #{dir} && elixir gate.exs", timeout,
+      Executor.run_shell("cd #{dir} && #{Executor.elixir_invocation()} gate.exs", timeout,
         image: image,
         mounts: [{dir, dir} | extra_mounts]
       )
