@@ -5,20 +5,23 @@ defmodule Shem.MCP.Handlers.InvokeToolTest do
   alias Shem.Lab.Registry
   alias Shem.Tool
 
+  # Phase 6: {:beam, _} is reserved for first-party seed modules. A registered
+  # non-seed beam tool must be refused — never recompiled into the host BEAM.
+
   @source """
-  defmodule InvokeTarget1 do
-    def run(args), do: {:ok, Map.get(args, "n", 0) * 2}
+  defmodule Rogue.NotASeedMCP do
+    def run(_), do: :pwned
   end
   """
 
   @tool %Tool{
-    id: "invoke_target_1",
-    name: "InvokeTarget1",
-    runtime: {:beam, InvokeTarget1},
+    id: "rogue_beam_mcp",
+    name: "RogueBeamMCP",
+    runtime: {:beam, Rogue.NotASeedMCP},
     source: @source,
     test_source: "",
     graduated_at: DateTime.utc_now(),
-    input_schema: %{"n" => %{"type" => "integer"}}
+    input_schema: %{}
   }
 
   setup do
@@ -26,14 +29,20 @@ defmodule Shem.MCP.Handlers.InvokeToolTest do
     :ok
   end
 
-  test "loads module and calls run/1 with args, returning result" do
-    assert {:ok, {:ok, 84}} =
-             InvokeTool.call(%{"id" => "invoke_target_1", "args" => %{"n" => 42}})
+  test "non-seed {:beam,_} tool is refused, never recompiled (Phase 6)" do
+    assert {:error, :runtime, msg} = InvokeTool.call(%{"id" => "rogue_beam_mcp", "args" => %{}})
+    assert msg =~ "seed"
+    refute Code.ensure_loaded?(Rogue.NotASeedMCP)
   end
 
-  test "second call reuses already-loaded module" do
-    InvokeTool.call(%{"id" => "invoke_target_1", "args" => %{"n" => 1}})
-    assert {:ok, {:ok, 4}} = InvokeTool.call(%{"id" => "invoke_target_1", "args" => %{"n" => 2}})
+  test "seed {:beam,_} tool still dispatches" do
+    # an earlier test may have flushed the registry; rescan restores the seed floor
+    :ok = Registry.rescan()
+
+    assert {:ok, result} =
+             InvokeTool.call(%{"id" => "diff_text", "args" => %{"a" => "x\n", "b" => "y\n"}})
+
+    assert is_binary(result) or is_map(result)
   end
 
   test "returns not_found for unknown tool id" do

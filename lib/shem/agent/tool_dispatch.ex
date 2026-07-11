@@ -524,36 +524,14 @@ defmodule Shem.Agent.ToolDispatch do
   defp score_to_band(score) when score >= 0.5, do: :medium
   defp score_to_band(_score), do: :low
 
-  defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
-    case :code.is_loaded(module) do
-      false ->
-        # Tamper defense: stored source is re-scanned before any recompile.
-        with :ok <- Shem.Lab.SourceScan.scan(source) do
-          compile_and_load(module, source)
-        end
-
-      _ ->
-        :ok
-    end
-  end
-
-  defp compile_and_load(module, source) do
-    try do
-      case Code.compile_string(source) do
-        compiled when is_list(compiled) ->
-          case Enum.find(compiled, fn {mod, _bc} -> mod == module end) do
-            {^module, bc} ->
-              case :code.load_binary(module, ~c"nofile", bc) do
-                {:module, _} -> :ok
-                {:error, _} -> {:error, "failed to load #{module}"}
-              end
-
-            nil ->
-              {:error, "failed to compile #{module}"}
-          end
-      end
-    rescue
-      e -> {:error, "compile error: #{Exception.message(e)}"}
+  # Phase 6: {:beam, _} is reserved for first-party seed modules — compiled into
+  # the release and force-loaded at Registry init. Agent/pack Elixir converts to
+  # {:port, _} at load; anything else reaching here is refused, never recompiled.
+  defp ensure_loaded(%{runtime: {:beam, module}}) do
+    if module in Shem.SeedTools.modules() do
+      :ok
+    else
+      {:error, "beam runtime is reserved for first-party seed tools"}
     end
   end
 

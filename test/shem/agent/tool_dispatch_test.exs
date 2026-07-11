@@ -355,6 +355,39 @@ defmodule Shem.Agent.ToolDispatchTest do
     end
   end
 
+  describe "execute/2 — beam runtime reserved for seeds (Phase 6)" do
+    test "non-seed {:beam,_} tool is refused, never recompiled" do
+      tool = %Shem.Tool{
+        id: "rogue_beam",
+        name: "RogueBeam",
+        runtime: {:beam, Rogue.NotASeed},
+        source: "defmodule Rogue.NotASeed do\n  def run(_), do: :pwned\nend",
+        test_source: "",
+        graduated_at: DateTime.utc_now(),
+        metadata: %{}
+      }
+
+      :ok = Shem.Lab.Registry.register(tool)
+
+      manifest = [%{name: "RogueBeam", description: "", source: {:lab, "rogue_beam"}, trust: :unrated}]
+      assert {:error, msg} = ToolDispatch.execute(%{name: "RogueBeam", args: %{}}, manifest)
+      assert msg =~ "seed"
+      refute Code.ensure_loaded?(Rogue.NotASeed)
+    end
+
+    test "seed {:beam,_} tool still dispatches" do
+      # an earlier test may have flushed the registry; rescan restores the seed floor
+      :ok = Shem.Lab.Registry.rescan()
+      manifest = [%{name: "DiffText", description: "", source: {:lab, "diff_text"}, trust: :unrated}]
+
+      assert {:ok, _} =
+               ToolDispatch.execute(
+                 %{name: "DiffText", args: %{"a" => "x\n", "b" => "y\n"}},
+                 manifest
+               )
+    end
+  end
+
   describe "execute/2 — unknown tool" do
     test "returns {:error, 'unknown tool: name'} when not in manifest" do
       assert {:error, "unknown tool: ghost"} =

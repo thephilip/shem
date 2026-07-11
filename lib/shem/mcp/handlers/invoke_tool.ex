@@ -55,25 +55,14 @@ defmodule Shem.MCP.Handlers.InvokeTool do
     end
   end
 
-  defp ensure_loaded(%{runtime: {:beam, module}, source: source}) do
-    case :code.is_loaded(module) do
-      false ->
-        # Tamper defense: stored source is re-scanned before any recompile.
-        with :ok <- Shem.Lab.SourceScan.scan(source) do
-          case Code.compile_string(source) do
-            [{^module, bytecode} | _] ->
-              case :code.load_binary(module, ~c"nofile", bytecode) do
-                {:module, _} -> :ok
-                {:error, _} -> {:error, :load_failed}
-              end
-
-            _ ->
-              {:error, :load_failed}
-          end
-        end
-
-      _ ->
-        :ok
+  # Phase 6: {:beam, _} is reserved for first-party seed modules — compiled into
+  # the release and force-loaded at Registry init. Agent/pack Elixir converts to
+  # {:port, _} at load; anything else reaching here is refused, never recompiled.
+  defp ensure_loaded(%{runtime: {:beam, module}}) do
+    if module in Shem.SeedTools.modules() do
+      :ok
+    else
+      {:error, :runtime, "beam runtime is reserved for first-party seed tools"}
     end
   end
 end

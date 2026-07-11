@@ -22,7 +22,8 @@ defmodule Shem.Lab.LoadSiteScanTest do
 
     :ok = Registry.register(tool)
     result = Shem.MCP.Handlers.InvokeTool.call(%{"id" => tool.id, "args" => %{}})
-    assert {:error, _} = result
+    # Phase 6: refused outright — non-seed beam tools never compile, scanned or not.
+    assert {:error, :runtime, _} = result
     refute Code.ensure_loaded?(TamperedToolNotLoaded)
   end
 
@@ -48,7 +49,8 @@ defmodule Shem.Lab.LoadSiteScanTest do
 
     result = Shem.Agent.ToolDispatch.execute(%{name: tool.id, args: %{}}, manifest)
     assert {:error, msg} = result
-    assert msg =~ "safety scan"
+    # Phase 6: refused outright — non-seed beam tools never compile, scanned or not.
+    assert msg =~ "seed"
     refute Code.ensure_loaded?(TamperedDispatchToolNotLoaded)
   end
 end
