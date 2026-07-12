@@ -140,6 +140,7 @@ defmodule Shem.Agent.Server do
             model: config.model,
             max_turns: config.max_turns,
             preset: config.preset,
+            brain: config.brain,
             project_context: config.project_context && Map.from_struct(config.project_context)
           })
           {[%{role: :user, content: config.task}], 0}

@@ -82,6 +82,27 @@ defmodule Shem.AgentTest do
       Shem.Agent.stop(name)
     end
 
+    test "resume/3 threads brain/preset/max_turns/model into config and the recorded agent_started" do
+      sid = "ses_RESUME_OPTS_#{System.unique_integer([:positive])}"
+      {:ok, ^sid} = Shem.EventLog.start_session(sid)
+
+      # no checkpoint in the session → init appends :agent_started with the config
+      assert {:ok, name, _} =
+               Shem.Agent.resume(sid, "opts task",
+                 brain: :client,
+                 preset: "general",
+                 max_turns: 7
+               )
+
+      {:ok, events} = Shem.EventLog.read_session_events(sid)
+      started = Enum.find(events, &(&1.type == :agent_started))
+      assert started.payload.brain == :client
+      assert started.payload.max_turns == 7
+      assert started.payload.preset == "general"
+
+      Shem.Agent.stop(name)
+    end
+
     test "started agent is queryable via status/1" do
       sid = "ses_RESUME_STATUS_#{System.unique_integer([:positive])}"
       {:ok, ^sid} = Shem.EventLog.start_session(sid)

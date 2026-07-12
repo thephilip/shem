@@ -40,6 +40,53 @@ defmodule Shem.Sessions.ForkTest do
     end
   end
 
+  describe "resume_opts/1" do
+    test "reads brain/preset/max_turns/model from the agent_started payload" do
+      {:ok, sid} = EventLog.start_session()
+
+      {:ok, _} =
+        EventLog.append(sid, :agent_started, %{
+          task: "t",
+          model: :default,
+          max_turns: 7,
+          preset: "general",
+          brain: :model
+        })
+
+      {:ok, events} = EventLog.read_session_events(sid)
+      opts = Fork.resume_opts(events)
+      assert opts[:brain] == :model
+      assert opts[:preset] == "general"
+      assert opts[:max_turns] == 7
+      assert opts[:model] == :default
+    end
+
+    test "legacy payload without brain falls back to the copied checkpoint's config" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, _} = EventLog.append(sid, :agent_started, %{task: "t", max_turns: 20, preset: "general"})
+
+      config = %Shem.Agent.Config{task: "t", system_prompt: "sys", brain: :model}
+
+      {:ok, _} =
+        EventLog.append(sid, :agent_checkpoint, %{
+          history: [],
+          turn_count: 0,
+          config: config,
+          node: node()
+        })
+
+      {:ok, events} = EventLog.read_session_events(sid)
+      assert Fork.resume_opts(events)[:brain] == :model
+    end
+
+    test "legacy payload without brain and no checkpoint defaults to :client" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, _} = EventLog.append(sid, :agent_started, %{task: "t", max_turns: 20, preset: "general"})
+      {:ok, events} = EventLog.read_session_events(sid)
+      assert Fork.resume_opts(events)[:brain] == :client
+    end
+  end
+
   describe "build_fork/5 (moved verbatim)" do
     test "copies prefix, injects alt_response, records provenance, finalizes static forks" do
       %{sid: sid, events: events, llm2: llm2} = seed()

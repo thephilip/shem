@@ -101,6 +101,46 @@ defmodule Shem.Sessions.Fork do
     end
   end
 
+  @doc """
+  Resume opts recovered from a (copied) session's `:agent_started` payload —
+  preset resolution at resume restores the tool set, so a forked specialist
+  isn't silently downgraded to the general preset. Legacy sessions recorded
+  before `brain` was in the payload fall back to the last copied
+  `:agent_checkpoint`'s full config; with neither, `:client` is the park-safe
+  default (the variant awaits a turn instead of calling a model the parent
+  never named).
+  """
+  @spec resume_opts([map()]) :: keyword()
+  def resume_opts(events) do
+    p =
+      case Enum.find(events, &(&1.type == :agent_started)) do
+        %{payload: payload} -> payload
+        _ -> %{}
+      end
+
+    [preset: p[:preset] || "general", brain: recorded_brain(p, events)] ++
+      case p[:max_turns] do
+        n when is_integer(n) and n > 0 -> [max_turns: n]
+        _ -> []
+      end ++
+      case p[:model] do
+        nil -> []
+        m -> [model: m]
+      end
+  end
+
+  defp recorded_brain(%{brain: brain}, _events) when brain in [:client, :model], do: brain
+
+  defp recorded_brain(_p, events) do
+    events
+    |> Enum.filter(&(&1.type == :agent_checkpoint))
+    |> List.last()
+    |> case do
+      %{payload: %{config: %{brain: brain}}} when brain in [:client, :model] -> brain
+      _ -> :client
+    end
+  end
+
   @spec task_from_events([map()]) :: String.t()
   def task_from_events(events) do
     case Enum.find(events, &(&1.type == :agent_started)) do

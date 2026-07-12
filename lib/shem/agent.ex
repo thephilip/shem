@@ -186,13 +186,19 @@ defmodule Shem.Agent do
 
   @spec resume(String.t(), String.t(), keyword()) :: {:ok, String.t(), String.t()} | {:error, term()}
   def resume(session_id, task, opts \\ []) do
-    with {:ok, preset} <- Shem.Agent.Preset.resolve("general") do
+    preset_name = Keyword.get(opts, :preset, "general")
+
+    with {:ok, preset} <- Shem.Agent.Preset.resolve(preset_name) do
       config = %Config{
         task: task,
         system_prompt: preset.system_prompt,
-        tools: [],
-        max_turns: 20,
-        brain: Keyword.get(opts, :brain, :model)
+        # tools: [] means allow-all in Config; :all is preset-only shorthand
+        tools: if(preset.tools == :all, do: [], else: preset.tools),
+        max_turns: Keyword.get(opts, :max_turns, preset.max_turns),
+        model: Keyword.get(opts, :model, :default),
+        brain: Keyword.get(opts, :brain, :model),
+        preset: preset_name,
+        policy: Keyword.get(opts, :policy)
       }
 
       name = "agent_" <> Base.encode16(:crypto.strong_rand_bytes(4))
