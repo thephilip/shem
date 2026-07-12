@@ -122,6 +122,13 @@ Usage:
   shem upgrade               Upgrade to latest release
   shem version               Show installed version
 
+Evidence & ops (handled by the release CLI):
+  shem stop                  Stop the running service
+  shem attest <session>      Export an offline-verifiable session bundle
+  shem replay --check <session>   Golden-replay a session, exit non-zero on divergence
+  shem gc <session> [--keep N]    Prune old events into a rollup digest
+  shem install <repo> [path]      Install a tool pack from git
+
 HELP
 }
 
@@ -192,6 +199,12 @@ case "${1:-}" in
     ;;
 
   *)
+    # Verbs this dispatcher doesn't know (stop, attest, replay, gc, install, ...)
+    # live in the release overlay CLI — forward instead of erroring, so the
+    # installed front door exposes every verb the release ships.
+    if [ -x "${_SHEM_DIR}/shem" ]; then
+      exec "${_SHEM_DIR}/shem" "$@"
+    fi
     echo "shem: unknown command '${1}'"
     _shem_help
     exit 1

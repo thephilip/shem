@@ -326,8 +326,9 @@ each; this is the live stickiness measurement):
   written by `install.sh`) only knows start/setup/config/status/upgrade — `attest`,
   `replay`, and `gc` exist only in the release overlay script it shadows
   (`~/.local/lib/shem/shem`). The evidence verbs are invisible from the installed
-  front door; workaround is calling the overlay directly. Fix: dispatcher forwards
-  unknown verbs to the overlay script.
+  front door; workaround is calling the overlay directly. FIXED same day: the
+  dispatcher forwards unknown verbs to the overlay (exposes stop/attest/replay/gc/
+  install), help lists them; verified live (`shem attest` through the front door).
 
 ## Parked (explicitly not scheduled)
 
