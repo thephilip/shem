@@ -187,17 +187,36 @@ browser + knowledge packs run fully sandboxed with no `backend: local`
 workaround; a secret read through a handle appears nowhere in the event
 log or an attest bundle.
 
-## Phase 7 — Recall `pending`
+## Phase 7 — Recall `done`
 
 The first true exocortex feature: semantic query over past EventLogs —
 "have we solved this before?" — answered with replayable evidence, not
 summaries. Memory that cannot confabulate: the LLM queries it instead of
-re-deriving; the human audits the same index. Likely an MCP tool over an
-index of event payloads. Gets its own design cycle when it comes up.
+re-deriving; the human audits the same index.
 
-**Exit criteria (intent):** from a fresh session, an LLM over MCP finds a
+**Shipped 2026-07-12** — `recall_search` + `recall_context` MCP tools over a
+pure-BEAM lexical BM25 index (document = one event; no new deps, no
+persistent artifact). Scan-on-query with a `{mtime, size}` per-file cache;
+all reads via `EventLog.read_session_events/1` (never a raw DETS open).
+Hits carry a snippet, `event_id` coordinates, and a fork pointer — the
+nearest `:llm_call_completed` at-or-before the match, accepted verbatim by
+`POST /api/sessions/:id/fork`. Chain-broken sessions are refused as memory
+by *both* tools (skipped from search with a reason; `recall_context`
+returns `chain_broken`) — tampered evidence is never served; legacy
+pre-0.5.0 chains index as old-but-honest only where they verify. Every
+search appends a `:recall_query` event to a dedicated hash-chained session
+(`ses_RECALL_QUERIES`, excluded from its own corpus) — the reach-rate
+instrument for the exocortex measurement gate. Corpus is the on-disk DETS
+events dir; Mnesia/clustered sessions are documented as not yet indexed.
+Suite 1380; live-verified over real MCP HTTP against the actual dev corpus
+(search by meaning → context window → fork returned 201; 10 pre-0.5.0
+sessions correctly skipped as chain-broken; queries visible in
+`ses_RECALL_QUERIES`).
+
+**Exit criteria (met):** from a fresh session, an LLM over MCP finds a
 relevant past run by meaning (not session id), receives the matching events,
-and can fork/replay from what it found.
+and can fork/replay from what it found. Unprompted reach-rate now accrues in
+the query log for the Phase 8 gate.
 
 **Explore (non-blocking):** a session *narrator* — a small (possibly local)
 model that reads the agent conversation straight from the EventLog and emits
