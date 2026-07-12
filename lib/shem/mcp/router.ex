@@ -7,6 +7,9 @@ defmodule Shem.MCP.Router do
 
   alias Shem.MCP.Handlers.{
     AgentStatus,
+    CounterfactualRun,
+    CounterfactualSelect,
+    CounterfactualStatus,
     ExecuteCode,
     GraduateTool,
     InstallPack,
@@ -185,6 +188,11 @@ defmodule Shem.MCP.Router do
     - recall_search / recall_context: before re-deriving how something was done, \
     search past sessions — hits return the matching events plus fork coordinates \
     so you can replay or branch from the exact moment.
+    - counterfactual_run / counterfactual_status / counterfactual_select: before \
+    committing to an approach, fork a session at a turn, run alternative premises \
+    as live branches, diff them against what actually happened, and continue on \
+    the winner — every branch stays in the log as evidence. Variants re-execute \
+    tools live.
     - Every run is a forkable, hash-verified event log: fork at any turn to explore \
     "what if it had decided differently", then replay/verify deterministically.
 
@@ -206,6 +214,9 @@ defmodule Shem.MCP.Router do
   defp call_tool("list_packs", args), do: ListPacks.call(args)
   defp call_tool("recall_search", args), do: RecallSearch.call(args)
   defp call_tool("recall_context", args), do: RecallContext.call(args)
+  defp call_tool("counterfactual_run", args), do: CounterfactualRun.call(args)
+  defp call_tool("counterfactual_status", args), do: CounterfactualStatus.call(args)
+  defp call_tool("counterfactual_select", args), do: CounterfactualSelect.call(args)
   defp call_tool(_, _), do: {:error, :not_found}
 
   defp build_response(id, {:ok, result}),
@@ -438,6 +449,45 @@ defmodule Shem.MCP.Router do
             "radius" => %{"type" => "integer", "description" => "Events either side to include (default 3, max 50)"}
           },
           "required" => ["session_id", "event_id"]
+        }
+      },
+      %{
+        "name" => "counterfactual_run",
+        "description" =>
+          "Before committing to an approach, test alternatives against your own history: fork a session at a turn and run N variant premises as live branches. Each variant is an alternative assistant turn YOU write (it replaces the LLM content at the fork point); fork_event_id may be any event id — it resolves to the nearest llm_call_completed at or before it. Branches run sequentially; client-brain branches park awaiting your provide_turn (drive them via agent_status using the branch session_id). Poll counterfactual_status for the divergence report, keep a winner with counterfactual_select. side_effects: variants re-execute tools live — a branch that reaches side-effecting tools acts again. The wall clock includes time parked awaiting turns.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "session_id" => %{"type" => "string", "description" => "Session to fork (recall_search hits carry these)"},
+            "fork_event_id" => %{"type" => "string", "description" => "Any event id in the session; resolved to the nearest llm_call_completed at or before it"},
+            "variants" => %{"type" => "array", "items" => %{"type" => "string"}, "description" => "Alternative assistant-turn premises, one branch each (default cap 4)"},
+            "max_turns" => %{"type" => "integer", "description" => "Turn budget per branch beyond the fork point (default 4)"},
+            "deny_actions" => %{"type" => "array", "items" => %{"type" => "string"}, "description" => "Optional Guardrails deny list applied to every branch (e.g. [\"secret.read\"])"}
+          },
+          "required" => ["session_id", "fork_event_id", "variants"]
+        }
+      },
+      %{
+        "name" => "counterfactual_status",
+        "description" =>
+          "Poll a counterfactual run. Per-branch status (queued | running | awaiting_turn | done | error | timeout); awaiting_turn branches are yours to steer — call agent_status/provide_turn with the branch session_id. Once every branch is terminal the response carries the structured divergence report: per-branch turns, tool calls (name + args digest), terminal status, final content, and first-divergence/tool-call deltas vs the parent's own post-fork continuation. Reminder: variants re-execute tools live.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{"run_id" => %{"type" => "string", "description" => "From counterfactual_run"}},
+          "required" => ["run_id"]
+        }
+      },
+      %{
+        "name" => "counterfactual_select",
+        "description" =>
+          "Commit to a branch: appends a :counterfactual_selected event to the parent (the experiment and its outcome become attestable evidence — losing branches are finalized, never deleted) and resumes the chosen branch so you continue there.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "run_id" => %{"type" => "string", "description" => "From counterfactual_run"},
+            "branch_session_id" => %{"type" => "string", "description" => "The winning branch's session_id from the report"}
+          },
+          "required" => ["run_id", "branch_session_id"]
         }
       }
     ]
