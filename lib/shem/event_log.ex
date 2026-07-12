@@ -516,8 +516,17 @@ defmodule Shem.EventLog do
     end
   end
 
+  # A session_id becomes a filesystem path (<events dir>/<id>.dets) on the
+  # historical-file fallbacks, and it arrives from remote surfaces (REST :id,
+  # MCP arguments). Anything outside [A-Za-z0-9_] is refused before the
+  # filesystem is touched — traversal ids read as simply not found.
+  defp path_safe_session_id?(session_id),
+    do: is_binary(session_id) and session_id =~ ~r/^[A-Za-z0-9_]+$/
+
   defp store_has_session?(Shem.EventLog.DETSStore, session_id),
-    do: File.exists?(Path.join(event_log_path(), "#{session_id}.dets"))
+    do:
+      path_safe_session_id?(session_id) and
+        File.exists?(Path.join(event_log_path(), "#{session_id}.dets"))
 
   # Mnesia/Fake opens are non-creating lookups keyed by session id.
   defp store_has_session?(store, session_id) do
@@ -531,7 +540,7 @@ defmodule Shem.EventLog do
     path = event_log_path()
     dets_path = Path.join(path, "#{session_id}.dets")
 
-    if File.exists?(dets_path) do
+    if path_safe_session_id?(session_id) and File.exists?(dets_path) do
       table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
       file_charlist = String.to_charlist(dets_path)
 
@@ -569,7 +578,7 @@ defmodule Shem.EventLog do
     path = event_log_path()
     dets_path = Path.join(path, "#{session_id}.dets")
 
-    if File.exists?(dets_path) do
+    if path_safe_session_id?(session_id) and File.exists?(dets_path) do
       table = :"shem_history_#{session_id}_#{:erlang.unique_integer([:positive])}"
       file_charlist = String.to_charlist(dets_path)
 
