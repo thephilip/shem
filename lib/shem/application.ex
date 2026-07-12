@@ -23,7 +23,9 @@ defmodule Shem.Application do
         Shem.Recall.Index,
         Shem.LLM.BudgetServer,
         %{id: :pg_shem_streams, start: {:pg, :start_link, [:shem_streams]}},
-        Shem.NodeRegistry
+        Shem.NodeRegistry,
+        {Registry, keys: :unique, name: Shem.Counterfactual.Registry},
+        {DynamicSupervisor, name: Shem.Counterfactual.Supervisor, strategy: :one_for_one}
       ] ++
         adversarial_children() ++
         shadow_children() ++

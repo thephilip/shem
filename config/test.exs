@@ -50,3 +50,4 @@ config :shem, shadow_agent_enabled: false
 config :shem, start_port_pool: false
 
 config :shem, gc: [keep_events: :infinity]
+config :shem, counterfactual: %{max_variants: 4, default_max_turns: 4, wall_clock_ms: 5_000}
