@@ -109,6 +109,12 @@ defmodule Shem.Lab.Registry do
           try do
             [build_tool_from_manifest(id, m)]
           rescue
+            # transient disk trouble (File.read!/write! during legacy conversion)
+            # must not permanently quarantine a healthy tool — skip this boot
+            e in File.Error ->
+              Logger.warning("skipping graduated tool #{id} this boot (disk error): #{Exception.message(e)}")
+              []
+
             e ->
               quarantine(id, manifest_path)
               Logger.warning("quarantined unloadable graduated tool #{id} -> .broken/: #{Exception.message(e)}")
@@ -130,6 +136,10 @@ defmodule Shem.Lab.Registry do
                 try do
                   [convert_legacy_elixir(id, %{})]
                 rescue
+                  e in File.Error ->
+                    Logger.warning("skipping legacy tool #{id} this boot (disk error): #{Exception.message(e)}")
+                    []
+
                   e ->
                     quarantine(id, source_path)
 

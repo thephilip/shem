@@ -250,6 +250,22 @@ defmodule Shem.Lab.RegistryTest do
       assert {:ok, %{runtime: {:port, _}}} = Shem.Lab.Registry.lookup("orphan")
     end
 
+    test "conversion File.Error (source unreadable) skips the tool, does NOT quarantine" do
+      # elixir manifest without runtime_path, but the .ex is missing → File.read!
+      # raises File.Error inside convert_legacy_elixir. A transient disk error
+      # must not permanently move a healthy tool into .broken/.
+      dir = Path.join(Application.get_env(:shem, :lab_dir), "graduated")
+      write_legacy!("flaky", @legacy_source)
+      File.rm!(Path.join(dir, "flaky.ex"))
+
+      :ok = Shem.Lab.Registry.rescan()
+      assert {:error, :not_found} = Shem.Lab.Registry.lookup("flaky")
+
+      # not quarantined: manifest still in place, nothing moved to .broken/
+      assert File.exists?(Path.join(dir, "flaky.json"))
+      refute File.exists?(Path.join([dir, ".broken", "flaky.json"]))
+    end
+
     test "scan-failing legacy source is quarantined, not loaded" do
       write_legacy!("evil", """
       defmodule Legacy.Evil do
@@ -263,6 +279,22 @@ defmodule Shem.Lab.RegistryTest do
       broken = Path.join([Application.get_env(:shem, :lab_dir), "graduated", ".broken"])
       assert File.exists?(Path.join(broken, "evil.ex"))
     end
+  end
+
+  test "granted profile round-trips through a :port manifest" do
+    id = "granted_rt_#{System.unique_integer([:positive])}"
+    rt = Shem.Lab.Workspace.runtime_path(id, "python")
+    tool = %Shem.Tool{id: id, name: "GrantedRt", runtime: {:port, rt},
+      source: "def run(args):\n    return args", test_source: "",
+      graduated_at: DateTime.utc_now(),
+      metadata: %{"language" => "python", "granted" => %{"network" => true}}}
+    :ok = Shem.Lab.Workspace.graduate(tool)
+
+    manifest = Jason.decode!(File.read!(Shem.Lab.Workspace.manifest_path(id)))
+    assert manifest["granted"] == %{"network" => true}
+
+    reloaded = Shem.Lab.Registry.build_tool_from_manifest(id, manifest)
+    assert reloaded.metadata["granted"] == %{"network" => true}
   end
 
   test "reload reads Go tool source from tool.go inside the dir" do

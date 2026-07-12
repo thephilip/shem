@@ -99,6 +99,8 @@ defmodule Shem.Lab.Workspace do
   end
 
   defp build_manifest(%Tool{runtime: {:port, runtime_path}} = tool) do
+    granted = Map.get(tool.metadata, "granted", %{})
+
     %{
       "id"           => tool.id,
       "name"         => tool.name,
@@ -111,6 +113,8 @@ defmodule Shem.Lab.Workspace do
       "test_source"  => tool.test_source,
       "graduated_at" => DateTime.to_iso8601(tool.graduated_at)
     }
+    # empty grants omit the key entirely — same convention as Pack.install
+    |> then(&if granted == %{}, do: &1, else: Map.put(&1, "granted", granted))
     |> Jason.encode!(pretty: true)
   end
 
