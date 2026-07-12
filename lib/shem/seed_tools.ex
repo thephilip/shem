@@ -14,4 +14,7 @@ defmodule Shem.SeedTools do
   def modules, do: @modules
 
   def all, do: Enum.map(@modules, & &1.tool())
+
+  @doc "Is this a first-party seed module? The only modules {:beam, _} may dispatch to."
+  def seed?(module), do: module in @modules
 end

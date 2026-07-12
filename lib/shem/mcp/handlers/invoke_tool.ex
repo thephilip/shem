@@ -60,7 +60,7 @@ defmodule Shem.MCP.Handlers.InvokeTool do
   # the release and force-loaded at Registry init. Agent/pack Elixir converts to
   # {:port, _} at load; anything else reaching here is refused, never recompiled.
   defp ensure_loaded(%{runtime: {:beam, module}}) do
-    if module in Shem.SeedTools.modules() do
+    if Shem.SeedTools.seed?(module) do
       :ok
     else
       {:error, :runtime, "beam runtime is reserved for first-party seed tools"}
