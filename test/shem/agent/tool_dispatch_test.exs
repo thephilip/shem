@@ -855,5 +855,36 @@ defmodule Shem.Agent.ToolDispatchTest do
       assert is_binary(result)
       assert Jason.decode!(result) == %{"echo" => %{"x" => 1}}
     end
+
+    test ":port dispatch rejects args that fail the tool's declared schema" do
+      tool = %Shem.Tool{
+        id: "schema_port_agent",
+        name: "schema_port_agent",
+        runtime: {:port, "/nonexistent/runtime.py"},
+        source: "",
+        test_source: "",
+        graduated_at: DateTime.utc_now(),
+        metadata: %{
+          "language" => "python",
+          "schema" => %{
+            "type" => "object",
+            "properties" => %{"n" => %{"type" => "integer"}},
+            "required" => ["n"]
+          }
+        }
+      }
+
+      :ok = Shem.Lab.Registry.register(tool)
+      on_exit(fn -> Shem.Lab.Registry.rescan() end)
+
+      manifest = [%{name: tool.name, description: "d", source: {:lab, tool.id}, trust: :unrated}]
+
+      # invalid args short-circuit BEFORE any pool/runtime is touched
+      assert {:error, msg} =
+               ToolDispatch.execute(%{name: tool.name, args: %{"n" => "three"}}, manifest, [])
+
+      assert msg =~ "invalid args"
+      assert msg =~ "integer"
+    end
   end
 end

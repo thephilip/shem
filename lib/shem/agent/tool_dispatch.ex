@@ -500,7 +500,8 @@ defmodule Shem.Agent.ToolDispatch do
               true ->
                 language = Map.get(tool.metadata, "language", "python")
 
-                with {:ok, resolved_args} <- Shem.Secrets.resolve(args),
+                with {:ok, _} <- validate_input(args, tool),
+                     {:ok, resolved_args} <- Shem.Secrets.resolve(args),
                      {:ok, pool} <-
                        Lab.PortPool.Supervisor.ensure_started(tool.id, runtime_path, language) do
                   # agent history interpolates results as strings; port tools
@@ -517,6 +518,13 @@ defmodule Shem.Agent.ToolDispatch do
 
       {:error, :not_found} ->
         {:error, "tool not found in registry: #{id}"}
+    end
+  end
+
+  defp validate_input(args, tool) do
+    case Shem.MCP.Schema.validate_input(args, Map.get(tool.metadata, "schema", %{})) do
+      {:ok, args} -> {:ok, args}
+      {:error, :invalid_args, msg} -> {:error, "invalid args for #{tool.name}: #{msg}"}
     end
   end
 

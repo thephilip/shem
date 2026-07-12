@@ -52,4 +52,35 @@ defmodule Shem.MCP.Handlers.InvokeToolTest do
   test "returns invalid_args when required id field is missing" do
     assert {:error, :invalid_args, _} = InvokeTool.call(%{"args" => %{}})
   end
+
+  test ":port invoke validates args against the tool's declared schema" do
+    tool = %Tool{
+      id: "schema_port_mcp",
+      name: "SchemaPortMCP",
+      runtime: {:port, "/nonexistent/runtime.py"},
+      source: "",
+      test_source: "",
+      graduated_at: DateTime.utc_now(),
+      metadata: %{
+        "language" => "python",
+        "schema" => %{
+          "type" => "object",
+          "properties" => %{"n" => %{"type" => "integer"}},
+          "required" => ["n"]
+        }
+      }
+    }
+
+    Registry.register(tool)
+    on_exit(fn -> Registry.rescan() end)
+
+    # invalid args short-circuit BEFORE any pool/runtime is touched
+    assert {:error, :invalid_args, msg} =
+             InvokeTool.call(%{"id" => "schema_port_mcp", "args" => %{"n" => "three"}})
+
+    assert msg =~ "integer"
+
+    assert {:error, :invalid_args, _} =
+             InvokeTool.call(%{"id" => "schema_port_mcp", "args" => %{}})
+  end
 end
