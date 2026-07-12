@@ -20,6 +20,7 @@ defmodule Shem.Application do
         Shem.Telemetry,
         {Task.Supervisor, name: Shem.Lab.TaskSupervisor},
         Shem.Lab.Registry,
+        Shem.Recall.Index,
         Shem.LLM.BudgetServer,
         %{id: :pg_shem_streams, start: {:pg, :start_link, [:shem_streams]}},
         Shem.NodeRegistry
