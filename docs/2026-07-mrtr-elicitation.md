@@ -35,8 +35,54 @@ resumes.
 
 So when a client speaks MRTR and has the `elicitation` capability, Shem's
 co-driver loop now comes back as a standard `elicitation/create` input
-request instead of Shem's own polling shape. The human answers, the client
-retries the call, the agent's turn advances. This is a wire-format adapter
+request instead of Shem's own polling shape. Concretely, a `spawn_agent`
+tool call that parks returns this instead of a final result:
+
+```json
+{
+  "resultType": "input_required",
+  "inputRequests": {
+    "turn": {
+      "method": "elicitation/create",
+      "params": {
+        "mode": "form",
+        "message": "<the agent's prompt for its next turn>",
+        "requestedSchema": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string",
+              "description": "Next turn for the agent: embed a {\"tool\":…,\"args\":…} JSON object to call a tool, or plain text to finish"
+            }
+          },
+          "required": ["content"]
+        }
+      }
+    }
+  },
+  "requestState": "<HMAC-signed turn token>"
+}
+```
+
+The human answers, and the client retries the same `tools/call` with the
+`requestState` echoed back and the answer under `inputResponses`:
+
+```json
+{
+  "requestState": "<the token, verbatim>",
+  "inputResponses": {
+    "turn": {
+      "action": "accept",
+      "content": { "content": "{\"tool\": \"http_get\", \"args\": {\"url\": \"…\"}}" }
+    }
+  }
+}
+```
+
+The agent's turn advances, and the call either completes or parks again with
+a fresh `InputRequiredResult` for the next turn. A `decline` or `cancel`
+action leaves the agent parked and steerable through the classic
+`agent_status` / `provide_turn` path. This is a wire-format adapter
 over code that already shipped, not a new capability and not a rewrite of the
 loop's semantics. The claim is precise: **Shem's co-driver loop is
 MRTR-native via elicitation.** Not "Shem is MRTR-native". The rest of Shem
@@ -71,3 +117,13 @@ as every other turn in the agent's run. Speaking the standard format buys no
 exception from being recorded. You get a co-driver loop that is steerable
 through whatever client you already use, and provable after the fact
 regardless of which format steered it.
+
+## References
+
+- SEP-2322 (Multi Round-Trip Requests) and SEP-2577 (sampling deprecation),
+  in the [MCP specification repo](https://github.com/modelcontextprotocol/modelcontextprotocol).
+- The adapter itself: [`lib/shem/mcp/mrtr.ex`](../lib/shem/mcp/mrtr.ex),
+  about 150 lines over the existing park / `provide_turn` loop.
+- The signed turn token (`requestState`): [`lib/shem/turn_token.ex`](../lib/shem/turn_token.ex).
+- Conformance tests, including tampered and replayed `requestState`
+  rejection: [`test/shem/mcp/mrtr_test.exs`](../test/shem/mcp/mrtr_test.exs).
