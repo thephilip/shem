@@ -4,6 +4,7 @@ defmodule Shem.REST.Handlers.Sessions do
   alias Shem.EventLog
   alias Shem.EventLog.HistoryScanner
   alias Shem.MCP.Handlers.AgentCommon
+  alias Shem.Sessions.Fork
 
   plug :match
   plug :dispatch
@@ -32,8 +33,8 @@ defmodule Shem.REST.Handlers.Sessions do
       send_json(conn, 400, %{error: "fork_event_id is required"})
     else
       with {:ok, events} <- EventLog.read_session_events(id),
-           {:ok, fork_event} <- find_fork_event(events, fork_event_id),
-           {:ok, new_session_id} <- build_fork(id, events, fork_event, alt_response, continue) do
+           {:ok, fork_event} <- Fork.find_fork_event(events, fork_event_id),
+           {:ok, new_session_id} <- Fork.build_fork(id, events, fork_event, alt_response, continue) do
         send_json(conn, 201, fork_response(new_session_id, events, continue))
       else
         {:error, :not_found} -> send_json(conn, 404, %{error: "session not found"})
@@ -184,68 +185,13 @@ defmodule Shem.REST.Handlers.Sessions do
   defp sanitize_payload(v), do: v
 
   # continue: false → static finalized fork; continue: true → live, resumed.
+  # The browser co-driver drives resumed forks, so brain: :client by contract.
   defp fork_response(new_session_id, _events, false), do: %{session_id: new_session_id}
 
   defp fork_response(new_session_id, events, true) do
-    task = task_from_events(events)
-
-    case Shem.Agent.resume(new_session_id, task, brain: :client) do
-      {:ok, agent_id, _} -> %{session_id: new_session_id, agent_id: agent_id, continued: true}
-      {:error, reason} ->
-        # Resume failed — finalize the fork so it's a static snapshot, not a
-        # forever-"running" orphan the UI would poll with no agent behind it.
-        EventLog.finalize(new_session_id)
-        %{session_id: new_session_id, continued: false, error: inspect(reason)}
-    end
-  end
-
-  defp task_from_events(events) do
-    case Enum.find(events, &(&1.type == :agent_started)) do
-      %{payload: p} -> Map.get(p, :task) || "Resumed fork"
-      _ -> "Resumed fork"
-    end
-  end
-
-  defp find_fork_event(events, fork_event_id) do
-    case Enum.find(events, &(&1.id == fork_event_id)) do
-      nil -> {:error, :fork_event_not_found}
-      event when event.type == :llm_call_completed -> {:ok, event}
-      _event -> {:error, :not_llm_call}
-    end
-  end
-
-  defp build_fork(original_session_id, events, fork_event, alt_response, continue) do
-    case EventLog.start_session() do
-      {:ok, new_session_id} ->
-        # Record provenance first: which session this branched from and at which
-        # turn. Lets the UI label forks and re-open their compare-to-parent. The
-        # UI filters branch_created out of the side-by-side lanes.
-        EventLog.append(new_session_id, :branch_created, %{
-          original_session_id: original_session_id,
-          fork_event_id: fork_event.id
-        })
-
-        events_before = Enum.take_while(events, &(&1.id != fork_event.id))
-
-        Enum.each(events_before, fn event ->
-          EventLog.append(new_session_id, event.type, event.payload)
-        end)
-
-        fork_payload =
-          if alt_response && alt_response != "" do
-            Map.put(fork_event.payload, :content, alt_response)
-          else
-            fork_event.payload
-          end
-
-        EventLog.append(new_session_id, :llm_call_completed, fork_payload)
-        # Static compare-fork is finalized; a continue-fork stays active so the
-        # resumed agent can append to it.
-        unless continue, do: EventLog.finalize(new_session_id)
-        {:ok, new_session_id}
-
-      {:error, reason} ->
-        {:error, reason}
+    case Fork.resume_fork(new_session_id, events, brain: :client) do
+      {:ok, agent_id} -> %{session_id: new_session_id, agent_id: agent_id, continued: true}
+      {:error, reason} -> %{session_id: new_session_id, continued: false, error: inspect(reason)}
     end
   end
 
