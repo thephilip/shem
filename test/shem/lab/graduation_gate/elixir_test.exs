@@ -42,6 +42,30 @@ defmodule Shem.Lab.GraduationGate.ElixirTest do
     assert File.read!(runtime_path) =~ "ShemRunner.loop(Gate.Doubler)"
   end
 
+  test "property-tested tool graduates offline (bundled stream_data ebin, no Mix.install)" do
+    # StreamData loads from the mounted/prepended ebin of Shem's own dep —
+    # no Hex, no network. This is why the test can run in the default suite.
+    property_test = """
+    defmodule Gate.DoublerPropTest do
+      def run do
+        %{"result" => 10} = Gate.Doubler.run(%{"n" => 5})
+
+        {:ok, _} =
+          StreamData.check_all(StreamData.integer(), [initial_seed: {42, 0, 0}], fn i ->
+            if Gate.Doubler.run(%{"n" => i})["result"] == i * 2, do: {:ok, i}, else: {:error, i}
+          end)
+
+        :ok
+      end
+    end
+    """
+
+    assert {:ok, tool} = GraduationGate.run(@source, property_test, language: "elixir")
+    assert tool.metadata[:property_tested] == true
+    # property-tested tools skip flat trust seeding (earn trust via properties)
+    assert Shem.Trust.Store.score(tool.id) == {:error, :unrated}
+  end
+
   test "failing test source yields {:error, :gate, _}" do
     failing = """
     defmodule Gate.FailTest do

@@ -57,6 +57,16 @@ defmodule Shem.Lab.ExecutorTest do
     assert {:ok, ":genuine"} = Executor.run_source(source)
   end
 
+  test "run_source can use StreamData without Mix.install or network" do
+    source = """
+    defmodule ExecSourceProp do
+      def run, do: StreamData.integer() |> Enum.take(3) |> length()
+    end
+    """
+
+    assert {:ok, "3"} = Executor.run_source(source)
+  end
+
   test "run_source times out" do
     source = """
     defmodule ExecSourceHang do

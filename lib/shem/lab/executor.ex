@@ -37,6 +37,14 @@ defmodule Shem.Lab.Executor do
   end
 
   @doc """
+  Compiled ebin of the bundled stream_data dep — mounted into sandbox
+  containers and `Code.prepend_path`-ed by the drivers so property tests need
+  no `Mix.install` (no Hex, no network; works airgapped and in the portable
+  tarball). Host fallback uses the same path directly: same BEAM, zero skew.
+  """
+  def stream_data_ebin, do: Application.app_dir(:stream_data, "ebin")
+
+  @doc """
   Compile + run one-shot Elixir source in the sandbox and return the
   `inspect/1` of the last module's `run/0`, parsed from a sentinel line.
   """
@@ -52,14 +60,15 @@ defmodule Shem.Lab.Executor do
       # process can still read run.exs mid-run; irrelevant since the result
       # returns to the same agent that wrote the code.
       marker = "__SHEM_RESULT_#{Base.encode16(:crypto.strong_rand_bytes(8))}__"
+      ebin = stream_data_ebin()
       File.mkdir_p!(dir)
       File.write!(Path.join(dir, "source.exs"), source)
-      File.write!(Path.join(dir, "run.exs"), driver(marker))
+      File.write!(Path.join(dir, "run.exs"), driver(marker, ebin))
 
       # run_code/execute_code is a scratch primitive with no granted profile —
       # deny network by default like every other unprofiled sandboxed tool.
       shell_opts =
-        [image: Shem.Lab.Sandbox.image("elixir"), network: :none, mounts: [{dir, dir}]] ++
+        [image: Shem.Lab.Sandbox.image("elixir"), network: :none, mounts: [{dir, dir}, {ebin, ebin}]] ++
           Keyword.take(opts, [:run_fn])
 
       try do
@@ -83,8 +92,9 @@ defmodule Shem.Lab.Executor do
     end
   end
 
-  defp driver(marker) do
+  defp driver(marker, ebin) do
     """
+    Code.prepend_path(#{inspect(ebin)})
     mods = Code.compile_string(File.read!("source.exs"))
     {mod, _} = List.last(mods)
     IO.write("\\n#{marker}" <> inspect(mod.run()))

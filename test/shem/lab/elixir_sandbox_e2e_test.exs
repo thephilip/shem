@@ -75,7 +75,7 @@ defmodule Shem.Lab.ElixirSandboxE2ETest do
   end
 
   @tag :elixir_integration
-  test "property-tested tool graduates via Mix.install([:stream_data]) and skips trust seeding" do
+  test "property-tested tool graduates via the mounted stream_data ebin and skips trust seeding" do
     source = """
     defmodule E2E.Abs do
       def run(args), do: %{"result" => abs(args["n"] || 0)}

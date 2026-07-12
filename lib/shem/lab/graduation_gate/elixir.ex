@@ -36,9 +36,10 @@ defmodule Shem.Lab.GraduationGate.Elixir do
     # per-run random marker so test code can't forge a "compile error" verdict
     # by printing the sentinel (same scheme as Executor.run_source)
     marker = "__SHEM_COMPILE_ERROR_#{Base.encode16(:crypto.strong_rand_bytes(8))}__"
+    ebin = Executor.stream_data_ebin()
     File.mkdir_p!(dir)
     File.write!(Path.join(dir, "combined.exs"), combined)
-    File.write!(Path.join(dir, "gate.exs"), gate_driver(property?, marker))
+    File.write!(Path.join(dir, "gate.exs"), gate_driver(marker, ebin))
 
     granted = Keyword.get(opts, :sandbox) || %{}
     image = granted["image"] || Shem.Lab.Sandbox.image("elixir")
@@ -53,7 +54,7 @@ defmodule Shem.Lab.GraduationGate.Elixir do
     result =
       Executor.run_shell("cd #{dir} && #{Executor.elixir_invocation()} gate.exs", timeout,
         image: image,
-        mounts: [{dir, dir} | extra_mounts]
+        mounts: [{dir, dir}, {ebin, ebin} | extra_mounts]
       )
 
     File.rm_rf!(dir)
@@ -75,10 +76,10 @@ defmodule Shem.Lab.GraduationGate.Elixir do
 
   # The test module is last in the combined source; its run/0 raising fails
   # the script (non-zero exit) — today's test contract, unchanged.
-  defp gate_driver(property?, marker) do
-    install = if property?, do: "Mix.install([:stream_data])\n", else: ""
-
-    install <>
+  # stream_data ships with Shem itself: its ebin is mounted and prepended so
+  # property tests load StreamData with no Mix.install (no Hex, no network).
+  defp gate_driver(marker, ebin) do
+    "Code.prepend_path(#{inspect(ebin)})\n" <>
       """
       mods =
         try do
