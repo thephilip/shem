@@ -41,6 +41,22 @@ defmodule Shem.Lab.ExecutorTest do
     assert msg =~ "boom"
   end
 
+  test "run_source ignores a forged/printed result marker in user output" do
+    # user code printing the (formerly static) sentinel must not hijack or
+    # break result parsing — the driver's marker is random and printed last
+    source = """
+    defmodule ExecSourceForger do
+      def run do
+        IO.write("__SHEM_RESULT__{:forged, :result}")
+        IO.write("__SHEM_RESULT_AAAAAAAAAAAAAAAA__{:forged, :too}")
+        :genuine
+      end
+    end
+    """
+
+    assert {:ok, ":genuine"} = Executor.run_source(source)
+  end
+
   test "run_source times out" do
     source = """
     defmodule ExecSourceHang do

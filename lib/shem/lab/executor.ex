@@ -47,9 +47,14 @@ defmodule Shem.Lab.Executor do
 
     with :ok <- host_fallback_scan(source) do
       dir = Path.join(System.tmp_dir!(), "shem_run_#{System.unique_integer([:positive])}")
+      # Per-run random marker: user code can't print it by accident or from
+      # memory of the codebase. ponytail: not airtight — code sharing the
+      # process can still read run.exs mid-run; irrelevant since the result
+      # returns to the same agent that wrote the code.
+      marker = "__SHEM_RESULT_#{Base.encode16(:crypto.strong_rand_bytes(8))}__"
       File.mkdir_p!(dir)
       File.write!(Path.join(dir, "source.exs"), source)
-      File.write!(Path.join(dir, "run.exs"), driver())
+      File.write!(Path.join(dir, "run.exs"), driver(marker))
 
       # run_code/execute_code is a scratch primitive with no granted profile —
       # deny network by default like every other unprofiled sandboxed tool.
@@ -62,9 +67,11 @@ defmodule Shem.Lab.Executor do
         # container) so the Local fallback backend runs the same command.
         case run_shell("cd #{dir} && #{elixir_invocation()} run.exs", timeout, shell_opts) do
           {:ok, out} ->
-            case String.split(out, "__SHEM_RESULT__") do
-              [_, result] -> {:ok, String.trim(result)}
-              _ -> {:error, "no result marker in output: #{out}"}
+            # last occurrence: the driver prints the genuine marker after user
+            # code returns, so anything earlier in the stream loses
+            case String.split(out, marker) do
+              [_] -> {:error, "no result marker in output: #{out}"}
+              parts -> {:ok, parts |> List.last() |> String.trim()}
             end
 
           {:error, msg} ->
@@ -76,11 +83,11 @@ defmodule Shem.Lab.Executor do
     end
   end
 
-  defp driver do
+  defp driver(marker) do
     """
     mods = Code.compile_string(File.read!("source.exs"))
     {mod, _} = List.last(mods)
-    IO.write("\\n__SHEM_RESULT__" <> inspect(mod.run()))
+    IO.write("\\n#{marker}" <> inspect(mod.run()))
     """
   end
 

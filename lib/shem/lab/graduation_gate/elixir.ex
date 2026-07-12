@@ -8,8 +8,6 @@ defmodule Shem.Lab.GraduationGate.Elixir do
   alias Shem.Lab.{Executor, Registry, Workspace}
   alias Shem.Tool
 
-  @compile_marker "__SHEM_COMPILE_ERROR__"
-
   def run(source, test_source, opts) do
     combined = source <> "\n" <> test_source
 
@@ -35,9 +33,12 @@ defmodule Shem.Lab.GraduationGate.Elixir do
     property? = property_tested?(test_source)
 
     dir = Path.join(System.tmp_dir!(), "shem_grad_#{System.unique_integer([:positive])}")
+    # per-run random marker so test code can't forge a "compile error" verdict
+    # by printing the sentinel (same scheme as Executor.run_source)
+    marker = "__SHEM_COMPILE_ERROR_#{Base.encode16(:crypto.strong_rand_bytes(8))}__"
     File.mkdir_p!(dir)
     File.write!(Path.join(dir, "combined.exs"), combined)
-    File.write!(Path.join(dir, "gate.exs"), gate_driver(property?))
+    File.write!(Path.join(dir, "gate.exs"), gate_driver(property?, marker))
 
     granted = Keyword.get(opts, :sandbox) || %{}
     image = granted["image"] || Shem.Lab.Sandbox.image("elixir")
@@ -65,7 +66,7 @@ defmodule Shem.Lab.GraduationGate.Elixir do
         {:error, :timeout}
 
       {:error, reason} ->
-        case String.split(reason, @compile_marker) do
+        case String.split(reason, marker) do
           [_, msg] -> {:error, :compile, String.trim(msg)}
           _ -> {:error, :gate, reason}
         end
@@ -74,7 +75,7 @@ defmodule Shem.Lab.GraduationGate.Elixir do
 
   # The test module is last in the combined source; its run/0 raising fails
   # the script (non-zero exit) — today's test contract, unchanged.
-  defp gate_driver(property?) do
+  defp gate_driver(property?, marker) do
     install = if property?, do: "Mix.install([:stream_data])\n", else: ""
 
     install <>
@@ -84,7 +85,7 @@ defmodule Shem.Lab.GraduationGate.Elixir do
           Code.compile_string(File.read!("combined.exs"))
         rescue
           e ->
-            IO.puts("#{@compile_marker} " <> Exception.message(e))
+            IO.puts("#{marker} " <> Exception.message(e))
             System.halt(2)
         end
 

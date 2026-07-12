@@ -21,9 +21,15 @@ defmodule Shem.Lab.ExecutorScanTest do
     on_exit(fn -> Process.delete(:shem_executor_backend) end)
 
     # run_shell threads opts through to the backend; Container honors :run_fn.
+    # The result marker is random per run — lift it from the generated driver.
     assert {:ok, "ok"} =
              Executor.run_source(@bad,
-               run_fn: fn _cmd, _timeout, _opts -> {:ok, "\n__SHEM_RESULT__ok"} end
+               run_fn: fn cmd, _timeout, _opts ->
+                 [dir] = Regex.run(~r/cd (\S+) &&/, cmd, capture: :all_but_first)
+                 driver = File.read!(Path.join(dir, "run.exs"))
+                 [marker] = Regex.run(~r/(__SHEM_RESULT_[A-F0-9]+__)/, driver, capture: :all_but_first)
+                 {:ok, "\n" <> marker <> "ok"}
+               end
              )
   end
 end
