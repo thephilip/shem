@@ -5,6 +5,11 @@ defmodule Shem.Recall do
   `:llm_call_completed` event so the caller can fork right there via
   `POST /api/sessions/:id/fork`. Every query is itself appended to a
   dedicated hash-chained session — the reach-rate instrument.
+
+  `context/4` verifies the session's hash chain before serving its events —
+  a chain-broken (tampered) session is refused with `{:error, :chain_broken}`
+  rather than returned as memory, even if the caller supplies exact
+  coordinates for a tampered event.
   """
 
   require Logger
@@ -36,9 +41,10 @@ defmodule Shem.Recall do
   end
 
   @spec context(String.t(), String.t(), pos_integer(), keyword()) ::
-          {:ok, map()} | {:error, :session_not_found | :event_not_found}
+          {:ok, map()} | {:error, :session_not_found | :event_not_found | :chain_broken}
   def context(session_id, event_id, radius \\ 3, _opts \\ []) do
     with {:ok, events} <- session_events(session_id),
+         :ok <- check_chain(session_id),
          idx when not is_nil(idx) <- Enum.find_index(events, &(&1.id == event_id)) do
       lo = max(idx - radius, 0)
 
@@ -54,6 +60,7 @@ defmodule Shem.Recall do
               fork: fork_pointer(session_id, events, event_id)}}
     else
       nil -> {:error, :event_not_found}
+      {:error, :chain_broken} -> {:error, :chain_broken}
       {:error, _} -> {:error, :session_not_found}
     end
   end
@@ -64,6 +71,16 @@ defmodule Shem.Recall do
     case Scanner.events(session_id) do
       {:ok, [_ | _] = events} -> {:ok, events}
       _ -> {:error, :session_not_found}
+    end
+  end
+
+  # A chain-broken log is tampered/corrupt evidence — never serve it as
+  # memory. Mirrors Shem.Recall.Index.check_chain/1: legacy (nil-hash) and
+  # GC-verified outcomes pass through as before.
+  defp check_chain(session_id) do
+    case Shem.EventLog.verify_chain(session_id) do
+      {:error, {:broken_at, _event_id}} -> {:error, :chain_broken}
+      _ -> :ok
     end
   end
 

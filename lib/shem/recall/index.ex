@@ -4,7 +4,9 @@ defmodule Shem.Recall.Index do
   first search and cached per session file by `{mtime, size}`; changed or new
   files are re-scanned on the next search, so the index can never be
   stale-wrong. ponytail: full per-file rescan + unbounded memory — persistent
-  index / size cap when a real corpus makes this slow or big.
+  index / size cap when a real corpus makes this slow or big. The corpus is
+  the on-disk DETS events directory only — sessions stored via MnesiaStore
+  (clustered mode) are not yet indexed and are silently absent from search.
   """
 
   use GenServer

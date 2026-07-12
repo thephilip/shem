@@ -99,6 +99,31 @@ defmodule Shem.RecallTest do
     assert {:error, :session_not_found} = Recall.context("ses_NOPE", "evt_x", 3, index: idx)
   end
 
+  test "context refuses a chain-broken session — tampered logs are never served as memory",
+       %{path: path, index: idx} do
+    # NOTE: fixture events need REAL hashes — nil-hash events read as
+    # :legacy, which context serves fine. Chain the events, then tamper one
+    # (the exact pattern from test/shem/recall/index_test.exs).
+    alias Shem.EventLog.Chain
+    sid = "ses_RECALL_BROKEN"
+
+    events = [
+      Event.new(sid, :agent_started, %{task: "tamperable run"}),
+      Event.new(sid, :agent_done, %{content: "fine"})
+    ]
+
+    {[e1, e2], _} =
+      Enum.map_reduce(events, Chain.genesis(sid), fn e, prev ->
+        h = Chain.next(prev, e)
+        {%{e | hash: h}, h}
+      end)
+
+    tampered = %{e1 | payload: %{task: "REWRITTEN HISTORY"}}
+    write_session(sid, [tampered, e2], path)
+
+    assert {:error, :chain_broken} = Recall.context(sid, e2.id, 3, index: idx)
+  end
+
   test "search still succeeds when the query-log append exits (EventLog down)", %{index: idx} do
     # Empty corpus: Index.search and hit-shaping never touch EventLog, so the
     # only EventLog call reachable here is log_query's own
