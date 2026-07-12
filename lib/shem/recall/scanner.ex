@@ -19,7 +19,9 @@ defmodule Shem.Recall.Scanner do
         files
         |> Enum.filter(&String.ends_with?(&1, ".dets"))
         |> Enum.map(&String.replace_suffix(&1, ".dets", ""))
-        |> Enum.reject(&(&1 == @query_session))
+        # Meta-sessions (recall's own queries, the MCP invocation log) are
+        # instruments, not memories — never part of the corpus.
+        |> Enum.reject(&(&1 in [@query_session, Shem.MCP.InvocationLog.session_id()]))
         |> Enum.flat_map(fn session_id ->
           case File.stat(Path.join(path, "#{session_id}.dets"), time: :posix) do
             {:ok, %File.Stat{mtime: mtime, size: size}} ->

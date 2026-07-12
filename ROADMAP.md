@@ -236,6 +236,15 @@ Serves the LLM (fewer tokens, faster loops) and the human (their install
 grows more capable with use). Un-parks the pattern-miner idea; Dogfood-track
 data is the fuel — measure real recurrence before building the miner.
 
+**Measured 2026-07-12: no evidence yet, by instrumentation gap.** The full
+real corpus (56 sessions) held exactly one agent tool call — because MCP
+tool-server calls (the dominant usage) were never event-logged. Shipped the
+prerequisite the same day: every MCP `tools/call` now appends a
+`:tool_invoked` event (tool, args digest — never plaintext, outcome) to
+`ses_TOOL_INVOCATIONS`, the `ses_RECALL_QUERIES` pattern; meta-sessions are
+excluded from Recall's corpus. The miner's design cites a re-measurement
+after weeks of instrumented dogfooding, not the 2026-07-12 zero.
+
 **Exit criteria (intent):** a real recurring sequence from Dogfood sessions
 is detected, suggested, graduated through the normal gate, and invoked as a
 single tool in a later session.

@@ -114,6 +114,8 @@ defmodule Shem.MCP.Router do
         :exit, reason -> {:error, :handler_crashed, inspect(reason)}
       end
 
+    Shem.MCP.InvocationLog.log(name, arguments, result)
+
     case result do
       # MRTR InputRequiredResult goes out as the JSON-RPC result itself,
       # not wrapped in tool content (SEP-2322).

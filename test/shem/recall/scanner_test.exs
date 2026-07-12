@@ -40,6 +40,13 @@ defmodule Shem.Recall.ScannerTest do
     assert [%{session_id: "ses_RC_B"}] = Scanner.sessions()
   end
 
+  test "sessions/0 excludes the tool-invocation meta-session", %{path: path} do
+    write_session(Shem.MCP.InvocationLog.session_id(), [], path)
+    write_session("ses_RC_D", [Event.new("ses_RC_D", :agent_started, %{task: "t"})], path)
+
+    assert [%{session_id: "ses_RC_D"}] = Scanner.sessions()
+  end
+
   test "sessions/0 returns [] when the directory doesn't exist" do
     Application.put_env(:shem, :event_log_path, "tmp/does_not_exist_#{:erlang.unique_integer([:positive])}")
     assert Scanner.sessions() == []
