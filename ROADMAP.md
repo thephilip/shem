@@ -293,7 +293,10 @@ parked agent from it.
   No deadline — but its "implements the RC while the window is open" value
   decays past 2026-07-28 (external spec date, not a commitment). Deciding
   *no* is a fine outcome; leaving it undecided is the only losing move.
-- [ ] **README repositioning — flight recorder first** (decided 2026-07-05):
+- [x] **README repositioning — flight recorder first** (decided 2026-07-05,
+  shipped 2026-07-12: evidence-first tagline + intro, an "Evidence" subsection
+  giving `shem attest` and `shem replay --check` their own billing, Recall in
+  the MCP table, stale roadmap paragraph refreshed):
   lead with evidence — "Shem records everything: fork/replay for
   development, `shem attest` for proof, `shem replay --check` for
   agent-behavior CI." Time-travel debugging is the dev-facing half of the

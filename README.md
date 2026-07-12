@@ -5,7 +5,7 @@
 <h1 align="center">shem</h1>
 
 <p align="center">
-  <strong>Rewind, fork, and replay every agent run — with tamper-evident proof of what it did.</strong>
+  <strong>Shem records everything your agents do — proof you can verify offline, replays you can trust, timelines you can fork.</strong>
 </p>
 
 <p align="center">
@@ -23,10 +23,12 @@
 
 ---
 
-Shem is a general-purpose AI agent platform that runs on your machine.
-Ask it to review your code, research a topic, draft a document, or audit
-a security posture — then watch exactly what it did and why, turn by turn,
-with a hash-chained, replayable event log — and offline-verifiable proof of what happened.
+Shem is a general-purpose AI agent platform that runs on your machine —
+with a flight recorder under every agent. Ask it to review your code,
+research a topic, draft a document, or audit a security posture — then
+*prove* what it did: every run is a hash-chained event log you can export
+as offline-verifiable evidence (`shem attest`), regression-test against
+(`shem replay --check`), and rewind, fork, and replay turn by turn.
 
 Works with Claude, ChatGPT, Ollama, llama.cpp, and any OpenAI-compatible API.
 Or skip the LLM entirely and use Shem as a tool server for Claude Code.
@@ -84,6 +86,22 @@ behind you, live divergence ahead of you.
 And because the log is sha256 hash-chained per session, each lane carries a live
 **verify badge**: a retroactive edit is *detectable* (`GET /api/sessions/:id/verify`) —
 the replay you trust can't be quietly rewritten.
+
+### Evidence you can hand to someone else
+
+The same log exports as proof and regression-tests as CI:
+
+- **`shem attest <session> [out_dir]`** — exports a self-verifying bundle:
+  canonical `events.jsonl`, the exact source of every tool the run invoked
+  (content-addressed by sha256), a manifest, and a stdlib-only `verify.py`
+  (plus a POSIX-sh/`sha256sum` fallback). It verifies on a machine with
+  neither Shem nor Erlang installed — the auditor doesn't have to trust
+  your setup, or you. Works against the running daemon or a stopped session.
+- **`shem replay --check <session>`** — agent-behavior CI. Re-runs a recorded
+  session with the *recorded* LLM responses against your *current* code —
+  prompts, presets, tool implementations — and reports exactly where behavior
+  diverged, with a non-zero exit code for pipelines. A golden session is a
+  regression test you recorded by just using the thing.
 
 Logs aren't kept forever by default: old segments are GC'd into a rollup
 digest (`shem gc <session>`, or automatically on append once a session passes
@@ -159,6 +177,7 @@ Claude Code then gets these tools:
 | `list_agents` / `stop_agent` | See and stop what's running |
 | `install_pack` / `uninstall_pack` / `list_packs` | Manage git-distributed tool packs (see below) |
 | `provide_turn` | Resume a client-brained agent with an action or response |
+| `recall_search` / `recall_context` | Search all past sessions by meaning — hits return the matching events plus fork coordinates, so "have we solved this before?" is answered with replayable evidence, not summaries |
 
 The self-extending pattern: Claude Code graduates a new tool once, then invokes
 it in every future session. The parallel pattern: spawn several Shem agents for
@@ -333,7 +352,7 @@ No begging here — just what's true so you can decide for yourself.
 
 ## Roadmap
 
-Recently shipped: the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go/Elixir — nothing agent-authored touches the host BEAM), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: human-in-the-loop approvals and hive_mind trust-weighted consensus. Full plan: [ROADMAP.md](ROADMAP.md).
+Recently shipped: **Recall** (`recall_search` / `recall_context` — search past sessions by meaning, answered with fork-ready evidence), the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go/Elixir — nothing agent-authored touches the host BEAM), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: compounding skills (pattern-mined tool graduation), counterfactual forking, and verified agent handoff. Full plan: [ROADMAP.md](ROADMAP.md).
 
 ## License
 
