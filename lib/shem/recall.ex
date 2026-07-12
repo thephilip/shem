@@ -122,5 +122,9 @@ defmodule Shem.Recall do
     else
       err -> Logger.warning("recall: query log append failed: #{inspect(err)}")
     end
+  rescue
+    e -> Logger.warning("recall: query log append failed: #{Exception.format(:error, e, __STACKTRACE__)}")
+  catch
+    kind, reason -> Logger.warning("recall: query log append failed: #{inspect({kind, reason})}")
   end
 end

@@ -98,4 +98,15 @@ defmodule Shem.RecallTest do
   test "context errors on unknown session or event", %{index: idx} do
     assert {:error, :session_not_found} = Recall.context("ses_NOPE", "evt_x", 3, index: idx)
   end
+
+  test "search still succeeds when the query-log append exits (EventLog down)", %{index: idx} do
+    # Empty corpus: Index.search and hit-shaping never touch EventLog, so the
+    # only EventLog call reachable here is log_query's own
+    # start_session/append — killing the process exercises exactly that path
+    # without racing or masking unrelated EventLog usage.
+    :ok = Supervisor.terminate_child(Shem.Supervisor, Shem.EventLog)
+    on_exit(fn -> Supervisor.restart_child(Shem.Supervisor, Shem.EventLog) end)
+
+    assert {:ok, %{status: "no_sessions_indexed", hits: []}} = Recall.search("gamma", 5, index: idx)
+  end
 end
