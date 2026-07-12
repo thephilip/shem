@@ -268,6 +268,12 @@ parked agent from it.
 - [x] **MCP round-trip positioning post — deadline 2026-07-28**: absorbed
   into Phase 5 (2026-07-05) — upgraded from a post to a working MRTR-native
   implementation plus the post.
+- [ ] **MRTR post: announce or shelve — a decision, not a task.** The post
+  has shipped in-repo since 2026-07-10
+  ([`docs/2026-07-mrtr-elicitation.md`](docs/2026-07-mrtr-elicitation.md)).
+  No deadline — but its "implements the RC while the window is open" value
+  decays past 2026-07-28 (external spec date, not a commitment). Deciding
+  *no* is a fine outcome; leaving it undecided is the only losing move.
 - [ ] **README repositioning — flight recorder first** (decided 2026-07-05):
   lead with evidence — "Shem records everything: fork/replay for
   development, `shem attest` for proof, `shem replay --check` for
@@ -330,20 +336,28 @@ each; this is the live stickiness measurement):
   dispatcher forwards unknown verbs to the overlay (exposes stop/attest/replay/gc/
   install), help lists them; verified live (`shem attest` through the front door).
 
-## Parked (explicitly not scheduled)
+## Parked (explicitly not scheduled — each with its revival trigger)
 
-Hermes skill importer (was Phase 7 pre-2026-07-06; opportunistic — adoption
-follows from being the exocortex, not from an importer) · live observability
-panel (was Phase 8; absorbed — forensic recall over dashboards, crowded
-market) · distributed `:port`-tool artifact locality · single-file binary
-(Burrito/Bakeware) · hive_mind trust-weighted consensus · K8s executor
-backend · TUI (`--tui`) revival · tool-building-in-UI (deferred) · generic
-human tool-runner (won't build) · WebUI framework upgrade (current: Alpine +
-static files, ~1.8k lines, zero build step). If a screen — the timeline
-debugger is the likely one — outgrows Alpine, port *that screen* to Preact +
-htm (React model, still single vendored file, no Node build), not a full
-React/Vite rewrite. Full toolchain only earns its keep if the UI becomes a
-multi-screen app; a Node build step taxes the "one artifact, zero install"
-onboarding win.
+- **Single-file binary (Burrito/Bakeware)** — unpark at the next outward
+  push (e.g. announcing the MRTR post): onboarding is when it pays. The
+  2026-07-11 dispatcher bug (two CLI scripts drifting apart) is exactly the
+  failure class one artifact deletes.
+- **Hermes skill importer** — revive only after Recall + Compounding Skills
+  prove the exocortex loop, when "bring your skills, gain the receipts" is
+  demonstrable rather than promised. As a first move it's a breadth-race
+  treadmill.
+- **Distributed `:port`-tool artifact locality** — waits for real
+  multi-node dogfooding.
+- **WebUI framework** — standing policy, not pending work: if a screen
+  (likely the timeline debugger) outgrows Alpine, port *that screen* to
+  Preact + htm (single vendored file, no Node build), never a full
+  React/Vite rewrite.
 
-*(EventLog pattern miner un-parked → Phase 8, Compounding Skills.)*
+**Dropped 2026-07-11** (removed as dead weight; git history keeps the old
+reasoning): live observability panel · hive_mind trust-weighted consensus ·
+K8s executor backend · TUI (`--tui`) revival · tool-building-in-UI · generic
+human tool-runner. A real user request can resurrect any of them; none get
+anticipatory work.
+
+*(EventLog pattern miner un-parked → Phase 8, Compounding Skills. Session
+narrator lives as Phase 7's explore note, not here.)*
