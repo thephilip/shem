@@ -317,10 +317,17 @@ each; this is the live stickiness measurement):
   code on it. A first-class "release rpc that returns an exit code without halting
   the node" would remove this dance.
 
-- 2026-07-03 (Phase 4 Dogfood, OPEN): "attest a real session from this track" not yet
-  done live — the running instance is an older 0.4.0 without `attest`; exit criteria
-  are met by the e2e (real `verify.py`), but the live-Dogfood attest awaits a rebuilt
-  `shem start` of this version.
+- 2026-07-03 (Phase 4 Dogfood, RESOLVED 2026-07-11): "attest a real session from this
+  track" done live — installed v0.8.1 release started, `shem attest` run against a real
+  session from the running daemon, bundle `VERIFIED` offline by its own `verify.py`
+  (exit 0).
+
+- 2026-07-11 (Dogfood attest): the installer's CLI dispatcher (`~/.local/bin/shem`,
+  written by `install.sh`) only knows start/setup/config/status/upgrade — `attest`,
+  `replay`, and `gc` exist only in the release overlay script it shadows
+  (`~/.local/lib/shem/shem`). The evidence verbs are invisible from the installed
+  front door; workaround is calling the overlay directly. Fix: dispatcher forwards
+  unknown verbs to the overlay script.
 
 ## Parked (explicitly not scheduled)
 
