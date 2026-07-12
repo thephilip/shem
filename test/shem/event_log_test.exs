@@ -27,6 +27,25 @@ defmodule Shem.EventLogTest do
     end
   end
 
+  describe "reopen/1" do
+    test "clears ended_at so appends succeed, and chain verifies across refinalize" do
+      {:ok, sid} = EventLog.start_session()
+      {:ok, _} = EventLog.append(sid, :agent_started, %{task: "t"})
+      :ok = EventLog.finalize(sid)
+      assert {:error, :session_ended} = EventLog.append(sid, :counterfactual_run, %{})
+
+      assert :ok = EventLog.reopen(sid)
+      assert {:ok, _} = EventLog.append(sid, :counterfactual_run, %{})
+      :ok = EventLog.finalize(sid)
+
+      assert {:ok, :verified, 2} = EventLog.verify_chain(sid)
+    end
+
+    test "reopen of unknown session errors" do
+      assert {:error, :session_not_found} = EventLog.reopen("ses_doesnotexist00")
+    end
+  end
+
   describe "list_sessions/0" do
     test "includes the session after start_session" do
       {:ok, id} = EventLog.start_session()

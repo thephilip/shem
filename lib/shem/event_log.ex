@@ -27,6 +27,16 @@ defmodule Shem.EventLog do
   @spec finalize(String.t()) :: :ok | {:error, :session_not_found}
   def finalize(session_id), do: GenServer.call(__MODULE__, {:finalize, session_id})
 
+  @doc """
+  Inverse of `finalize/1`: clears `ended_at` so appends are accepted again.
+  Chain continuity is untouched — the chain simply grows from `last_hash`.
+  `ended_at` means "no live writer", not "immutable"; immutability is the
+  hash chain's job. Used by counterfactual runs to append run/selection
+  events to past sessions and to resume terminal branches.
+  """
+  @spec reopen(String.t()) :: :ok | {:error, :session_not_found}
+  def reopen(session_id), do: GenServer.call(__MODULE__, {:reopen, session_id})
+
   @spec list_sessions() :: {:ok, [Session.t()]}
   def list_sessions, do: GenServer.call(__MODULE__, :list_sessions)
 
@@ -190,6 +200,18 @@ defmodule Shem.EventLog do
         # it non-active and the append guard rejects further writes.
         closed = Session.close(session)
         sessions = Map.put(state.sessions, session_id, {handle, closed})
+        {:reply, :ok, %{state | sessions: sessions}}
+
+      :error ->
+        {:reply, {:error, :session_not_found}, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:reopen, session_id}, _from, state) do
+    case Map.fetch(state.sessions, session_id) do
+      {:ok, {handle, session}} ->
+        sessions = Map.put(state.sessions, session_id, {handle, Session.reopen(session)})
         {:reply, :ok, %{state | sessions: sessions}}
 
       :error ->

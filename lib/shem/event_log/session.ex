@@ -29,4 +29,8 @@ defmodule Shem.EventLog.Session do
   @spec close(t()) :: t()
   def close(%__MODULE__{} = session),
     do: %{session | ended_at: DateTime.utc_now()}
+
+  @spec reopen(t()) :: t()
+  def reopen(%__MODULE__{} = session),
+    do: %{session | ended_at: nil}
 end
