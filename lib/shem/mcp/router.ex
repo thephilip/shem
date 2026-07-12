@@ -15,6 +15,8 @@ defmodule Shem.MCP.Router do
     ListPacks,
     ListTools,
     ProvideTurn,
+    RecallContext,
+    RecallSearch,
     SpawnAgent,
     StopAgent,
     UninstallPack
@@ -178,6 +180,9 @@ defmodule Shem.MCP.Router do
     session, instead of re-deriving it each time.
     - list_tools / invoke_tool: call tools you or earlier sessions already graduated \
     before writing new code.
+    - recall_search / recall_context: before re-deriving how something was done, \
+    search past sessions — hits return the matching events plus fork coordinates \
+    so you can replay or branch from the exact moment.
     - Every run is a forkable, hash-verified event log: fork at any turn to explore \
     "what if it had decided differently", then replay/verify deterministically.
 
@@ -197,6 +202,8 @@ defmodule Shem.MCP.Router do
   defp call_tool("install_pack", args), do: InstallPack.call(args)
   defp call_tool("uninstall_pack", args), do: UninstallPack.call(args)
   defp call_tool("list_packs", args), do: ListPacks.call(args)
+  defp call_tool("recall_search", args), do: RecallSearch.call(args)
+  defp call_tool("recall_context", args), do: RecallContext.call(args)
   defp call_tool(_, _), do: {:error, :not_found}
 
   defp build_response(id, {:ok, result}),
@@ -403,6 +410,33 @@ defmodule Shem.MCP.Router do
         "name" => "list_packs",
         "description" => "List installed tool packs (name, version, tool ids).",
         "inputSchema" => %{"type" => "object", "properties" => %{}}
+      },
+      %{
+        "name" => "recall_search",
+        "description" =>
+          "Search ALL past agent sessions by keywords — \"have we solved this before?\" — before re-deriving prior work. Hits return matching events with a snippet, score, and fork coordinates (replayable evidence, not summaries). Refine with different keywords if the first query misses; then expand a hit with recall_context.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "query" => %{"type" => "string", "description" => "Keywords to search for (lexical match; try synonyms if no hits)"},
+            "limit" => %{"type" => "integer", "description" => "Max hits (default 5, max 25)"}
+          },
+          "required" => ["query"]
+        }
+      },
+      %{
+        "name" => "recall_context",
+        "description" =>
+          "Expand a recall_search hit: the matched event plus surrounding events from that session, with fork coordinates for POST /api/sessions/:id/fork.",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "session_id" => %{"type" => "string", "description" => "Session id from a recall_search hit"},
+            "event_id" => %{"type" => "string", "description" => "Event id from a recall_search hit"},
+            "radius" => %{"type" => "integer", "description" => "Events either side to include (default 3, max 50)"}
+          },
+          "required" => ["session_id", "event_id"]
+        }
       }
     ]
   end
