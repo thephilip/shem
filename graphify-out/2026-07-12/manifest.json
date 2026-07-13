@@ -5,14 +5,14 @@
     "semantic_hash": "5929c731d5bca5967e0fb415b7fa9a01"
   },
   "config/config.exs": {
-    "mtime": 1783896659.411787,
-    "ast_hash": "58741a71f5cd95e1b83fd98a956d35c9",
+    "mtime": 1783188496.4156883,
+    "ast_hash": "d46fe9d0d0079d35fc42b6155ea3da3e",
     "semantic_hash": ""
   },
   "config/dev.exs": {
-    "mtime": 1783777846.2898877,
-    "ast_hash": "6eb94289b21f51c4b382cc6bc164a16d",
-    "semantic_hash": ""
+    "mtime": 1782095436.554848,
+    "ast_hash": "0de01f5b47fa215f84e995d0020329a6",
+    "semantic_hash": "0de01f5b47fa215f84e995d0020329a6"
   },
   "config/prod.exs": {
     "mtime": 1780793350.0462098,
@@ -20,19 +20,19 @@
     "semantic_hash": "88716c74148b039ee7c4e6e6bf79f7f6"
   },
   "config/runtime.exs": {
-    "mtime": 1783897970.333035,
-    "ast_hash": "1298d5edc95d6712674d89a8423990e4",
+    "mtime": 1783024066.9060183,
+    "ast_hash": "852379c7015a719cfe004b739f4e6f52",
     "semantic_hash": ""
   },
   "config/test.exs": {
-    "mtime": 1783896671.6310248,
-    "ast_hash": "6ef95982f6da9541f0ad7df0e6dde18c",
+    "mtime": 1783188508.0358307,
+    "ast_hash": "0974cd4c110bfedb9551bda1d0cc18ee",
     "semantic_hash": ""
   },
   "install.sh": {
-    "mtime": 1783824386.5037627,
-    "ast_hash": "471763704d7816984972d0f4cb546853",
-    "semantic_hash": ""
+    "mtime": 1782145676.5959408,
+    "ast_hash": "0b7764279da00a8e4e19f0dfccbbe445",
+    "semantic_hash": "0b7764279da00a8e4e19f0dfccbbe445"
   },
   "lib/shem.ex": {
     "mtime": 1780506616.9768865,
@@ -45,13 +45,13 @@
     "semantic_hash": "2420cd47cc9774d968c82030d8fbd108"
   },
   "lib/shem/adversarial/hardening_job.ex": {
-    "mtime": 1783283116.0,
+    "mtime": 1783036140.0,
     "ast_hash": "fb8a1723038af7b8e814c99694d4d15f",
     "semantic_hash": "fb8a1723038af7b8e814c99694d4d15f"
   },
   "lib/shem/agent.ex": {
-    "mtime": 1783896099.9380653,
-    "ast_hash": "ea4fe5a83627e9661f194b97ce33d796",
+    "mtime": 1783029187.932524,
+    "ast_hash": "38b20c686aab2bbedde6facf25d6485a",
     "semantic_hash": ""
   },
   "lib/shem/agent/checkpoint.ex": {
@@ -70,28 +70,28 @@
     "semantic_hash": "8229d0299ae2895e44a9f3b48ff14a34"
   },
   "lib/shem/agent/server.ex": {
-    "mtime": 1783896080.173786,
-    "ast_hash": "b3df832b1348d7b4339e22a2dbd68257",
+    "mtime": 1783029199.5977414,
+    "ast_hash": "49fb98483f799922486ca98a1fb8c41e",
     "semantic_hash": ""
   },
   "lib/shem/agent/tool_dispatch.ex": {
-    "mtime": 1783817802.9773412,
-    "ast_hash": "654838c392af7a100b35657fb10eff80",
+    "mtime": 1783036140.0,
+    "ast_hash": "ea594776afbe47108fe9b5aaed58709a",
     "semantic_hash": ""
   },
   "lib/shem/agent/turn.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1783036140.0,
     "ast_hash": "fc9e5ff32daf1011484dc53b242eb5c7",
     "semantic_hash": "fc9e5ff32daf1011484dc53b242eb5c7"
   },
   "lib/shem/agent_supervisor.ex": {
-    "mtime": 1783283116.0,
+    "mtime": 1783036140.0,
     "ast_hash": "734f0632278ef7621f12c37dbf12a531",
     "semantic_hash": "734f0632278ef7621f12c37dbf12a531"
   },
   "lib/shem/application.ex": {
-    "mtime": 1783896647.0845459,
-    "ast_hash": "073e39faa784c3436317370c46462aac",
+    "mtime": 1782569081.2324584,
+    "ast_hash": "183a6e3b636be8ae7b8bd52aeec158f4",
     "semantic_hash": ""
   },
   "lib/shem/cli/banner.ex": {
@@ -110,8 +110,8 @@
     "semantic_hash": "18ffc7cc88df18f6a1ace747c662b001"
   },
   "lib/shem/cli/setup.ex": {
-    "mtime": 1783346335.596202,
-    "ast_hash": "15e5c5b5062345a94edd63a0a1a68014",
+    "mtime": 1783024084.9823546,
+    "ast_hash": "b65e2b917e80902d91481bae487f76bf",
     "semantic_hash": ""
   },
   "lib/shem/cli/status.ex": {
@@ -130,8 +130,8 @@
     "semantic_hash": "a4203598b9bfacca6fa06dcf813ef8c7"
   },
   "lib/shem/event_log.ex": {
-    "mtime": 1783895416.8984323,
-    "ast_hash": "744d739abfb3c1de3b1f6cd78a2293c9",
+    "mtime": 1783206007.834517,
+    "ast_hash": "7d0016ef387dfa114bcdb1c95a405082",
     "semantic_hash": ""
   },
   "lib/shem/event_log/chain.ex": {
@@ -165,8 +165,8 @@
     "semantic_hash": "25fd6b7f756290da594267a3a8fe6032"
   },
   "lib/shem/event_log/session.ex": {
-    "mtime": 1783895396.3341417,
-    "ast_hash": "b6a3f364dda3ee6deed69b58a07bbce7",
+    "mtime": 1783169648.8116708,
+    "ast_hash": "5c6d55ab322134e52ef7443b01b2cbb0",
     "semantic_hash": ""
   },
   "lib/shem/event_log/store.ex": {
@@ -175,9 +175,9 @@
     "semantic_hash": ""
   },
   "lib/shem/guardrails.ex": {
-    "mtime": 1783254752.223304,
-    "ast_hash": "a0338754a17bf5a0ef2adb4fd194de16",
-    "semantic_hash": ""
+    "mtime": 1781137800.943665,
+    "ast_hash": "e458db2db82c61d9fcff8b684c21d7f2",
+    "semantic_hash": "e458db2db82c61d9fcff8b684c21d7f2"
   },
   "lib/shem/http/router.ex": {
     "mtime": 1783023970.824231,
@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "lib/shem/lab/executor.ex": {
-    "mtime": 1783817245.9509673,
-    "ast_hash": "40547d316cbe9c7ce0da300f4f1b8392",
+    "mtime": 1783023740.9079523,
+    "ast_hash": "a499d4127517388e11a0ed734324bee1",
     "semantic_hash": ""
   },
   "lib/shem/lab/executor/backend.ex": {
@@ -195,9 +195,9 @@
     "semantic_hash": "491189e134d70da7a4965f7834cbf312"
   },
   "lib/shem/lab/executor/backend/container.ex": {
-    "mtime": 1783295355.2245991,
-    "ast_hash": "6f874617729b6dd65b62f3cb83c74059",
-    "semantic_hash": ""
+    "mtime": 1781660019.9965096,
+    "ast_hash": "223bd4ebfcf151188e4f3edd31cffd3b",
+    "semantic_hash": "223bd4ebfcf151188e4f3edd31cffd3b"
   },
   "lib/shem/lab/executor/backend/local.ex": {
     "mtime": 1780920441.1608772,
@@ -205,18 +205,18 @@
     "semantic_hash": "18dda90bb5356d26954eee3442f49f9d"
   },
   "lib/shem/lab/graduation_gate.ex": {
-    "mtime": 1783777571.7118468,
-    "ast_hash": "4d9662284ed3f75239fd758e5ce1f4ac",
+    "mtime": 1783023756.3272395,
+    "ast_hash": "4e5778b8a0f324a19c5e281772e5a739",
     "semantic_hash": ""
   },
   "lib/shem/lab/registry.ex": {
-    "mtime": 1783814879.4345767,
-    "ast_hash": "0cb2ad8c399fb94b76f78195337ddeae",
+    "mtime": 1782509374.1013296,
+    "ast_hash": "66ac3504b2efe74f01189411697518e7",
     "semantic_hash": ""
   },
   "lib/shem/lab/workspace.ex": {
-    "mtime": 1783814868.1741872,
-    "ast_hash": "8a5d34ab1701111dd764bc34d3826a5d",
+    "mtime": 1782509374.1023297,
+    "ast_hash": "20fe85579c7927242d3caa5012bb4950",
     "semantic_hash": ""
   },
   "lib/shem/llm.ex": {
@@ -240,9 +240,9 @@
     "semantic_hash": "6fae19a0ef3311bbe4674eef404634e3"
   },
   "lib/shem/llm/middleware/anthropic_transport.ex": {
-    "mtime": 1783348175.407121,
-    "ast_hash": "96ed326fa3dc284c3a57ebe59408e92e",
-    "semantic_hash": ""
+    "mtime": 1781556712.0,
+    "ast_hash": "7b7deabe98610368a934c696e3f3a9b1",
+    "semantic_hash": "7b7deabe98610368a934c696e3f3a9b1"
   },
   "lib/shem/llm/middleware/budget_check.ex": {
     "mtime": 1782061614.5611317,
@@ -255,17 +255,17 @@
     "semantic_hash": "9814329845374c332b2063f21c90ddfb"
   },
   "lib/shem/llm/middleware/llama_cpp_transport.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1781556712.0,
     "ast_hash": "8420f9fc4806a20dbcacc367a144c495",
     "semantic_hash": "8420f9fc4806a20dbcacc367a144c495"
   },
   "lib/shem/llm/middleware/ollama_transport.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1781556712.0,
     "ast_hash": "8a45c9f3c63b03baa91a36095f020090",
     "semantic_hash": "8a45c9f3c63b03baa91a36095f020090"
   },
   "lib/shem/llm/middleware/openai_transport.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1781553437.7414308,
     "ast_hash": "388af6fe38c47563f93ccb333b030fce",
     "semantic_hash": "388af6fe38c47563f93ccb333b030fce"
   },
@@ -285,7 +285,7 @@
     "semantic_hash": "d23a5b6d785c4d65669d3255b0ad0ede"
   },
   "lib/shem/llm/replay_transport.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1781556712.0,
     "ast_hash": "2ffa30a48a5e7b4841159b2043bceb40",
     "semantic_hash": "2ffa30a48a5e7b4841159b2043bceb40"
   },
@@ -300,9 +300,9 @@
     "semantic_hash": "0b8c690b9341d8d0fae8155019606459"
   },
   "lib/shem/llm/response.ex": {
-    "mtime": 1783348131.8052044,
-    "ast_hash": "8a84c1433a34d9228bea57ba4e37e05a",
-    "semantic_hash": ""
+    "mtime": 1781553229.7432115,
+    "ast_hash": "186c2b5464d3753fa2d693a566fda8b9",
+    "semantic_hash": "186c2b5464d3753fa2d693a566fda8b9"
   },
   "lib/shem/llm/router.ex": {
     "mtime": 1780791276.111976,
@@ -310,7 +310,7 @@
     "semantic_hash": "23a3eb7e50c646a66315bb569ba6fc5c"
   },
   "lib/shem/llm/stub_transport.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1781556712.0,
     "ast_hash": "3827f23686866dba7d097c376367e061",
     "semantic_hash": "3827f23686866dba7d097c376367e061"
   },
@@ -350,13 +350,13 @@
     "semantic_hash": "cff8d42f45b2cb108e567688f74b8576"
   },
   "lib/shem/mcp/handlers/agent_status.ex": {
-    "mtime": 1783694362.167382,
-    "ast_hash": "fafd0cf912e59e9b3e10990bf282341d",
-    "semantic_hash": ""
+    "mtime": 1782332402.1120212,
+    "ast_hash": "c4b8879a1afda4d8c820cb02f2c089b5",
+    "semantic_hash": "c4b8879a1afda4d8c820cb02f2c089b5"
   },
   "lib/shem/mcp/handlers/execute_code.ex": {
-    "mtime": 1783776917.5827732,
-    "ast_hash": "dc432d175a987acf8cd17b7f8ee04008",
+    "mtime": 1783023742.3199787,
+    "ast_hash": "abdfae93a9d8d49c2a55459498c61e3e",
     "semantic_hash": ""
   },
   "lib/shem/mcp/handlers/graduate_tool.ex": {
@@ -365,8 +365,8 @@
     "semantic_hash": "e19f4934175ef33355f3c7576a92949b"
   },
   "lib/shem/mcp/handlers/invoke_tool.ex": {
-    "mtime": 1783817805.2344196,
-    "ast_hash": "07a786f3e7f9f82c42842f972dcb729d",
+    "mtime": 1783023879.9175396,
+    "ast_hash": "6dcd5acd9101bf652b25beb5917c20fa",
     "semantic_hash": ""
   },
   "lib/shem/mcp/handlers/list_agents.ex": {
@@ -380,9 +380,9 @@
     "semantic_hash": "6c6ff3a7428d4e375f0ceea900fa5eaa"
   },
   "lib/shem/mcp/handlers/spawn_agent.ex": {
-    "mtime": 1783254834.8238735,
-    "ast_hash": "f2d9e1a761a87d027152e7e57796d658",
-    "semantic_hash": ""
+    "mtime": 1782332373.715242,
+    "ast_hash": "38372071fc009e47878213cee79ef9fc",
+    "semantic_hash": "38372071fc009e47878213cee79ef9fc"
   },
   "lib/shem/mcp/handlers/stop_agent.ex": {
     "mtime": 1781284755.5456257,
@@ -390,14 +390,14 @@
     "semantic_hash": "bbb5c1063f8964794c26856300f01b85"
   },
   "lib/shem/mcp/router.ex": {
-    "mtime": 1783896878.5388997,
-    "ast_hash": "c90082daf1e7f585ec3ef94c97b1d84a",
+    "mtime": 1783011889.7777371,
+    "ast_hash": "fbd52ed0bcec1e30a6e6d0dc8ba4e028",
     "semantic_hash": ""
   },
   "lib/shem/mcp/schema.ex": {
-    "mtime": 1783816352.2428918,
-    "ast_hash": "e37d187f9a764719c92472cf8811d611",
-    "semantic_hash": ""
+    "mtime": 1780537185.1729083,
+    "ast_hash": "482534a46a4ccd76d6fcbe29dceedf94",
+    "semantic_hash": "482534a46a4ccd76d6fcbe29dceedf94"
   },
   "lib/shem/mcp/server.ex": {
     "mtime": 1783024053.5377698,
@@ -405,9 +405,9 @@
     "semantic_hash": ""
   },
   "lib/shem/mcp/session_registry.ex": {
-    "mtime": 1783694819.3162727,
-    "ast_hash": "eb13dc71bc36786834247d0aa23ec7e0",
-    "semantic_hash": ""
+    "mtime": 1780537185.1729083,
+    "ast_hash": "1b94e3acde112db7fb6da230eaa108f4",
+    "semantic_hash": "1b94e3acde112db7fb6da230eaa108f4"
   },
   "lib/shem/memory/store.ex": {
     "mtime": 1781194895.8305905,
@@ -420,8 +420,8 @@
     "semantic_hash": "8e56c889ad33020303106ca9fdc29032"
   },
   "lib/shem/rest/handlers/agents.ex": {
-    "mtime": 1783715348.7590127,
-    "ast_hash": "8d70f76667b31104a068aeadec50e41e",
+    "mtime": 1783025624.192508,
+    "ast_hash": "dba43c8f904ad6f26dddeff3d021ca82",
     "semantic_hash": ""
   },
   "lib/shem/rest/handlers/health.ex": {
@@ -440,8 +440,8 @@
     "semantic_hash": "94f297639d88823328c61f5325ac1c05"
   },
   "lib/shem/rest/handlers/sessions.ex": {
-    "mtime": 1783895879.8189635,
-    "ast_hash": "52034b4c9484af581242f89412ddb9b1",
+    "mtime": 1783189448.0968742,
+    "ast_hash": "07220e9b58215a3b05cf1b23f69fd35a",
     "semantic_hash": ""
   },
   "lib/shem/rest/router.ex": {
@@ -525,8 +525,8 @@
     "semantic_hash": "290856e0aaf167e9af724ec55f6998a4"
   },
   "mix.exs": {
-    "mtime": 1783881788.8979948,
-    "ast_hash": "138d96127ae63dd0b30d55d65b00935a",
+    "mtime": 1783086698.5144594,
+    "ast_hash": "9c23b12457317d78a7a8fc4f9963c926",
     "semantic_hash": ""
   },
   "priv/waf": {
@@ -585,9 +585,9 @@
     "semantic_hash": "be9aeba64120c11973ca4a75b94511b7"
   },
   "test/shem/agent/tool_dispatch_test.exs": {
-    "mtime": 1783816441.3309886,
-    "ast_hash": "19401a714ab6e73dbbe69e9248b210be",
-    "semantic_hash": ""
+    "mtime": 1782094317.9642096,
+    "ast_hash": "73355a310dd020d21361a52d1c640f8c",
+    "semantic_hash": "73355a310dd020d21361a52d1c640f8c"
   },
   "test/shem/agent/turn_test.exs": {
     "mtime": 1782401613.8529177,
@@ -600,9 +600,9 @@
     "semantic_hash": "719fb15461109a2bd5ada7cb999387a2"
   },
   "test/shem/agent_test.exs": {
-    "mtime": 1783896051.703385,
-    "ast_hash": "45f84f319d0dd1271a1d13a02429a221",
-    "semantic_hash": ""
+    "mtime": 1782327614.505964,
+    "ast_hash": "30ed01c89ade3aa8b071c32cf8114809",
+    "semantic_hash": "30ed01c89ade3aa8b071c32cf8114809"
   },
   "test/shem/application_executor_test.exs": {
     "mtime": 1780921140.1600304,
@@ -665,9 +665,9 @@
     "semantic_hash": "c908b302abd0eb2d03ed514c5548ff1c"
   },
   "test/shem/event_log_test.exs": {
-    "mtime": 1783895375.139842,
-    "ast_hash": "179b4514a87ea397bcdfe0d577ba9feb",
-    "semantic_hash": ""
+    "mtime": 1781527308.355324,
+    "ast_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7",
+    "semantic_hash": "3bcfe34fc5e3539e8a5511ac5b0558e7"
   },
   "test/shem/guardrails_test.exs": {
     "mtime": 1781137800.9437613,
@@ -695,19 +695,19 @@
     "semantic_hash": "e216a5ab5183404e739cef3bed24d10e"
   },
   "test/shem/lab/executor_test.exs": {
-    "mtime": 1783817319.578528,
-    "ast_hash": "db7638b7617a3791461daeb5c7772a91",
-    "semantic_hash": ""
+    "mtime": 1780688997.4428482,
+    "ast_hash": "066ea5c0675b1a27db03f624a17da5f2",
+    "semantic_hash": "066ea5c0675b1a27db03f624a17da5f2"
   },
   "test/shem/lab/graduation_gate_test.exs": {
-    "mtime": 1783778148.7390277,
-    "ast_hash": "5f7becf1e2d2880016e1c93fc9254a06",
-    "semantic_hash": ""
+    "mtime": 1782411558.4639041,
+    "ast_hash": "37af1b968e54eb9403ef1607856b0451",
+    "semantic_hash": "37af1b968e54eb9403ef1607856b0451"
   },
   "test/shem/lab/registry_test.exs": {
-    "mtime": 1783814911.0106695,
-    "ast_hash": "0251e2f9bdc953008dd8c64ef8e26c21",
-    "semantic_hash": ""
+    "mtime": 1782439051.4530578,
+    "ast_hash": "6eb50dfc92883cdd0f984ac17ac73cf0",
+    "semantic_hash": "6eb50dfc92883cdd0f984ac17ac73cf0"
   },
   "test/shem/lab/workspace_test.exs": {
     "mtime": 1782431778.9594285,
@@ -725,9 +725,9 @@
     "semantic_hash": "f8d6599e14d1339dd8fec0a6f70dc8bf"
   },
   "test/shem/llm/middleware/anthropic_transport_test.exs": {
-    "mtime": 1783348139.4593663,
-    "ast_hash": "3b269f4e86c3cfdf4cd13b3a777a709c",
-    "semantic_hash": ""
+    "mtime": 1780880625.1995115,
+    "ast_hash": "86902bf3271016f318421476b2f63217",
+    "semantic_hash": "86902bf3271016f318421476b2f63217"
   },
   "test/shem/llm/middleware/budget_check_events_test.exs": {
     "mtime": 1780599612.1091995,
@@ -845,19 +845,19 @@
     "semantic_hash": "9ecf5baee94618844c88e08c0457846b"
   },
   "test/shem/mcp/handlers/execute_code_test.exs": {
-    "mtime": 1783778109.8417547,
-    "ast_hash": "5e7b56da4ac0b1c4c105c1d8a6d44d29",
-    "semantic_hash": ""
+    "mtime": 1780537185.1733925,
+    "ast_hash": "c2a26949f7bcab72c466f6d549908833",
+    "semantic_hash": "c2a26949f7bcab72c466f6d549908833"
   },
   "test/shem/mcp/handlers/graduate_tool_test.exs": {
-    "mtime": 1783778422.19508,
-    "ast_hash": "de261d6f85e061f416fb8cd07b348ad9",
-    "semantic_hash": ""
+    "mtime": 1781659487.8404913,
+    "ast_hash": "90f6bae091b078c7a2e36907222346fc",
+    "semantic_hash": "90f6bae091b078c7a2e36907222346fc"
   },
   "test/shem/mcp/handlers/invoke_tool_test.exs": {
-    "mtime": 1783816429.3265712,
-    "ast_hash": "ef6219039c2f2e6c1fc1b9bf63682e49",
-    "semantic_hash": ""
+    "mtime": 1781659476.877171,
+    "ast_hash": "bd8ce2baf029e5562592d90abf0f0ae6",
+    "semantic_hash": "bd8ce2baf029e5562592d90abf0f0ae6"
   },
   "test/shem/mcp/handlers/list_agents_test.exs": {
     "mtime": 1781474497.75914,
@@ -885,14 +885,14 @@
     "semantic_hash": ""
   },
   "test/shem/mcp/schema_test.exs": {
-    "mtime": 1783816416.1951149,
-    "ast_hash": "d98ce2b3ee39169956ea7940bdcafc2d",
-    "semantic_hash": ""
+    "mtime": 1780688997.4439726,
+    "ast_hash": "8e4e6f8e668363f357901acf98a7a63c",
+    "semantic_hash": "8e4e6f8e668363f357901acf98a7a63c"
   },
   "test/shem/mcp/session_registry_test.exs": {
-    "mtime": 1783694736.5060422,
-    "ast_hash": "a42b3fe2a0828303995da4fa291acf14",
-    "semantic_hash": ""
+    "mtime": 1780537185.1734722,
+    "ast_hash": "8af8ec0e1af39e6991e9c635d5a41c95",
+    "semantic_hash": "8af8ec0e1af39e6991e9c635d5a41c95"
   },
   "test/shem/memory/store_test.exs": {
     "mtime": 1780935140.3359666,
@@ -905,8 +905,8 @@
     "semantic_hash": "de8494287083ed0d703d16e697f0f72c"
   },
   "test/shem/rest/agents_test.exs": {
-    "mtime": 1783694379.4139047,
-    "ast_hash": "af2e434b7c74c17bf7df30f5c6fa55cc",
+    "mtime": 1783025592.4331918,
+    "ast_hash": "35d0a5de04264cdd541dafb5cf09b752",
     "semantic_hash": ""
   },
   "test/shem/rest/health_test.exs": {
@@ -925,8 +925,8 @@
     "semantic_hash": "3373955be792c09e576c61255b1207fa"
   },
   "test/shem/rest/sessions_test.exs": {
-    "mtime": 1783736071.5509195,
-    "ast_hash": "c920cf732dc1c76cda6b99f543273dbc",
+    "mtime": 1783189431.412601,
+    "ast_hash": "8fb9967c37aa6700860f8a2f7c6deab8",
     "semantic_hash": ""
   },
   "test/shem/rest/shadow_test.exs": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": "510870aa6dea090a823e2f184ea44459"
   },
   "test/test_helper.exs": {
-    "mtime": 1783778164.8271422,
-    "ast_hash": "f53fbe3c27c36bc8b884944dc873d21a",
+    "mtime": 1783024106.9737637,
+    "ast_hash": "42ba5e3b362ba4c40f748a50b80dea97",
     "semantic_hash": ""
   },
   "lib/shem/rest/handlers/cluster.ex": {
@@ -1085,18 +1085,18 @@
     "semantic_hash": "0824088e01c84438b6269be32017b645"
   },
   "lib/mix/tasks/demo.ex": {
-    "mtime": 1783354098.0,
+    "mtime": 1783036140.0,
     "ast_hash": "930f8361d1e1a65a26be31d70f3d884b",
     "semantic_hash": "930f8361d1e1a65a26be31d70f3d884b"
   },
   "lib/shem/lab/graduation_gate/python.ex": {
-    "mtime": 1783777482.8318446,
-    "ast_hash": "ccbb480e2aa8037d8082fda858287781",
-    "semantic_hash": ""
+    "mtime": 1782407678.3571286,
+    "ast_hash": "6041359deb72eb522504420636394c9f",
+    "semantic_hash": "6041359deb72eb522504420636394c9f"
   },
   "lib/shem/lab/port_pool.ex": {
-    "mtime": 1783293820.6949444,
-    "ast_hash": "8d326f2d863cd82574a7b283de8e1185",
+    "mtime": 1782568401.8810582,
+    "ast_hash": "1c6f4db26b4c6eca28ab268c006e8b94",
     "semantic_hash": ""
   },
   "lib/shem/lab/port_pool/supervisor.ex": {
@@ -1110,19 +1110,19 @@
     "semantic_hash": "d46da0b57086fad59b28e1877cfe6429"
   },
   "test/shem/lab/port_pool_test.exs": {
-    "mtime": 1783293837.605293,
-    "ast_hash": "8df180e9a843ada0783731d886efc1af",
+    "mtime": 1782568386.9453168,
+    "ast_hash": "7dfdbe91fca0153c9bc49b6fdd6f7770",
     "semantic_hash": ""
   },
   "lib/mix/tasks/shem.serve.ex": {
-    "mtime": 1783900579.9179704,
-    "ast_hash": "1192c30b2c6ae47271a04f2141a60573",
-    "semantic_hash": ""
+    "mtime": 1782097081.1109664,
+    "ast_hash": "850d7c3288e61fd57c0d2ee98e97c92b",
+    "semantic_hash": "850d7c3288e61fd57c0d2ee98e97c92b"
   },
   "lib/shem/lab/graduation_gate/hardening.ex": {
-    "mtime": 1783257488.314804,
-    "ast_hash": "0273a07510cba3840d9d0fb98437f7fb",
-    "semantic_hash": ""
+    "mtime": 1782069048.122168,
+    "ast_hash": "0b2370850d87bf7ba9456fc95755736a",
+    "semantic_hash": "0b2370850d87bf7ba9456fc95755736a"
   },
   "lib/shem/telemetry.ex": {
     "mtime": 1782072026.2062516,
@@ -1140,23 +1140,23 @@
     "semantic_hash": "7d682d4de97771b661f92a4c085d3bf7"
   },
   "lib/shem/lab/graduation_gate/go.ex": {
-    "mtime": 1783777482.8322961,
-    "ast_hash": "b38d8a71eb18165c480b99a197f0a4d1",
-    "semantic_hash": ""
+    "mtime": 1782434005.0417337,
+    "ast_hash": "a1c01532d578d4e605c8c653109a898d",
+    "semantic_hash": "a1c01532d578d4e605c8c653109a898d"
   },
   "lib/shem/lab/graduation_gate/js.ex": {
-    "mtime": 1783777482.8321257,
-    "ast_hash": "09646d2b3c19e37419547e187f4ff1ae",
-    "semantic_hash": ""
+    "mtime": 1782410352.290489,
+    "ast_hash": "888eed0c2ae963cf7db845437ab69477",
+    "semantic_hash": "888eed0c2ae963cf7db845437ab69477"
   },
   "lib/shem/lab/languages.ex": {
-    "mtime": 1783802364.4792411,
-    "ast_hash": "35c0c4e6992255d92ccfc85be776898a",
-    "semantic_hash": ""
+    "mtime": 1782424737.3808246,
+    "ast_hash": "8aaa5bc139d4253c9b667dd96cab5e38",
+    "semantic_hash": "8aaa5bc139d4253c9b667dd96cab5e38"
   },
   "lib/shem/lab/pack.ex": {
-    "mtime": 1783253672.6540267,
-    "ast_hash": "d34521917133debc8799e3304b1b26c3",
+    "mtime": 1782509374.1013296,
+    "ast_hash": "a8c75d1c3f4185e77838296fca0a1a29",
     "semantic_hash": ""
   },
   "lib/shem/llm/middleware/one_shot.ex": {
@@ -1165,9 +1165,9 @@
     "semantic_hash": "8bedc1f26358e1cace80e86d7032b632"
   },
   "lib/shem/mcp/handlers/install_pack.ex": {
-    "mtime": 1783253095.9444163,
-    "ast_hash": "9aff1f6ee0a0da145ea19c2b08c17ab6",
-    "semantic_hash": ""
+    "mtime": 1782268288.7553227,
+    "ast_hash": "d0f8664fcb015e3212311374b7f9ed9a",
+    "semantic_hash": "d0f8664fcb015e3212311374b7f9ed9a"
   },
   "lib/shem/mcp/handlers/list_packs.ex": {
     "mtime": 1782270430.4290533,
@@ -1175,8 +1175,8 @@
     "semantic_hash": "caa03c1e645020c73d80468df70668b3"
   },
   "lib/shem/mcp/handlers/provide_turn.ex": {
-    "mtime": 1783694359.260113,
-    "ast_hash": "0735a00d02831279416d79be8dee9c68",
+    "mtime": 1783025612.7073925,
+    "ast_hash": "b54b96bd26521d7c6afae09bf1e5693b",
     "semantic_hash": ""
   },
   "lib/shem/mcp/handlers/uninstall_pack.ex": {
@@ -1185,14 +1185,14 @@
     "semantic_hash": "df7716a9d44d064e7e67cc49531f6d25"
   },
   "lib/shem/rest/handlers/packs.ex": {
-    "mtime": 1783253113.4976475,
-    "ast_hash": "6b10686dfdccdb8576ebf5da0d0d172f",
-    "semantic_hash": ""
+    "mtime": 1782270450.2364264,
+    "ast_hash": "5f0aba2e49a205b468b894f53fc8649c",
+    "semantic_hash": "5f0aba2e49a205b468b894f53fc8649c"
   },
   "lib/shem/seed_tools.ex": {
-    "mtime": 1783817795.2370718,
-    "ast_hash": "05887408d91cf4ce3b4a056a9ba3700a",
-    "semantic_hash": ""
+    "mtime": 1782174383.759644,
+    "ast_hash": "7b4c99c85bededbf5042621fc210f033",
+    "semantic_hash": "7b4c99c85bededbf5042621fc210f033"
   },
   "lib/shem/seed_tools/diff_text.ex": {
     "mtime": 1782168708.2516286,
@@ -1240,9 +1240,9 @@
     "semantic_hash": "3008fbd813af3eb9f235bdcb1722b8e6"
   },
   "rel/overlays/bin/shem-install": {
-    "mtime": 1783253128.3658435,
-    "ast_hash": "358bb7c3be149f2b8940d3687558f9f8",
-    "semantic_hash": ""
+    "mtime": 1782269945.10488,
+    "ast_hash": "ab7c2f1be63677744fa2f14c169608ee",
+    "semantic_hash": "ab7c2f1be63677744fa2f14c169608ee"
   },
   "rel/overlays/bin/shem-uninstall": {
     "mtime": 1782269948.2641726,
@@ -1290,9 +1290,9 @@
     "semantic_hash": "59cc724647cb5da4699fab6bb05da9df"
   },
   "test/shem/lab/languages_test.exs": {
-    "mtime": 1783776658.2586153,
-    "ast_hash": "b970d7fb2a023a72d067b1db227e0766",
-    "semantic_hash": ""
+    "mtime": 1782424720.2974823,
+    "ast_hash": "28f6a9fd6012273d569f09df910e221e",
+    "semantic_hash": "28f6a9fd6012273d569f09df910e221e"
   },
   "test/shem/lab/pack_test.exs": {
     "mtime": 1782509374.1023297,
@@ -1310,9 +1310,9 @@
     "semantic_hash": "16cb12a3415ad5599c018b976a7fb647"
   },
   "test/shem/mcp/provide_turn_test.exs": {
-    "mtime": 1783694343.2415621,
-    "ast_hash": "0426c334feb31936fda2d94780ee9c08",
-    "semantic_hash": ""
+    "mtime": 1782353176.7851934,
+    "ast_hash": "ac6b744cd51f4b7d69edde935c681eeb",
+    "semantic_hash": "ac6b744cd51f4b7d69edde935c681eeb"
   },
   "test/shem/rest/packs_test.exs": {
     "mtime": 1782270461.7918804,
@@ -1355,8 +1355,8 @@
     "semantic_hash": ""
   },
   ".impeccable/hook.cache.json": {
-    "mtime": 1783900917.5343647,
-    "ast_hash": "472dd74b717d1b569068bb7be3556eea",
+    "mtime": 1783206239.0248055,
+    "ast_hash": "941ac9d1c11ac48f07b0437ab7b80082",
     "semantic_hash": ""
   },
   "lib/shem/http/host_guard.ex": {
@@ -1365,8 +1365,8 @@
     "semantic_hash": ""
   },
   "lib/shem/lab/sandbox.ex": {
-    "mtime": 1783800812.6840823,
-    "ast_hash": "8698cfb69ba8fc65fc46d1665409179f",
+    "mtime": 1782566849.2460907,
+    "ast_hash": "4e0339221c743e5c222845b412645023",
     "semantic_hash": ""
   },
   "lib/shem/lab/source_scan.ex": {
@@ -1395,18 +1395,18 @@
     "semantic_hash": ""
   },
   "test/shem/lab/executor_scan_test.exs": {
-    "mtime": 1783816845.3500357,
-    "ast_hash": "19c0f4c372979191d1b018060de2286e",
+    "mtime": 1783023724.1476402,
+    "ast_hash": "3bdbc278f8b3d8b4c35553622a3ea228",
     "semantic_hash": ""
   },
   "test/shem/lab/load_site_scan_test.exs": {
-    "mtime": 1783779068.9634635,
-    "ast_hash": "9f537a5f3babd8f7b415ec9e973e713d",
+    "mtime": 1783023835.6257153,
+    "ast_hash": "e60e2bc3d1c313f81786e5a5745dae35",
     "semantic_hash": ""
   },
   "test/shem/lab/sandbox_test.exs": {
-    "mtime": 1783800838.0560493,
-    "ast_hash": "f1f89a858a4c0001b2b49c29af75fbb1",
+    "mtime": 1782569077.914508,
+    "ast_hash": "fb51d4862ec218ae64687c32a9da3ce7",
     "semantic_hash": ""
   },
   "test/shem/lab/source_scan_test.exs": {
@@ -1435,7 +1435,7 @@
     "semantic_hash": ""
   },
   "lib/shem/replay/check.ex": {
-    "mtime": 1783283116.0,
+    "mtime": 1783086203.0145168,
     "ast_hash": "48114ea37f3570d3b1c3cb485fbd5464",
     "semantic_hash": ""
   },
@@ -1460,8 +1460,8 @@
     "semantic_hash": ""
   },
   "lib/shem/attest.ex": {
-    "mtime": 1783296203.8950627,
-    "ast_hash": "1824c5f94070a232cb344b01ac66aac9",
+    "mtime": 1783206016.8946838,
+    "ast_hash": "9eba0aead36456f871df492398ec8036",
     "semantic_hash": ""
   },
   "lib/shem/attest/canonical_json.ex": {
@@ -1507,216 +1507,6 @@
   "test/shem/gc_cli_test.exs": {
     "mtime": 1783206120.593602,
     "ast_hash": "5e625ed24cf441773c71c8cb7e61ee50",
-    "semantic_hash": ""
-  },
-  "lib/shem/counterfactual.ex": {
-    "mtime": 1783900917.4293633,
-    "ast_hash": "222e1cb5d8b73515cea9cc7833d26149",
-    "semantic_hash": ""
-  },
-  "lib/shem/counterfactual/coordinator.ex": {
-    "mtime": 1783896631.834246,
-    "ast_hash": "849454e2a68e09ac4249ba7eb0521814",
-    "semantic_hash": ""
-  },
-  "lib/shem/counterfactual/report.ex": {
-    "mtime": 1783896256.5120947,
-    "ast_hash": "80f8d3b80bc72b56cb02d7cf09d9b138",
-    "semantic_hash": ""
-  },
-  "lib/shem/event_log/redact.ex": {
-    "mtime": 1783257044.61359,
-    "ast_hash": "3e2fd255494dd821c92a7197cae12d86",
-    "semantic_hash": ""
-  },
-  "lib/shem/lab/graduation_gate/common.ex": {
-    "mtime": 1783777104.015005,
-    "ast_hash": "ec5ff41a67a815f11615c403906783f9",
-    "semantic_hash": ""
-  },
-  "lib/shem/lab/graduation_gate/elixir.ex": {
-    "mtime": 1783817259.4454365,
-    "ast_hash": "66ffe14ea0c1ca0b4426187bbdce3d9d",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/handlers/counterfactual_run.ex": {
-    "mtime": 1783896841.411223,
-    "ast_hash": "3b2499b51b8e23deed6e9cf33572db85",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/handlers/counterfactual_select.ex": {
-    "mtime": 1783896846.7553208,
-    "ast_hash": "439fa7cbc4e376ed1e4fcd703bf38718",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/handlers/counterfactual_status.ex": {
-    "mtime": 1783896843.766266,
-    "ast_hash": "632a9c7240e3dd0a749680d1311c11a3",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/handlers/recall_context.ex": {
-    "mtime": 1783859648.6684198,
-    "ast_hash": "7ce419782f403d38d288a97b179af2dc",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/handlers/recall_search.ex": {
-    "mtime": 1783859645.2983017,
-    "ast_hash": "1433c9698255f3ddf4dcb7614c4f51a5",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/invocation_log.ex": {
-    "mtime": 1783878001.3251357,
-    "ast_hash": "ee81fae3d52dc4c3df5a5c0e5f8eceb6",
-    "semantic_hash": ""
-  },
-  "lib/shem/mcp/mrtr.ex": {
-    "mtime": 1783712881.7024362,
-    "ast_hash": "4800e86dcd6414f5a3f58c84cee89ee8",
-    "semantic_hash": ""
-  },
-  "lib/shem/recall.ex": {
-    "mtime": 1783860607.6509564,
-    "ast_hash": "836922599806a246302616d40569d6d9",
-    "semantic_hash": ""
-  },
-  "lib/shem/recall/index.ex": {
-    "mtime": 1783860611.6082196,
-    "ast_hash": "641624ad94f8de4dc3fe8d507444b183",
-    "semantic_hash": ""
-  },
-  "lib/shem/recall/scanner.ex": {
-    "mtime": 1783878122.2320044,
-    "ast_hash": "b88a877783fafe27bacf3a18df0c3bb7",
-    "semantic_hash": ""
-  },
-  "lib/shem/recall/text.ex": {
-    "mtime": 1783857897.3669906,
-    "ast_hash": "e144ba0f6cfa9a44a8d3567850848d40",
-    "semantic_hash": ""
-  },
-  "lib/shem/sessions/fork.ex": {
-    "mtime": 1783896086.6138768,
-    "ast_hash": "ca984378634db91eaba7d648c7d1695f",
-    "semantic_hash": ""
-  },
-  "test/shem/counterfactual/report_test.exs": {
-    "mtime": 1783896220.5402107,
-    "ast_hash": "5dd39e9d7ce9d6040e70688cec609f24",
-    "semantic_hash": ""
-  },
-  "test/shem/counterfactual_test.exs": {
-    "mtime": 1783896544.3354867,
-    "ast_hash": "8b35a28559c5175e55828653f94ec252",
-    "semantic_hash": ""
-  },
-  "test/shem/event_log/redact_test.exs": {
-    "mtime": 1783255635.2005289,
-    "ast_hash": "063ac01ef57c588485445bffa5d23f1d",
-    "semantic_hash": ""
-  },
-  "test/shem/event_log/session_id_safety_test.exs": {
-    "mtime": 1783879799.8292515,
-    "ast_hash": "c065e4521e3a36747c034bf10a478d8b",
-    "semantic_hash": ""
-  },
-  "test/shem/guardrails_action_test.exs": {
-    "mtime": 1783294467.4299119,
-    "ast_hash": "f7c7753920f0feff995e12fc25d855b2",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/elixir_sandbox_e2e_test.exs": {
-    "mtime": 1783817329.469872,
-    "ast_hash": "b41b5d1c307f8de3e4c8627626d004a4",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/graduation_gate/elixir_test.exs": {
-    "mtime": 1783817310.1962016,
-    "ast_hash": "0f668866fe87a42f87f31fa55da6f59c",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/graduation_gate/gate_profile_test.exs": {
-    "mtime": 1783295384.552164,
-    "ast_hash": "8f132dc4e92b867a27b75d86871e8087",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/graduation_gate/hardening_actions_test.exs": {
-    "mtime": 1783257444.2279925,
-    "ast_hash": "f210058b918f5e1750dc1a9ae5f323de",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/pack_contract_test.exs": {
-    "mtime": 1783253466.621067,
-    "ast_hash": "a77bca7471c835f0bf9401d013b3457a",
-    "semantic_hash": ""
-  },
-  "test/shem/lab/sandbox_profile_test.exs": {
-    "mtime": 1783253768.0911796,
-    "ast_hash": "9302b083f52dc1d27e1831e9be3531c7",
-    "semantic_hash": ""
-  },
-  "test/shem/mcp/counterfactual_tools_test.exs": {
-    "mtime": 1783896895.7242103,
-    "ast_hash": "7c016af2e38da8f50d39ae64bdbf476d",
-    "semantic_hash": ""
-  },
-  "test/shem/mcp/invocation_log_test.exs": {
-    "mtime": 1783877969.0497222,
-    "ast_hash": "bc04d569d0be8c9b30a81674a0040d19",
-    "semantic_hash": ""
-  },
-  "test/shem/mcp/mrtr_test.exs": {
-    "mtime": 1783715370.8782473,
-    "ast_hash": "bbf6ee869d84fb24895707d1bba212d9",
-    "semantic_hash": ""
-  },
-  "test/shem/mcp/recall_tools_test.exs": {
-    "mtime": 1783859638.3432224,
-    "ast_hash": "f601a6fa0673824b68c8068443f78d15",
-    "semantic_hash": ""
-  },
-  "test/shem/pack_contract_e2e_test.exs": {
-    "mtime": 1783266567.2209163,
-    "ast_hash": "4b8031c8511de78a024a32e5d654c7f6",
-    "semantic_hash": ""
-  },
-  "test/shem/recall/fork_from_hit_test.exs": {
-    "mtime": 1783859911.195821,
-    "ast_hash": "0e11a543acf3786d0f18217e89e020a5",
-    "semantic_hash": ""
-  },
-  "test/shem/recall/index_test.exs": {
-    "mtime": 1783858381.439003,
-    "ast_hash": "ca8f7c55bdad7e52a5467154e919c0d1",
-    "semantic_hash": ""
-  },
-  "test/shem/recall/recall_test.exs": {
-    "mtime": 1783860618.7607374,
-    "ast_hash": "7dc62f07fc47a8355f132f19d58da308",
-    "semantic_hash": ""
-  },
-  "test/shem/recall/scanner_test.exs": {
-    "mtime": 1783878102.522253,
-    "ast_hash": "6d15924879a017a146dc5a5c12149ff7",
-    "semantic_hash": ""
-  },
-  "test/shem/recall/text_test.exs": {
-    "mtime": 1783857793.695497,
-    "ast_hash": "ae87bee32622dc03abee166a0b291d9b",
-    "semantic_hash": ""
-  },
-  "test/shem/rest/packs_grants_test.exs": {
-    "mtime": 1783253392.7663562,
-    "ast_hash": "41b1468cfc9dde8de551429676ac50c7",
-    "semantic_hash": ""
-  },
-  "test/shem/sessions/fork_test.exs": {
-    "mtime": 1783896057.8294713,
-    "ast_hash": "7b0d5c5bf9c1b077b06736f96cca3a54",
-    "semantic_hash": ""
-  },
-  "test/shem/turn_token_test.exs": {
-    "mtime": 1783694070.7507162,
-    "ast_hash": "7e89a605b9ceacfc25690a0245dda1b5",
     "semantic_hash": ""
   }
 }
