@@ -178,6 +178,7 @@ Claude Code then gets these tools:
 | `install_pack` / `uninstall_pack` / `list_packs` | Manage git-distributed tool packs (see below) |
 | `provide_turn` | Resume a client-brained agent with an action or response |
 | `recall_search` / `recall_context` | Search all past sessions by meaning — hits return the matching events plus fork coordinates, so "have we solved this before?" is answered with replayable evidence, not summaries |
+| `counterfactual_run` / `counterfactual_status` / `counterfactual_select` | Fork a session at a turn, run alternative premises as live branches, get a structured divergence report, continue on the winner — every branch (and the selection itself) stays in the log as evidence. **Variants re-execute tools live** |
 
 The self-extending pattern: Claude Code graduates a new tool once, then invokes
 it in every future session. The parallel pattern: spawn several Shem agents for
@@ -352,7 +353,7 @@ No begging here — just what's true so you can decide for yourself.
 
 ## Roadmap
 
-Recently shipped: **Recall** (`recall_search` / `recall_context` — search past sessions by meaning, answered with fork-ready evidence), the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go/Elixir — nothing agent-authored touches the host BEAM), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: compounding skills (pattern-mined tool graduation), counterfactual forking, and verified agent handoff. Full plan: [ROADMAP.md](ROADMAP.md).
+Recently shipped: **counterfactual forking** (`counterfactual_run` — fork a session at a turn, run alternative premises as live branches, diff them, keep the winner; all branches stay in the log), **Recall** (`recall_search` / `recall_context` — search past sessions by meaning, answered with fork-ready evidence), the visual time-travel debugger (scrub · fork · live side-by-side divergence · hash-chain verify badge), container-sandboxed polyglot tools (Python/JS/Go/Elixir — nothing agent-authored touches the host BEAM), and the browser **co-driver** (inject a running agent's next turn from the WebUI — MRTR-native via elicitation). Upcoming: compounding skills (pattern-mined tool graduation) and verified agent handoff. Full plan: [ROADMAP.md](ROADMAP.md).
 
 ## License
 

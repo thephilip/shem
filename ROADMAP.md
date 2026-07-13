@@ -249,14 +249,39 @@ after weeks of instrumented dogfooding, not the 2026-07-12 zero.
 is detected, suggested, graduated through the normal gate, and invoked as a
 single tool in a later session.
 
-## Phase 9 — Counterfactual Fork `pending`
+## Phase 9 — Counterfactual Fork `done`
 
 Fork-N-and-diff as a first-class primitive an agent can invoke on its own
 reasoning: run variants from a chosen turn, return the structured diff, keep
 the winner. The forensic time-travel machinery used prospectively — an
 ability no prompt technique can replicate because it requires the substrate.
 
-**Exit criteria (intent):** an agent (client-brain included) requests a
+**Shipped 2026-07-12** — `counterfactual_run` / `counterfactual_status` /
+`counterfactual_select` MCP tools over `Shem.Counterfactual` (+ a per-run
+sequential `Coordinator`). Variants are caller-supplied premises (an
+alternative assistant turn injected as `alt_response` at the fork point —
+brain-agnostic, never model re-rolls); fork targets resolve to the nearest
+`:llm_call_completed` at-or-before. Branch agents resume with the parent's
+recorded config (`brain`/preset/max-turns threaded via the copied
+`:agent_started` payload — `brain` is now recorded at spawn; legacy sessions
+fall back to the copied checkpoint's config). The run is one chained record:
+`:counterfactual_run` / `:counterfactual_completed` / `:counterfactual_selected`
+events in the PARENT session (parent-side payloads carry digests only), via a
+new `EventLog.reopen/1` — `ended_at` means "no live writer", not "immutable";
+immutability stays the hash chain's job. The report diffs typed events:
+per-branch turns/tool-calls (name + args digest)/terminal status/final
+content/fork coordinates, plus first-divergence and tool-call deltas vs the
+parent's own post-fork continuation. Losing branches are finalized, never
+deleted. Caps are config (`counterfactual: max_variants/default_max_turns/
+wall_clock_ms`); optional `deny_actions` rides the existing Guardrails policy;
+descriptors and reports carry `side_effects: "variants re-execute tools live"`
+(no dry-run in v1). Reach is countable from `:counterfactual_run` events in
+parent logs — no separate instrument. Suite 1410; live-verified over real MCP
+HTTP against a real past session (client-brain: run → branches park → steered
+via `provide_turn` → report → select → winner resumed awaiting the caller's
+turn; all three chains verify).
+
+**Exit criteria (met):** an agent (client-brain included) requests a
 counterfactual over MCP, receives a divergence report, and continues on the
 selected branch; all branches remain in the log.
 
