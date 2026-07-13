@@ -14,6 +14,9 @@ defmodule Mix.Tasks.Shem.Serve do
 
   @impl true
   def run(_args) do
+    # load config/runtime.exs (SHEM_PORT/SHEM_HOST/SHEM_DATA_DIR overrides) —
+    # ensure_all_started alone skips it, silently ignoring the env vars
+    Mix.Task.run("app.config")
     Application.put_env(:shem, :start_tui, false)
     Application.put_env(:shem, :start_cluster, false)
     {:ok, _} = Application.ensure_all_started(:shem)

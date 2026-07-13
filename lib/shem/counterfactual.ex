@@ -86,8 +86,17 @@ defmodule Shem.Counterfactual do
   @spec status(String.t()) :: {:ok, map()} | {:error, :not_found}
   def status(run_id) do
     case Registry.lookup(Shem.Counterfactual.Registry, run_id) do
-      [{pid, _}] -> GenServer.call(pid, :status)
-      [] -> reconstruct_status(run_id)
+      [{pid, _}] ->
+        # the coordinator can die between lookup and call (registry cleanup
+        # is async) — a dead coordinator is the reconstruction case, not an error
+        try do
+          GenServer.call(pid, :status)
+        catch
+          :exit, _ -> reconstruct_status(run_id)
+        end
+
+      [] ->
+        reconstruct_status(run_id)
     end
   end
 
