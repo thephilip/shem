@@ -15,14 +15,16 @@ defmodule Shem.MCP.Handlers.ListToolsTest do
     input_schema: %{"x" => %{"type" => "integer"}}
   }
 
-  test "always returns {:ok, list}" do
-    assert {:ok, tools} = ListTools.call(%{})
-    assert is_list(tools)
+  test "returns a nudge map when no tools are graduated" do
+    Registry.flush()
+    assert {:ok, %{"tools" => [], "note" => note}} = ListTools.call(%{})
+    assert note =~ "graduate_tool"
   end
 
   test "returns tool summaries for registered tools" do
     Registry.register(@tool)
     {:ok, tools} = ListTools.call(%{})
+    assert is_list(tools)
     found = Enum.find(tools, &(&1["id"] == "lt_tool_1"))
     assert found["name"] == "LtTool1"
     assert found["input_schema"] == %{"x" => %{"type" => "integer"}}

@@ -27,8 +27,8 @@ defmodule Shem.MCP.Handlers.GraduateToolTest do
 
     args = %{"source" => source, "test_source" => test_source}
     assert {:ok, tool} = GraduateTool.call(args)
-    assert tool.id == "grad_handler_tool1"
-    assert match?({:port, _}, tool.runtime)
+    assert tool["id"] == "grad_handler_tool1"
+    assert tool["note"] =~ "invoke_tool(id: \"grad_handler_tool1\")"
   end
 
   test "accepts optional input_schema and stores it on the tool" do
@@ -50,7 +50,7 @@ defmodule Shem.MCP.Handlers.GraduateToolTest do
     schema = %{"n" => %{"type" => "integer"}}
     args = %{"source" => source, "test_source" => test_source, "input_schema" => schema}
     assert {:ok, tool} = GraduateTool.call(args)
-    assert tool.input_schema == schema
+    assert tool["input_schema"] == schema
   end
 
   test "returns gate error when test source fails" do

@@ -1,7 +1,7 @@
 defmodule Shem.MCP.Handlers.ListTools do
   alias Shem.Lab.Registry
 
-  @spec call(map()) :: {:ok, [map()]}
+  @spec call(map()) :: {:ok, [map()] | map()}
   def call(_args) do
     tools =
       Registry.all()
@@ -13,6 +13,18 @@ defmodule Shem.MCP.Handlers.ListTools do
         }
       end)
 
-    {:ok, tools}
+    case tools do
+      [] ->
+        {:ok,
+         %{
+           "tools" => [],
+           "note" =>
+             "No graduated tools yet. Write code once, graduate_tool it, and it " <>
+               "persists here — callable in every future session without rewriting."
+         }}
+
+      _ ->
+        {:ok, tools}
+    end
   end
 end

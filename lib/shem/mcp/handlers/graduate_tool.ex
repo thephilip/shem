@@ -18,11 +18,25 @@ defmodule Shem.MCP.Handlers.GraduateTool do
         {:ok, tool} ->
           updated = %{tool | input_schema: input_schema}
           :ok = Registry.register(updated)
-          {:ok, updated}
+          {:ok, summarize(updated)}
 
         error ->
           error
       end
     end
+  end
+
+  # %Shem.Tool{} isn't JSON-encodable (tuple runtime), so hand back a plain map —
+  # and spend the result to reinforce the loop: graduation persists, so the model
+  # should reach for invoke_tool next time instead of rewriting the code.
+  defp summarize(tool) do
+    %{
+      "id" => tool.id,
+      "name" => tool.name,
+      "input_schema" => tool.input_schema,
+      "note" =>
+        "Graduated and persisted. Call it in any future session with " <>
+          "invoke_tool(id: \"#{tool.id}\") instead of rewriting this code."
+    }
   end
 end
