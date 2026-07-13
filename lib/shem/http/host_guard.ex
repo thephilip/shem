@@ -20,7 +20,7 @@ defmodule Shem.HTTP.HostGuard do
 
   @impl true
   def call(conn, _opts) do
-    with :ok <- check_host(conn), :ok <- check_token(conn) do
+    with :ok <- check_host(conn), {:ok, conn} <- check_token(conn) do
       conn
     else
       {:error, status, msg} ->
@@ -42,19 +42,40 @@ defmodule Shem.HTTP.HostGuard do
 
   defp check_token(conn) do
     case Application.get_env(:shem, :auth_token) do
-      nil ->
-        :ok
+      nil -> {:ok, conn}
+      token -> verify_token(conn, token)
+    end
+  end
 
-      token ->
-        case get_req_header(conn, "authorization") do
-          ["Bearer " <> presented | _] ->
-            if Plug.Crypto.secure_compare(presented, token),
-              do: :ok,
-              else: {:error, 401, "invalid token"}
+  # API clients present `Authorization: Bearer <token>`. Browsers can't attach that
+  # to a plain navigation, so we also accept the token from a `?token=` query param
+  # (used once) or a `shem_token` cookie, and seed the cookie on the query-param hit
+  # so subsequent navigations + same-origin /api fetches carry it automatically.
+  # ponytail: raw token in an HttpOnly cookie; fine for a LAN dev UI, revisit if the
+  # listener ever faces the public internet (then: short-lived signed session cookie).
+  defp verify_token(conn, token) do
+    conn = conn |> fetch_query_params() |> fetch_cookies()
 
-          _ ->
-            {:error, 401, "missing bearer token"}
-        end
+    {presented, from_query?} =
+      case get_req_header(conn, "authorization") do
+        ["Bearer " <> t | _] -> {t, false}
+        _ -> {conn.params["token"] || conn.cookies["shem_token"], conn.params["token"] != nil}
+      end
+
+    cond do
+      is_binary(presented) and Plug.Crypto.secure_compare(presented, token) ->
+        conn =
+          if from_query?,
+            do: put_resp_cookie(conn, "shem_token", token, http_only: true, same_site: "Strict"),
+            else: conn
+
+        {:ok, conn}
+
+      is_binary(presented) ->
+        {:error, 401, "invalid token"}
+
+      true ->
+        {:error, 401, "missing bearer token"}
     end
   end
 end

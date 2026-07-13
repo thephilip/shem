@@ -49,4 +49,21 @@ defmodule Shem.HTTP.HostGuardTest do
     assert req("localhost", [{"authorization", "Bearer wrong"}]).status == 401
     assert req("localhost").status == 401
   end
+
+  test "browser paths: ?token= seeds a cookie; cookie then authenticates" do
+    Application.put_env(:shem, :auth_token, "sekrit")
+    on_exit(fn -> Application.delete_env(:shem, :auth_token) end)
+
+    conn =
+      %{conn(:get, "/api/presets?token=sekrit") | host: "localhost"} |> Router.call(@opts)
+
+    assert conn.status == 200
+    assert {"shem_token", "sekrit"} in Enum.map(conn.resp_cookies, fn {k, v} -> {k, v.value} end)
+
+    assert req("localhost", [{"cookie", "shem_token=sekrit"}]).status == 200
+    assert req("localhost", [{"cookie", "shem_token=wrong"}]).status == 401
+
+    bad = %{conn(:get, "/api/presets?token=wrong") | host: "localhost"} |> Router.call(@opts)
+    assert bad.status == 401
+  end
 end
