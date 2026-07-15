@@ -343,18 +343,45 @@ parked agent from it.
 
 ## Dogfood track (standing practice — gated on Phase 1)
 
-Shem is used to further Shem's own development. Tool-server mode (an external
-brain such as Claude Code over MCP) is the practice; autonomous local-LLM
-development is a post-sandbox (Phase 6+) aspiration, not a near-term claim.
+**Dogfooding here means the ordinary thing: Shem is used for real work, by both
+of its customers.** Shem has two — the human and the model (see the exocortex
+direction): the model gets memory, skills, counterfactual branches and
+continuity it structurally lacks; the human gets speed, token savings, and
+offline-verifiable proof of what happened. A session counts as dogfood if it is
+*real work with Shem connected*, whatever the subject matter.
 
-- Every development session on Shem runs with Shem connected via MCP
-  (`shem start` + `claude mcp add`); structural codebase questions go through
-  `graphify_query` first.
-- Each phase's execution uses at least one Shem capability for its own work:
-  Phase 2 — client-brain explorer agents during co-driver development;
-  Phase 3 — `replay --check` validated on real dev sessions; Phase 4 —
-  `attest` a real session from this track.
-- The token bench gets its number from these sessions, not a synthetic run.
+The thesis a dogfood session is testing: **a tool call should cost the model
+fewer tokens than the behaviour it replaces.** An agent that greps, reads three
+whole files, and reconstructs an answer burns context that a single structured
+tool call would not. That saving is the product — for the model as capability,
+for the human as speed and cost. Sessions are the evidence; the token bench
+gets its number from them, not from a synthetic run.
+
+Two kinds of dogfood session, both required, neither a substitute for the other:
+
+1. **Shem on Shem** (self-development) — proves the phase machinery on data we
+   control. Tool-server mode (an external brain such as Claude Code over MCP)
+   is the practice; autonomous local-LLM development is a post-sandbox
+   (Phase 6+) aspiration, not a near-term claim.
+   - Every development session on Shem runs with Shem connected via MCP
+     (`shem start` + `claude mcp add`); structural codebase questions go
+     through `graphify_query` first.
+   - Each phase's execution uses at least one Shem capability for its own work:
+     Phase 2 — client-brain explorer agents during co-driver development;
+     Phase 3 — `replay --check` validated on real dev sessions; Phase 4 —
+     `attest` a real session from this track.
+2. **Shem on not-Shem** (real outside work) — the only track that tests whether
+   the loop closes for someone who is not the author, under real token
+   pressure, on a corpus too big to read. Self-development is a poor probe for
+   this: editing product code in-repo rarely contains a graduate-shaped moment,
+   so a shelf fed only by track 1 stays irrelevant and nothing gets invoked.
+   Track 2 is where the compounding loop either closes or is shown not to.
+
+**Known open finding (2026-07-15):** `graduate_tool` has never fired in any
+session, on either track. The shelf holds installed packs only, zero
+self-graduated tools. Until one real recurring pattern is graduated and later
+invoked from the shelf, the self-evolution claim is unproven by our own logs —
+Phase 8's exit criteria are the test, and they are not met.
 
 **Friction log** (anything that made Shem awkward to reach for — one line
 each; this is the live stickiness measurement):
